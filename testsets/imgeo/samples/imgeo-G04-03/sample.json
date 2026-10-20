@@ -1,0 +1,13 @@
+{
+  "defect": "G4",
+  "task": "classify",
+  "standard": "imgeo-2.2",
+  "input": "Een openluchtzwembad van 50 bij 20 m, wat voor objecttype is dat in de BGT, en van welk type? Antwoord met alleen een JSON-object met de sleutels \"objecttype\" en \"type\", met de namen en waarden zoals de Gegevenscatalogus BGT ze schrijft.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "A swimming pool holds water, so a model that does not read the catalog answers Waterdeel, or a value zwembad that does not exist. The catalog classifies it as OverigBouwwerk of type bassin, in the domain values (9.11) and in the rules for object boundaries (10.8.2)",
+    "expected_variant": 1,
+    "location": "BGT catalog 9.11 and 10.8.2",
+    "absence": false
+  }
+}

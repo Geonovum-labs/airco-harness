@@ -1,0 +1,41 @@
+import json
+import re
+
+import pytest
+from jsonschema import validators
+
+from airco_harness import dataset
+from validators import rules
+
+TESTSETS = rules.TESTSETS_DIR
+SAMPLE_SCHEMA = json.loads((TESTSETS / "sample.schema.json").read_text(encoding="utf-8"))
+NAMES = dataset.testsets()
+FOLDERS = sorted(p for name in NAMES for p in (TESTSETS / name / "samples").iterdir())
+IDS = [f"{p.parent.parent.name}/{p.name}" for p in FOLDERS]
+RULES = set(rules.RULES)
+
+
+def test_test_sets_are_the_folders_with_a_manifest():
+    assert NAMES == ["imgeo"]
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_every_test_set_states_purpose_version_and_date(name):
+    manifest = dataset.manifest(name)
+    assert sorted(manifest) == ["date", "purpose", "version"] and all(manifest.values())
+
+
+@pytest.mark.parametrize("folder", FOLDERS, ids=IDS)
+def test_sample_folder_is_named_by_its_id_and_holds_a_valid_sample(folder):
+    assert re.fullmatch(r"[a-z0-9.-]+-G\d{2}-\d{2}", folder.name)
+    sample = json.loads((folder / "sample.json").read_text(encoding="utf-8"))
+    assert list(validators.validator_for(SAMPLE_SCHEMA)(SAMPLE_SCHEMA).iter_errors(sample)) == []
+
+
+@pytest.mark.parametrize("folder", FOLDERS, ids=IDS)
+def test_expected_outcome_names_a_known_rule_and_valid_answer_schema(folder):
+    expected = json.loads((folder / "expected.json").read_text(encoding="utf-8"))
+    assert expected["rule"] in RULES
+    if "answer_schema" in expected:
+        schema = json.loads((folder / expected["answer_schema"]).read_text(encoding="utf-8"))
+        validators.validator_for(schema).check_schema(schema)

@@ -1,0 +1,5 @@
+# Source files and publication forms are stored byte for byte so their sha256 matches the lock and provenance.json.
+sources/** -text
+publications/** -text
+reference-models/** -text
+recordings/** -text

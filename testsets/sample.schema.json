@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "airco-harness/testsets/sample",
+  "title": "sample.json of a sample in testsets/<name>/samples/<id>/; the folder name is the id",
+  "type": "object",
+  "required": ["defect", "task", "standard", "input", "metadata"],
+  "additionalProperties": false,
+  "properties": {
+    "defect": {"type": "string", "pattern": "^G\\d{1,2}$"},
+    "task": {"enum": ["lookup", "error", "example", "fragment", "validate", "classify", "code", "impact", "mapping", "mutation", "coherence", "location", "query", "assess"]},
+    "standard": {"type": "string"},
+    "input": {"type": "string", "minLength": 1},
+    "metadata": {
+      "type": "object",
+      "required": ["status", "hypothesis", "expected_variant", "location", "absence"],
+      "properties": {
+        "status": {"enum": ["draft", "approved", "withdrawn"]},
+        "hypothesis": {"type": "string"},
+        "expected_variant": {"type": "integer", "minimum": 0},
+        "location": {"type": "string"},
+        "absence": {"type": "boolean"},
+        "also_defect": {"type": "string"},
+        "exploration_question": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

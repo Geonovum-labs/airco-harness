@@ -1,0 +1,75 @@
+{
+  "fetched": "2026-10-18T08:33:53Z",
+  "files": [
+    {
+      "path": "imgeo-2.2/concept-register-imgeo.ttl",
+      "url": "https://definities.geostandaarden.nl/rest/v1/imgeo/data?format=text/turtle",
+      "last_modified": "Wed, 08 Jul 2026 07:51:38 GMT",
+      "etag": "\"85976-65614c70396fd\"",
+      "sha256": "67c104bf13f56a8ee85418231e1a02c9705b123cc90852bb6da08e770a3ff36e",
+      "bytes": 547190
+    },
+    {
+      "path": "imgeo-2.2/catalog-bgt.html",
+      "url": "https://docs.geostandaarden.nl/imgeo/catalogus/bgt/",
+      "last_modified": "Fri, 16 Oct 2026 10:05:32 GMT",
+      "etag": "\"409be-65df24e05036a\"",
+      "sha256": "375c1e6a4d372260c66bef4b5849489a88ee0a51e86ffef0770452ec4047b294",
+      "bytes": 264638
+    },
+    {
+      "path": "imgeo-2.2/catalog-imgeo.html",
+      "url": "https://docs.geostandaarden.nl/imgeo/catalogus/imgeo/",
+      "last_modified": "Fri, 16 Oct 2026 10:05:32 GMT",
+      "etag": "\"43781-65df24e0516f2\"",
+      "sha256": "5e94147dc2c9da065131ebba00de0ee633eb02cae68ce8c91c0150be02333e2d",
+      "bytes": 276353
+    },
+    {
+      "path": "imgeo-2.2/imgeo2.2-mim-logisch.xml",
+      "url": "https://raw.githubusercontent.com/Geonovum/IMGeo-dev/30d750029fc4b81998d30a95185f78ff2c314ced/mim/imgeo2.2-mim-logisch.xml",
+      "sha256": "6c16a4ba4462e7f6c2c0b333d6c1fdbcf6107f931a857b33ffcfc5836cf63771",
+      "bytes": 5465660
+    },
+    {
+      "path": "mim-1.1.1/MIMFORMAT_Mim_relatiesoort.xsd",
+      "url": "https://register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_Mim_relatiesoort.xsd",
+      "last_modified": "Tue, 23 Apr 2024 08:20:25 GMT",
+      "etag": "\"1154-616bf39d3ba52\"",
+      "sha256": "b972a762b091375f867705e34fcb8de5d8123e583d650f7fa9837dcb9d8ff00b",
+      "bytes": 4436
+    },
+    {
+      "path": "schemas/register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_Mim.xsd",
+      "url": "https://register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_Mim.xsd",
+      "last_modified": "Tue, 23 Apr 2024 08:20:25 GMT",
+      "etag": "\"8c82-616bf39d3aab2\"",
+      "sha256": "1c3434d04ff660df07c9d655f41d1772fda2dd92dd795e26232bca80d9790af6",
+      "bytes": 35970
+    },
+    {
+      "path": "schemas/register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_MimExt.xsd",
+      "url": "https://register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_MimExt.xsd",
+      "last_modified": "Tue, 23 Apr 2024 08:20:25 GMT",
+      "etag": "\"984-616bf39d3c9f3\"",
+      "sha256": "2776b515cbea8cf5d7e53becf992c4592f128a6bc0fb759897db31b752422a7a",
+      "bytes": 2436
+    },
+    {
+      "path": "schemas/register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_MimRef.xsd",
+      "url": "https://register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_MimRef.xsd",
+      "last_modified": "Tue, 23 Apr 2024 08:20:25 GMT",
+      "etag": "\"753-616bf39d3aab2\"",
+      "sha256": "f0161cab20fcd543ea728669be40c91ef17f9048293a7ac2f802a93ed3d8c341",
+      "bytes": 1875
+    },
+    {
+      "path": "schemas/register.geostandaarden.nl/xmlschema/mim/1.1.1/xlink.xsd",
+      "url": "https://register.geostandaarden.nl/xmlschema/mim/1.1.1/xlink.xsd",
+      "last_modified": "Tue, 23 Apr 2024 08:20:25 GMT",
+      "etag": "\"5ed-616bf39d3aab2\"",
+      "sha256": "ebdce7749c5f759870fe2772bddd78eb7c6f9121b87dfe192f9034f2a359223f",
+      "bytes": 1517
+    }
+  ]
+}

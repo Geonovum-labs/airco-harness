@@ -1,0 +1,2670 @@
+@prefix airco: <urn:airco-harness:imgeo-2.2:> .
+@prefix begrip: <http://definities.geostandaarden.nl/imgeo/id/begrip/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+airco:FunctieOndersteunendWegdeel_berm a skos:Concept ;
+    skos:definition "Een strook grond langs een weg of spoorweg."@nl ;
+    skos:exactMatch begrip:Berm ;
+    skos:inScheme airco:list_FunctieOndersteunendWegdeel ;
+    skos:prefLabel "berm"@nl ;
+    skos:topConceptOf airco:list_FunctieOndersteunendWegdeel .
+
+airco:FunctieOndersteunendWegdeel_verkeerseiland a skos:Concept ;
+    skos:definition "Ondersteunend wegdeel van beperkte omvang, uitgevoerd als verhoging of wegmarkering, dat wordt omsloten door wegdelen en ten doel heeft verkeersstromen te scheiden."@nl ;
+    skos:exactMatch begrip:Verkeerseiland ;
+    skos:inScheme airco:list_FunctieOndersteunendWegdeel ;
+    skos:prefLabel "verkeerseiland"@nl ;
+    skos:topConceptOf airco:list_FunctieOndersteunendWegdeel .
+
+airco:FunctieSpoorPlus__haven_kraan a skos:Concept ;
+    skos:definition "Spoorbaan waarop een hefkraan (bij een haven) zich voortbeweegt."@nl ;
+    skos:exactMatch <http://definities.geostandaarden.nl/imgeo/id/begrip/(haven)kraan> ;
+    skos:inScheme airco:list_FunctieSpoorPlus ;
+    skos:prefLabel "(haven)kraan"@nl ;
+    skos:topConceptOf airco:list_FunctieSpoorPlus .
+
+airco:FunctieSpoor_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_functieSpoor ;
+    skos:inScheme airco:list_FunctieSpoor ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_FunctieSpoor .
+
+airco:FunctieSpoor_sneltram a skos:Concept ;
+    skos:definition "Spoor voor een boven- danwel ondergrondse interlokale tram met een vrije baan."@nl ;
+    skos:exactMatch begrip:Sneltram ;
+    skos:inScheme airco:list_FunctieSpoor ;
+    skos:prefLabel "sneltram"@nl ;
+    skos:topConceptOf airco:list_FunctieSpoor .
+
+airco:FunctieSpoor_tram a skos:Concept ;
+    skos:definition "Spoor voor een railvoertuig voor personenvervoer voor de korte afstand."@nl ;
+    skos:exactMatch begrip:Tram ;
+    skos:inScheme airco:list_FunctieSpoor ;
+    skos:prefLabel "tram"@nl ;
+    skos:topConceptOf airco:list_FunctieSpoor .
+
+airco:FunctieSpoor_trein a skos:Concept ;
+    skos:definition "Spoor voor een railvoertuig voor de langere afstand dat sneller dan 45 km per uur kan, bestaande uit een enkele of een reeks van locomotieven, treinstellen en/of wagons."@nl ;
+    skos:exactMatch begrip:Trein ;
+    skos:inScheme airco:list_FunctieSpoor ;
+    skos:prefLabel "trein"@nl ;
+    skos:topConceptOf airco:list_FunctieSpoor .
+
+airco:FunctieWegPlus_calamiteitendoorsteek a skos:Concept ;
+    skos:broadMatch airco:FunctieWeg_rijbaan_autosnelweg,
+        airco:FunctieWeg_rijbaan_autoweg ;
+    skos:definition "Een (Calamiteiten doorsteek) CADO heeft tot doel het verkeer op een rijbaan via een doorsteek van de weg te kunnen geleiden in geval van een calamiteit of werkzaamheden op de rijbaan. Een tweede doel is het faciliteren van toegang tot rijbanen voor hulpdiensten vanaf andere rijbanen of van een parallelweg."@nl ;
+    skos:exactMatch begrip:Calamiteitendoorsteek ;
+    skos:inScheme airco:list_FunctieWegPlus ;
+    skos:prefLabel "calamiteitendoorsteek"@nl ;
+    skos:topConceptOf airco:list_FunctieWegPlus .
+
+airco:FunctieWegPlus_verbindingsweg a skos:Concept ;
+    skos:broadMatch airco:FunctieWeg_rijbaan_autosnelweg,
+        airco:FunctieWeg_rijbaan_autoweg,
+        airco:FunctieWeg_rijbaan_regionale_weg ;
+    skos:definition "Een verbindingsweg is (in principe) een eenrichtingsweg, gelegen binnen een knooppunt of aansluiting, die onderdeel is van de wijze waarop de ongelijkvloersheid is gerealiseerd."@nl ;
+    skos:exactMatch begrip:Verbindingsweg ;
+    skos:inScheme airco:list_FunctieWegPlus ;
+    skos:prefLabel "verbindingsweg"@nl ;
+    skos:topConceptOf airco:list_FunctieWegPlus .
+
+airco:FunctieWegPlus_verkeersdrempel a skos:Concept ;
+    skos:broadMatch airco:FunctieWeg_rijbaan_lokale_weg,
+        airco:FunctieWeg_rijbaan_regionale_weg ;
+    skos:definition "Verhoging in een regionale rijbaan, bedoeld om het gemotoriseerde verkeer met een lage snelheid te laten rijden."@nl ;
+    skos:exactMatch begrip:Verkeersdrempel ;
+    skos:inScheme airco:list_FunctieWegPlus ;
+    skos:prefLabel "verkeersdrempel"@nl ;
+    skos:topConceptOf airco:list_FunctieWegPlus .
+
+airco:FunctieWeg_OV-baan a skos:Concept ;
+    skos:definition "Wegdeel dat uitsluitend is bestemd en gemarkeerd voor openbaar vervoer en afgescheiden is van de andere wegdelen niet uitsluitend door markering."@nl ;
+    skos:exactMatch begrip:Ov-baan ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "OV-baan"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_baan_voor_vliegverkeer a skos:Concept ;
+    skos:definition "Wegdeel uitsluitend bedoeld voor vliegverkeer."@nl ;
+    skos:exactMatch begrip:BaanVoorVliegverkeer ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "baan voor vliegverkeer"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_fietspad a skos:Concept ;
+    skos:definition "Wegdeel met name bestemd voor fietsers en, indien toegestaan, bromfietsers en dat afgescheiden is van de andere wegdelen niet uitsluitend door markering."@nl ;
+    skos:exactMatch begrip:Fietspad ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "fietspad"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_inrit a skos:Concept ;
+    skos:definition "Toegangswegen, oprijlanen en dergelijke met verkeersfunctie die leiden naar erven en terreinen."@nl ;
+    skos:exactMatch begrip:Inrit ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "inrit"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_overweg a skos:Concept ;
+    skos:definition "Een gelijkvloerse kruising van een wegdeel en een wegdeel type ov-baan met spoor type trein of sneltram."@nl ;
+    skos:exactMatch begrip:Overweg ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "overweg"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_parkeervlak a skos:Concept ;
+    skos:definition "Wegdeel bestemd voor het parkeren van motorvoertuigen."@nl ;
+    skos:exactMatch begrip:Parkeervlak ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "parkeervlak"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_ruiterpad a skos:Concept ;
+    skos:definition "Een wegdeel primair aangelegd voor het gebruik door ruiters."@nl ;
+    skos:exactMatch begrip:Ruiterpad ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "ruiterpad"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_spoorbaan a skos:Concept ;
+    skos:definition "Gebaand gedeelte voor het verkeer over rails."@nl ;
+    skos:exactMatch begrip:Spoorbaan_functieWeg ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "spoorbaan"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_voetgangersgebied a skos:Concept ;
+    skos:definition "Wegdeel alleen voor het gebruik door voetgangers, waarbij het door voetgangers te gebruiken gebied de volle breedte van de weg beslaat en het gebied een nadrukkelijk openbaar karakter heeft."@nl ;
+    skos:exactMatch begrip:Voetgangersgebied ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "voetgangersgebied"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_voetpad a skos:Concept ;
+    skos:definition "Wegdeel waar voetgangers gebruik van moeten maken."@nl ;
+    skos:exactMatch begrip:Voetpad ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "voetpad"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_voetpad_op_trap a skos:Concept ;
+    skos:definition "Voetpad op verkeersinfrastructurele voorziening bestaande uit een constructie van treden, waarop men een hoger of lager gelegen plaats kan bereiken."@nl ;
+    skos:exactMatch begrip:VoetpadOpTrap ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "voetpad op trap"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_woonerf a skos:Concept ;
+    skos:definition "Wegdeel waar de verblijfsfunctie (lopen, spelen, ontmoeten enzovoorts) prioriteit heeft boven de verkeersfunctie."@nl ;
+    skos:exactMatch begrip:Woonerf ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "woonerf"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_akkerbouw a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_bouwland ;
+    skos:definition "Terreindeel in gebruik als akker, voor de teelt van akkerbouwgewassen."@nl ;
+    skos:exactMatch begrip:Akkerbouw ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "akkerbouw"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_bodembedekkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_groenvoorziening ;
+    skos:definition "Beheerde beplanting van groenvak in  de openbare ruimte, zijnde bodembedekkers."@nl ;
+    skos:exactMatch begrip:Bodembedekkers_fysiekVoorkomenBegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "bodembedekkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_bollenteelt a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_bouwland ;
+    skos:definition "Terreindeel in gebruik als akker, voor de teelt van bloembollen."@nl ;
+    skos:exactMatch begrip:Bollenteelt ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "bollenteelt"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_bosplantsoen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_groenvoorziening ;
+    skos:definition "Opgaande beplanting van houtachtige gewassen die struikvormend en/of boomvormend zijn. De soorten zijn als bosplantsoen opgekweekt en aangeplant.De beplanting kan open of gesloten zijn en bestaat vaak uit inheemse soorten. Onderscheidt zich van heesters omdat de sierkenmerken niet voorop staan."@nl ;
+    skos:exactMatch begrip:Bosplantsoen_fysiekVoorkomenBegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "bosplantsoen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_braakliggend a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_bouwland ;
+    skos:definition "Terrein in gebruik als akker, maar tijdelijk niet beteeld met een landbouwgewas."@nl ;
+    skos:exactMatch begrip:Braakliggend ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "braakliggend"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_gesloten_duinvegetatie a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_duin ;
+    skos:definition "Duin met een overwegend opgaande vegetatie van struiken en of bomen."@nl ;
+    skos:exactMatch begrip:GeslotenDuinvegetatie ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "gesloten duinvegetatie"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_gras-_en_kruidachtigen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_groenvoorziening ;
+    skos:definition "(Grond met) een laagblijvende, aaneengesloten kruidachtige vegetatie."@nl ;
+    skos:exactMatch begrip:Gras-EnKruidachtigen_fysiekVoorkomenBegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "gras- en kruidachtigen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_griend_en_hakhout a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_loofbos ;
+    skos:definition "Terreindeel met opgaande begroeiing van loofbomen, in een dicht groeiverband, en die periodiek wordt afgezet."@nl ;
+    skos:exactMatch begrip:GriendEnHakhout ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "griend en hakhout"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_heesters a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_groenvoorziening ;
+    skos:definition "Beplanting van houtige gewassen die struikvormend zijn en die al dan niet een gesloten geheel vormen. Het accent ligt op de sierwaarde, de beplanting kan uit één soort of uit meerdere soorten bestaan. Onder de heesters kan een houtachtige of kruidachtige onderbegroeiing aanwezig zijn. Het oppervlak met struikachtige gewassen is meer dan 50% van de totale oppervlakte van het vak."@nl ;
+    skos:exactMatch begrip:Heesters_fysiekVoorkomenBegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "heesters"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_hoogstam_boomgaarden a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_fruitteelt ;
+    skos:definition "Terreindeel begroeid met hoogstamfruitbomen."@nl ;
+    skos:exactMatch begrip:HoogstamBoomgaarden ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "hoogstam boomgaarden"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_klein_fruit a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_fruitteelt ;
+    skos:definition "Terreindeel begroeid met heesters voor zachtfruit zoals bessen of frambozen."@nl ;
+    skos:exactMatch begrip:KleinFruit ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "klein fruit"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_laagstam_boomgaarden a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_fruitteelt ;
+    skos:definition "Terreindeel begroeid met laagstamfruitbomen."@nl ;
+    skos:exactMatch begrip:LaagstamBoomgaarden ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "laagstam boomgaarden"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_open_duinvegetatie a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_duin ;
+    skos:definition "Duin met een overwegend grasachtige vegetatie."@nl ;
+    skos:exactMatch begrip:OpenDuinvegetatie ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "open duinvegetatie"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_planten a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_groenvoorziening ;
+    skos:definition "Beheerde niet nader gespecificeerde beplanting van groenvak in de openbare ruimte."@nl ;
+    skos:exactMatch begrip:Planten_fysiekVoorkomenBegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "planten"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_struikrozen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_groenvoorziening ;
+    skos:definition "Beheerde beplanting van groenvak in  de openbare ruimte, zijnde in struikvorm groeiende rozen."@nl ;
+    skos:exactMatch begrip:Struikrozen_fysiekVoorkomenBegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "struikrozen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_vollegrondsteelt a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_bouwland ;
+    skos:definition "Terreindeel in gebruik als akker, voor de teelt van tuinbouwgewassen."@nl ;
+    skos:exactMatch begrip:Vollegrondsteelt ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "vollegrondsteelt"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerreinPlus_wijngaarden a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenBegroeidTerrein_fruitteelt ;
+    skos:definition "Terreindeel begroeid met druivenstokken voor wijnbouw."@nl ;
+    skos:exactMatch begrip:Wijngaarden ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerreinPlus ;
+    skos:prefLabel "wijngaarden"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerreinPlus .
+
+airco:FysiekVoorkomenBegroeidTerrein_boomteelt a skos:Concept ;
+    skos:definition "Grond in gebruik voor het kweken van jonge siergewassen, bomen enz. ten behoeve van een later gebruik elders."@nl ;
+    skos:exactMatch begrip:Boomteelt ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "boomteelt"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_gemengd_bos a skos:Concept ;
+    skos:definition "Terreindeel begroeid met een dusdanige aantal naald- en loofbomen dat deze een min of meer gesloten geheel vormen of, na volgroeiing van de bomen, zullen vormen."@nl ;
+    skos:exactMatch begrip:GemengdBos ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:notation "BGT" ;
+    skos:prefLabel "gemengd bos"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_grasland_agrarisch_ a skos:Concept ;
+    skos:definition "Terreindeel met een vegetatie bestaande uit grassen en of grasachtigen, en met de in graslanden voorkomende  kruiden, zijnde cultuurgrasland dat in gebruik is voor de veeteelt, bijvoorbeeld als weiland of als hooiland."@nl ;
+    skos:exactMatch begrip:GraslandAgrarisch ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "grasland agrarisch "@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_grasland_overig a skos:Concept ;
+    skos:definition "Terreindeel met een vegetatie bestaande uit grassen en of grasachtigen, en met de in graslanden voorkomende  kruiden, dat niet in gebruik is voor agrarische doeleinden."@nl ;
+    skos:exactMatch begrip:GraslandOverig ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "grasland overig"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_heide a skos:Concept ;
+    skos:definition "Terreindeel overwegend begroeid met heide en heideachtige vegetaties."@nl ;
+    skos:exactMatch begrip:Heide ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "heide"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_houtwal a skos:Concept ;
+    skos:definition "Terreindeel zijnde een afscheiding met beperkte breedte en beplant met bomen of struiken."@nl ;
+    skos:exactMatch begrip:Houtwal ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "houtwal"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_kwelder a skos:Concept ;
+    skos:definition "Buitendijks gelegen aangeslibd land van een wad, dat bij gewone vloed niet meer onder loopt."@nl ;
+    skos:exactMatch begrip:Kwelder ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "kwelder"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_moeras a skos:Concept ;
+    skos:definition "Terreindeel met moerasvegetatie in stilstaand water van geringe diepte zonder merkbare toe- of afvloeiing."@nl ;
+    skos:exactMatch begrip:Moeras ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "moeras"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_naaldbos a skos:Concept ;
+    skos:definition "Terreindeel begroeid met een dusdanige aantal naaldbomen dat deze een min of meer gesloten geheel vormen of, na volgroeiing van de bomen, zullen vormen."@nl ;
+    skos:exactMatch begrip:Naaldbos ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "naaldbos"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_rietland a skos:Concept ;
+    skos:definition "Terreindeel overwegend begroeid met rietvegetatie."@nl ;
+    skos:exactMatch begrip:Rietland ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "rietland"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_struiken a skos:Concept ;
+    skos:definition "Terreindeel bedekt met niet-gecultiveerde (natuurlijke), lage, houtachtige, overblijvende planten gekenmerkt door verschillende vertakkingen dicht bij de wortel en afwezigheid van opvallende stammen."@nl ;
+    skos:exactMatch begrip:Struiken ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "struiken"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_asfalt a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_gesloten_verharding ;
+    skos:definition "Gesloten verharding bestaande uit asfaltbeton of andere met bitumen gebonden materialen."@nl ;
+    skos:exactMatch begrip:Asfalt_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "asfalt"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_beton_element a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_open_verharding ;
+    skos:definition "Geprepareerde elementen van beton zoals, trottoirbanden, opsluitbanden en stelconplaten."@nl ;
+    skos:exactMatch begrip:BetonElement_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "beton element"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_betonstraatstenen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_open_verharding ;
+    skos:definition "Verharding gemaakt van betonstraatstenen. Straatsteen die als goedkope vervanging van de gebakken klinkers is ontwikkeld."@nl ;
+    skos:exactMatch begrip:Betonstraatstenen_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "betonstraatstenen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_boomschors a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_onverhard ;
+    skos:definition "Onverhard met als deklaag boomschors."@nl ;
+    skos:exactMatch begrip:Boomschors_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "boomschors"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_cementbeton a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_gesloten_verharding ;
+    skos:definition "Gesloten verharding bestaande uit gewapend of ongewapend beton."@nl ;
+    skos:exactMatch begrip:Cementbeton_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "cementbeton"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_gebakken_klinkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_open_verharding ;
+    skos:definition "Verharding gemaakt van straatbakstenen. Gebakken klinkers worden voornamelijk geproduceerd uit grondstof van eigen bodem – de beddingen van onze rivieren."@nl ;
+    skos:exactMatch begrip:GebakkenKlinkers_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "gebakken klinkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_grasklinkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_half_verhard ;
+    skos:definition "Elementenverharding bestaande uit elementen van beperkte afmetingen die ten behoeve van de doorgroei van grassen en kruiden, zijn voorzien van openingen of met tussenruimten aangebracht."@nl ;
+    skos:exactMatch begrip:Grasklinkers_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "grasklinkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_gravel a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_half_verhard ;
+    skos:definition "Gravel is een ondergrond van gemalen baksteen die veel wordt gebruikt bij tennis en ook wel op atletiekbanen."@nl ;
+    skos:exactMatch begrip:Gravel_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "gravel"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_grind a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_half_verhard ;
+    skos:definition "Ongebonden verharding bestaande uit kiezelmateriaal, waarvan de stenen in doorsnede variëren van 1 tot 5 cm."@nl ;
+    skos:exactMatch begrip:Grind_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "grind"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_kunststof a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_gesloten_verharding ;
+    skos:definition "Synthetisch vervaardigd materiaal dat als verharding dient, zoals kunstgras of kunststof toplagen op atletiekbanen."@nl ;
+    skos:exactMatch begrip:Kunststof ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "kunststof"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_puin a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_half_verhard ;
+    skos:definition "Puin is afvalmateriaal dat bestaat uit losse brokstukken, grotendeels bestaande uit stenen en beton, van gesloopte of ingestorte gebouwen, viaducten, bruggen en andere objecten."@nl ;
+    skos:exactMatch begrip:Puin_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "puin"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_schelpen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_half_verhard ;
+    skos:definition "Ongebonden verharding bestaande uit schelpenmateriaal"@nl ;
+    skos:exactMatch begrip:Schelpen_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "schelpen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_sierbestrating a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_open_verharding ;
+    skos:definition "Bestrating, uitgevoerd in verschillende bestratingsverbanden en -materialen, of in een sierverband, die vooral wordt toegepast uit esthetische overwegingen."@nl ;
+    skos:exactMatch begrip:Sierbestrating_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "sierbestrating"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_strand_en_strandwal a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_zand ;
+    skos:definition "Onbegroeide zandige kustvlakte op de overgang van zee met land. Staat onder invloed van het zeewater en de wind."@nl ;
+    skos:exactMatch begrip:StrandEnStrandwal ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "strand en strandwal"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_tegels a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_open_verharding ;
+    skos:definition "Bestrating van tegels, een platte vaak vierkante betonnen steen; veelal gebruikt voor trottoirbestrating."@nl ;
+    skos:exactMatch begrip:Tegels_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "tegels"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_zand a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_onverhard ;
+    skos:definition "Onverhard met als deklaag zand."@nl ;
+    skos:exactMatch begrip:Zand_fysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "zand"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerreinPlus_zandverstuiving a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOnbegroeidTerrein_zand ;
+    skos:definition "Een gebied met zandige bodem waarvan delen van het gebied zonder vegetatie zijn, door invloed van wind."@nl ;
+    skos:exactMatch begrip:Zandverstuiving ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerreinPlus ;
+    skos:prefLabel "zandverstuiving"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerreinPlus .
+
+airco:FysiekVoorkomenOnbegroeidTerrein_erf a skos:Concept ;
+    skos:definition "Terreindeel dat bij een pand of overig bouwwerk hoort, dat niet nader wordt ingewonnen en dat bestaat uit een mengvorm van begroeiing, verharding, en/of water."@nl ;
+    skos:exactMatch begrip:Erf ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerrein ;
+    skos:prefLabel "erf"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerrein .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_asfalt a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_gesloten_verharding ;
+    skos:definition "Gesloten verharding bestaande uit asfaltbeton of andere met bitumen gebonden materialen."@nl ;
+    skos:exactMatch begrip:Asfalt_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "asfalt"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_beton_element a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_open_verharding ;
+    skos:definition "Geprepareerde elementen van beton zoals, trottoirbanden, opsluitbanden en stelconplaten."@nl ;
+    skos:exactMatch begrip:BetonElement_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "beton element"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_betonstraatstenen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_open_verharding ;
+    skos:definition "Verharding gemaakt van betonstraatstenen. Straatsteen die als goedkope vervanging van de gebakken klinkers is ontwikkeld."@nl ;
+    skos:exactMatch begrip:Betonstraatstenen_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "betonstraatstenen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_bodembedekkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_groenvoorziening ;
+    skos:definition "Beheerde beplanting van groenvak in  de openbare ruimte, zijnde bodembedekkers."@nl ;
+    skos:exactMatch begrip:Bodembedekkers_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "bodembedekkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_boomschors a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_onverhard ;
+    skos:definition "Onverhard met als deklaag boomschors."@nl ;
+    skos:exactMatch begrip:Boomschors_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "boomschors"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_bosplantsoen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_groenvoorziening ;
+    skos:definition "Opgaande beplanting van houtachtige gewassen die struikvormend en/of boomvormend zijn. De soorten zijn als bosplantsoen opgekweekt en aangeplant.De beplanting kan open of gesloten zijn en bestaat vaak uit inheemse soorten. Onderscheidt zich van heesters omdat de sierkenmerken niet voorop staan."@nl ;
+    skos:exactMatch begrip:Bosplantsoen_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "bosplantsoen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_cementbeton a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_gesloten_verharding ;
+    skos:definition "Gesloten verharding bestaande uit gewapend of ongewapend beton."@nl ;
+    skos:exactMatch begrip:Cementbeton_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "cementbeton"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_gebakken_klinkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_open_verharding ;
+    skos:definition "Verharding gemaakt van straatbakstenen. Gebakken klinkers worden voornamelijk geproduceerd uit grondstof van eigen bodem; de beddingen van onze rivieren."@nl ;
+    skos:exactMatch begrip:GebakkenKlinkers_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "gebakken klinkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_gras-_en_kruidachtigen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_groenvoorziening ;
+    skos:definition "(Grond met) een laagblijvende, aaneengesloten kruidachtige vegetatie."@nl ;
+    skos:exactMatch begrip:Gras-EnKruidachtigen_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "gras- en kruidachtigen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_grasklinkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_half_verhard ;
+    skos:definition "Elementenverharding bestaande uit elementen van beperkte afmetingen die ten behoeve van de doorgroei van grassen en kruiden, zijn voorzien van openingen of met tussenruimten aangebracht."@nl ;
+    skos:exactMatch begrip:Grasklinkers_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "grasklinkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_gravel a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_half_verhard ;
+    skos:definition "Gravel is een ondergrond van gemalen baksteen die veel wordt gebruikt bij tennis en ook wel op atletiekbanen."@nl ;
+    skos:exactMatch begrip:Gravel_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "gravel"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_grind a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_half_verhard ;
+    skos:definition "Ongebonden verharding bestaande uit kiezelmateriaal, waarvan de stenen in doorsnede variëren van 1 tot 5 cm."@nl ;
+    skos:exactMatch begrip:Grind_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "grind"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_heesters a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_groenvoorziening ;
+    skos:definition "Beplanting van houtige gewassen die struikvormend zijn en die al dan niet een gesloten geheel vormen. Het accent ligt op de sierwaarde, de beplanting kan uit één soort of uit meerdere soorten bestaan. Onder de heesters kan een houtachtige of kruidachtige onderbegroeiing aanwezig zijn. Het oppervlak met struikachtige gewassen is meer dan 50% van de totale oppervlakte van het vak."@nl ;
+    skos:exactMatch begrip:Heesters_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "heesters"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_planten a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_groenvoorziening ;
+    skos:definition "Beheerde niet nader gespecificeerde beplanting van groenvak in de openbare ruimte."@nl ;
+    skos:exactMatch begrip:Planten_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "planten"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_puin a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_half_verhard ;
+    skos:definition "Puin is afvalmateriaal dat bestaat uit losse brokstukken, grotendeels bestaande uit stenen en beton, van gesloopte of ingestorte gebouwen, viaducten, bruggen en andere objecten."@nl ;
+    skos:exactMatch begrip:Puin_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "puin"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_schelpen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_half_verhard ;
+    skos:definition "Ongebonden verharding bestaande uit schelpenmateriaal."@nl ;
+    skos:exactMatch begrip:Schelpen_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "schelpen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_sierbestrating a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_open_verharding ;
+    skos:definition "Bestrating, uitgevoerd in verschillende bestratingsverbanden en -materialen, of in een sierverband, die vooral wordt toegepast uit esthetische overwegingen."@nl ;
+    skos:exactMatch begrip:Sierbestrating_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "sierbestrating"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_struikrozen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_groenvoorziening ;
+    skos:definition "Beheerde beplanting van groenvak in  de openbare ruimte, zijnde in struikvorm groeiende rozen."@nl ;
+    skos:exactMatch begrip:Struikrozen_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "struikrozen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_tegels a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_open_verharding ;
+    skos:definition "Bestrating van tegels, een platte vaak vierkante betonnen steen; veelal gebruikt voor trottoirbestrating."@nl ;
+    skos:exactMatch begrip:Tegels_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "tegels"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenOndersteunendWegdeelPlus_zand a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenOndersteunendWegdeel_onverhard ;
+    skos:definition "Onverhard met als deklaag zand."@nl ;
+    skos:exactMatch begrip:Zand_fysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeelPlus ;
+    skos:prefLabel "zand"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeelPlus .
+
+airco:FysiekVoorkomenWegPlus_asfalt a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_gesloten_verharding ;
+    skos:definition "Gesloten verharding bestaande uit asfaltbeton of andere met bitumen gebonden materialen."@nl ;
+    skos:exactMatch begrip:Asfalt_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "asfalt"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_beton_element a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_open_verharding ;
+    skos:definition "Geprepareerde elementen van beton zoals, trottoirbanden, opsluitbanden en stelconplaten."@nl ;
+    skos:exactMatch begrip:BetonElement_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "beton element"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_betonstraatstenen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_open_verharding ;
+    skos:definition "Verharding gemaakt van betonstraatstenen. Straatsteen die als goedkope vervanging van de gebakken klinkers is ontwikkeld."@nl ;
+    skos:exactMatch begrip:Betonstraatstenen_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "betonstraatstenen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_boomschors a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_onverhard ;
+    skos:definition "Onverhard met als deklaag boomschors."@nl ;
+    skos:exactMatch begrip:Boomschors_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "boomschors"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_cementbeton a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_gesloten_verharding ;
+    skos:definition "Gesloten verharding bestaande uit gewapend of ongewapend beton."@nl ;
+    skos:exactMatch begrip:Cementbeton_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "cementbeton"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_gebakken_klinkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_open_verharding ;
+    skos:definition "Verharding gemaakt van straatbakstenen. Gebakken klinkers worden voornamelijk geproduceerd uit grondstof van eigen bodem – de beddingen van onze rivieren."@nl ;
+    skos:exactMatch begrip:GebakkenKlinkers_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "gebakken klinkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_grasklinkers a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_half_verhard ;
+    skos:definition "Elementenverharding bestaande uit elementen van beperkte afmetingen die ten behoeve van de doorgroei van grassen en kruiden, zijn voorzien van openingen of met tussenruimten aangebracht."@nl ;
+    skos:exactMatch begrip:Grasklinkers_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "grasklinkers"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_gravel a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_half_verhard ;
+    skos:definition "Gravel is een ondergrond van gemalen baksteen die veel wordt gebruikt bij tennis en ook wel op atletiekbanen."@nl ;
+    skos:exactMatch begrip:Gravel_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "gravel"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_grind a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_half_verhard ;
+    skos:definition "Ongebonden verharding bestaande uit kiezelmateriaal, waarvan de stenen in doorsnede variëren van 1 tot 5 cm."@nl ;
+    skos:exactMatch begrip:Grind_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "grind"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_puin a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_half_verhard ;
+    skos:definition "Puin is afvalmateriaal dat bestaat uit losse brokstukken, grotendeels bestaande uit stenen en beton, van gesloopte of ingestorte gebouwen, viaducten, bruggen en andere objecten."@nl ;
+    skos:exactMatch begrip:Puin_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "puin"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_schelpen a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_half_verhard ;
+    skos:definition "Ongebonden verharding bestaande uit schelpenmateriaal."@nl ;
+    skos:exactMatch begrip:Schelpen_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "schelpen"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_sierbestrating a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_open_verharding ;
+    skos:definition "Bestrating, uitgevoerd in verschillende bestratingsverbanden en -materialen, of in een sierverband, die vooral wordt toegepast uit esthetische overwegingen."@nl ;
+    skos:exactMatch begrip:Sierbestrating_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "sierbestrating"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_tegels a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_open_verharding ;
+    skos:definition "Bestrating van tegels, een platte vaak vierkante betonnen steen; veelal gebruikt voor trottoirbestrating."@nl ;
+    skos:exactMatch begrip:Tegels_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "tegels"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:FysiekVoorkomenWegPlus_zand a skos:Concept ;
+    skos:broadMatch airco:FysiekVoorkomenWeg_onverhard ;
+    skos:definition "Onverhard met als deklaag zand."@nl ;
+    skos:exactMatch begrip:Zand_fysiekVoorkomenWegPlus ;
+    skos:inScheme airco:list_FysiekVoorkomenWegPlus ;
+    skos:prefLabel "zand"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWegPlus .
+
+airco:Inwinningsmethode_fotogrammetisch a skos:Concept ;
+    skos:definition "De geometrie is ingewonnen vanaf daartoe geschikte (digitale) foto's, meestal luchtfoto's."@nl ;
+    skos:exactMatch begrip:Fotogrammetisch ;
+    skos:inScheme airco:list_Inwinningsmethode ;
+    skos:prefLabel "fotogrammetisch"@nl ;
+    skos:topConceptOf airco:list_Inwinningsmethode .
+
+airco:Inwinningsmethode_laser a skos:Concept ;
+    skos:definition "De geometrie is met behulp van een laserscanner ingewonnen."@nl ;
+    skos:exactMatch begrip:Laser ;
+    skos:inScheme airco:list_Inwinningsmethode ;
+    skos:prefLabel "laser"@nl ;
+    skos:topConceptOf airco:list_Inwinningsmethode .
+
+airco:Inwinningsmethode_panoramabeelden a skos:Concept ;
+    skos:definition "De geometrie is vanaf panoramafoto's ingewonnen."@nl ;
+    skos:exactMatch begrip:Panoramabeelden ;
+    skos:inScheme airco:list_Inwinningsmethode ;
+    skos:prefLabel "panoramabeelden"@nl ;
+    skos:topConceptOf airco:list_Inwinningsmethode .
+
+airco:Inwinningsmethode_terrestrisch a skos:Concept ;
+    skos:definition "De geometrie is ingewonnen middels terreinbezoek."@nl ;
+    skos:exactMatch begrip:Terrestrisch ;
+    skos:inScheme airco:list_Inwinningsmethode ;
+    skos:prefLabel "terrestrisch"@nl ;
+    skos:topConceptOf airco:list_Inwinningsmethode .
+
+airco:StatusPlus_plan a skos:Concept ;
+    skos:definition """Situatie die ontstaat op het moment van verlening van een beschikking voor bouw of aanleg en
+duurt tot het moment waarop het object gereed is voor het beoogde gebruik."""@nl ;
+    skos:exactMatch begrip:Plan ;
+    skos:inScheme airco:list_StatusPlus ;
+    skos:prefLabel "plan"@nl ;
+    skos:topConceptOf airco:list_StatusPlus .
+
+airco:Status_bestaand a skos:Concept ;
+    skos:definition "Situatie waarin het object wordt / kan worden gebruikt voor het doel waarvoor het is gebouwd / aangelegd."@nl ;
+    skos:exactMatch begrip:Bestaand ;
+    skos:inScheme airco:list_Status ;
+    skos:prefLabel "bestaand"@nl ;
+    skos:topConceptOf airco:list_Status .
+
+airco:TypeBakPlus_afval_apart_plaats a skos:Concept ;
+    skos:definition "Boven- of ondergrondse opslagplaats voor het gescheiden inzamelen van afval, met stortkoker(s) op het straatniveau."@nl ;
+    skos:exactMatch begrip:AfvalApartPlaats ;
+    skos:inScheme airco:list_TypeBakPlus ;
+    skos:prefLabel "afval apart plaats"@nl ;
+    skos:topConceptOf airco:list_TypeBakPlus .
+
+airco:TypeBakPlus_afvalbak a skos:Concept ;
+    skos:definition "Bak of korf in de openbare ruimte met een permanent karakter; bedoeld voor het verzamelen van (meestal los) afval."@nl ;
+    skos:exactMatch begrip:Afvalbak ;
+    skos:inScheme airco:list_TypeBakPlus ;
+    skos:prefLabel "afvalbak"@nl ;
+    skos:topConceptOf airco:list_TypeBakPlus .
+
+airco:TypeBakPlus_bloembak a skos:Concept ;
+    skos:definition "Bak in de openbare ruimte met een permanent karakter, waarin planten of struiken zijn geplant."@nl ;
+    skos:exactMatch begrip:Bloembak ;
+    skos:inScheme airco:list_TypeBakPlus ;
+    skos:prefLabel "bloembak"@nl ;
+    skos:topConceptOf airco:list_TypeBakPlus .
+
+airco:TypeBakPlus_container a skos:Concept ;
+    skos:definition "Nagelvast met de grond verbonden inzamelmiddel voor afvalstoffen, doorgaans van metaal of kunststof waarin afvalstoffen worden verzameld, bewaard en waaruit deze afvalstoffen vervolgens worden overgeladen in een inzamelvoertuig."@nl ;
+    skos:exactMatch begrip:Container ;
+    skos:inScheme airco:list_TypeBakPlus ;
+    skos:prefLabel "container"@nl ;
+    skos:topConceptOf airco:list_TypeBakPlus .
+
+airco:TypeBakPlus_drinkbak a skos:Concept ;
+    skos:definition "Bak gevuld met water, waaruit vee of wild kan drinken."@nl ;
+    skos:exactMatch begrip:Drinkbak ;
+    skos:inScheme airco:list_TypeBakPlus ;
+    skos:prefLabel "drinkbak"@nl ;
+    skos:topConceptOf airco:list_TypeBakPlus .
+
+airco:TypeBakPlus_zand-___zoutbak a skos:Concept ;
+    skos:definition "Een bak met strooisel ten behoeve van gladheidsbestrijding."@nl ;
+    skos:exactMatch begrip:Zand-Zoutbak ;
+    skos:inScheme airco:list_TypeBakPlus ;
+    skos:prefLabel "zand- / zoutbak"@nl ;
+    skos:topConceptOf airco:list_TypeBakPlus .
+
+airco:TypeBak_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeBak ;
+    skos:inScheme airco:list_TypeBak ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeBak .
+
+airco:TypeBordPlus_dynamische_snelheidsindicator a skos:Concept ;
+    skos:definition "Een snelheidsinformatiebord dat in \"real time\" de snelheid van de weggebruikers aanduidt."@nl ;
+    skos:exactMatch begrip:DynamischeSnelheidsindicator ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "dynamische snelheidsindicator"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_informatiebord a skos:Concept ;
+    skos:definition "Een bord met daarop specifieke actuele informatie, zoals plattegronden of vertrektijden."@nl ;
+    skos:exactMatch begrip:Informatiebord ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "informatiebord"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_plaatsnaambord a skos:Concept ;
+    skos:definition "Een bord waarop een naam van een (woon)plaats of locatie is vermeld."@nl ;
+    skos:exactMatch begrip:Plaatsnaambord ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "plaatsnaambord"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_reclamebord a skos:Concept ;
+    skos:definition "Vrijstaand bord/zuil waarop rondom of aan één of meer zijden affiches kunnen worden (of zijn) geplakt."@nl ;
+    skos:exactMatch begrip:Reclamebord ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "reclamebord"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_scheepvaartbord a skos:Concept ;
+    skos:definition "Bord waarop een scheepvaartteken is aangebracht en waarvan de uitvoering als richtlijn is voorgeschreven volgens 'Richtlijnen Scheepvaarttekens (RST 2008)'."@nl ;
+    skos:exactMatch begrip:Scheepvaartbord ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "scheepvaartbord"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_straatnaambord a skos:Concept ;
+    skos:definition "Bord waarop de door de gemeente vastgestelde naam van de straat is vermeld. Bord kan zich op een paal of aan de gevel bevinden."@nl ;
+    skos:exactMatch begrip:Straatnaambord ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "straatnaambord"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_verkeersbord a skos:Concept ;
+    skos:definition "Bord waarop een verkeersteken is aangebracht en waarvan de uitvoering wettelijk is voorgeschreven volgens het 'Reglement verkeersregels en verkeerstekens 1990 (RVV 1990)'."@nl ;
+    skos:exactMatch begrip:Verkeersbord ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "verkeersbord"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_verklikker_transportleiding a skos:Concept ;
+    skos:definition "Bovengrondse voorziening om een ondergrondse transportleiding te markeren."@nl ;
+    skos:exactMatch begrip:VerklikkerTransportleiding ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "verklikker transportleiding"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_waarschuwingshek a skos:Concept ;
+    skos:definition "Constructie in de vorm van een hek, voorzien van rode en witte blokken of chevrons, die het verkeer attendeert op een gevarenpunt."@nl ;
+    skos:exactMatch begrip:Waarschuwingshek ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "waarschuwingshek"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBordPlus_wegwijzer a skos:Concept ;
+    skos:definition "Constructie voorzien van een of meer panelen met informatie ten behoeve van de bewegwijzering."@nl ;
+    skos:exactMatch begrip:Wegwijzer ;
+    skos:inScheme airco:list_TypeBordPlus ;
+    skos:prefLabel "wegwijzer"@nl ;
+    skos:topConceptOf airco:list_TypeBordPlus .
+
+airco:TypeBord_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeBord ;
+    skos:inScheme airco:list_TypeBord ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeBord .
+
+airco:TypeFunctioneelGebiedPlus_bedrijvigheid a skos:Concept ;
+    skos:definition "Gebied waarop  panden of overige gebouwen staan, en / of niet bebouwde oppervlakte , voornamelijk gebruikt  voor economische activiteiten en non-profit activiteiten."@nl ;
+    skos:exactMatch begrip:Bedrijvigheid ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "bedrijvigheid"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_begraafplaats a skos:Concept ;
+    skos:definition "Een besloten gebied waar lichamen van overleden personen worden begraven. Ook worden op begraafplaatsen urnen as van gecremeerde lichamen bewaard."@nl ;
+    skos:exactMatch begrip:Begraafplaats ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "begraafplaats"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_benzinestation a skos:Concept ;
+    skos:definition "Geheel van installaties, verharding en opstallen waar brandstoffen ten behoeve van verbrandingsmotoren worden verkocht."@nl ;
+    skos:exactMatch begrip:Benzinestation ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "benzinestation"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_bewoning a skos:Concept ;
+    skos:definition "Gebied waarop panden of overige bouwwerken staan die voornamelijk gebruikt worden voor bewoning, inclusief erven en tuinen die bij de panden behoren."@nl ;
+    skos:exactMatch begrip:Bewoning ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "bewoning"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_bushalte a skos:Concept ;
+    skos:definition "Halteplaats voor bussen van het openbaar vervoer."@nl ;
+    skos:exactMatch begrip:Bushalte ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "bushalte"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_carpoolplaats a skos:Concept ;
+    skos:definition "Parkeerplaats die qua ligging en ontsluiting geschikt is voor carpooling."@nl ;
+    skos:exactMatch begrip:Carpoolplaats ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "carpoolplaats"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_functioneel_beheer a skos:Concept ;
+    skos:definition "Gebied waar een specifiek beheer voor benodigd is, louter bepaald vanuit beheersoogpunt."@nl ;
+    skos:exactMatch begrip:FunctioneelBeheer ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "functioneel beheer"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_functioneel_beheer__hondenuitlaatplaats a skos:Concept ;
+    skos:definition "Een uitlaatplaats waar uw hond zijn behoefte kan/ mag doen waarbij geen opruimplicht bestaat."@nl ;
+    skos:exactMatch begrip:FunctioneelBeheerHondenuitlaatplaats ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "functioneel beheer: hondenuitlaatplaats"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_infrastructuur_verkeer_en_vervoer a skos:Concept ;
+    skos:definition "Gebied primair in gebruik voor verkeer en vervoer, waaronder verstaan spoorwegen, wegdelen, vliegverkeersbanen, parkeerterreinen, bermen en de ondersteunende objecten als kunstwerken."@nl ;
+    skos:exactMatch begrip:InfrastructuurVerkeerEnVervoer ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "infrastructuur verkeer en vervoer"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_infrastructuur_waterstaatswerken a skos:Concept ;
+    skos:definition "Gebied grenzend aan oppervlaktewater, primair in gebruik voor de oppervlaktewaterhuishouding (waterafvoer, wateraanvoer en waterconservering)."@nl ;
+    skos:exactMatch begrip:InfrastructuurWaterstaatswerken ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "infrastructuur waterstaatswerken"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_landbouw a skos:Concept ;
+    skos:definition "Gebied primair in gebruik voor land- en tuinbouwproductie."@nl ;
+    skos:exactMatch begrip:Landbouw ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "landbouw"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_maatschappelijke_en_of_publieksvoorziening a skos:Concept ;
+    skos:definition "Bebouwd of landelijk gebied, niet zijnde woon- of bedrijventerrein, in gebruik voor maatschappelijke- en publieksdoeleinden (omvat overheids- en particuliere terreinen)."@nl ;
+    skos:exactMatch begrip:MaatschappelijkeEnofPublieksvoorziening ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "maatschappelijke en/of publieksvoorziening"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_natuur_en_landschap a skos:Concept ;
+    skos:definition "Gebied dat wegens natuurschoon en/of natuurlijke historie in stand wordt gehouden."@nl ;
+    skos:exactMatch begrip:NatuurEnLandschap ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "natuur en landschap"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_recreatie a skos:Concept ;
+    skos:definition "Gebied in gebruik voor openlucht recreatie."@nl ;
+    skos:exactMatch begrip:Recreatie ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "recreatie"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_recreatie__bungalowpark a skos:Concept ;
+    skos:definition "Geheel van verharding, begroeiing, overige opstallen en gebouwen, bedoeld als vakantie-/weekendhuisjes die niet permanent bewoond worden."@nl ;
+    skos:exactMatch begrip:RecreatieBungalowpark ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "recreatie: bungalowpark"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_recreatie__camping a skos:Concept ;
+    skos:definition "Geheel van verharding, begroeiing en opstallen, in gebruik als terrein waar tijdelijk tenten en/of caravans kunnen worden geplaatst ten behoeve van recreatie."@nl ;
+    skos:exactMatch begrip:RecreatieCamping ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "recreatie: camping"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_recreatie__park a skos:Concept ;
+    skos:definition "Landschappelijk ingericht terrein, begroeid met houtachtige en kruidachtige vegetatie, verharding, objecten, waterpartijen en dergelijke, bedoeld als (grootschalige) recreatieve voorziening."@nl ;
+    skos:exactMatch begrip:RecreatiePark ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "recreatie: park"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_recreatie__speeltuin a skos:Concept ;
+    skos:definition "Geheel van begroeiing, verharding, opstallen en speelwerktuigen, bedoeld als speelplaats voor kinderen."@nl ;
+    skos:exactMatch begrip:RecreatieSpeeltuin ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "recreatie: speeltuin"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_recreatie__sportterrein a skos:Concept ;
+    skos:definition "Terrein, mogelijk met groenvoorziening, verharding en bebouwing, bestemd voor sportbeoefening."@nl ;
+    skos:exactMatch begrip:RecreatieSportterrein ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "recreatie: sportterrein"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_recreatie__volkstuin a skos:Concept ;
+    skos:definition "Terreingedeelte in gebruik als volkstuinen, inclusief bebouwing, verharding en dergelijke."@nl ;
+    skos:exactMatch begrip:RecreatieVolkstuin ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "recreatie: volkstuin"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_verzorgingsplaats a skos:Concept ;
+    skos:definition "Langs de weg gelegen parkeergelegenheid, met inbegrip van de daarbij behorende verharde en onverharde banen en een of meer voorzieningen ten behoeve van reizigers en/of voertuigen."@nl ;
+    skos:exactMatch begrip:Verzorgingsplaats ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "verzorgingsplaats"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebiedPlus_waterbergingsgebied a skos:Concept ;
+    skos:definition "Terrein met als functie het tijdelijk of langdurig bergen van (regen)wateroverschotten uit de omgeving."@nl ;
+    skos:exactMatch begrip:Waterbergingsgebied ;
+    skos:inScheme airco:list_TypeFunctioneelGebiedPlus ;
+    skos:prefLabel "waterbergingsgebied"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebiedPlus .
+
+airco:TypeFunctioneelGebied_kering a skos:Concept ;
+    skos:definition "Een waterkerende en / of scheidende, kunstmatige of natuurlijke hoogte of hooggelegen gronden inclusief de daarin aanwezige waterkerende elementen."@nl ;
+    skos:exactMatch begrip:Kering ;
+    skos:inScheme airco:list_TypeFunctioneelGebied ;
+    skos:prefLabel "kering"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebied .
+
+airco:TypeFunctioneelGebied_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeFunctioneelGebied ;
+    skos:inScheme airco:list_TypeFunctioneelGebied ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeFunctioneelGebied .
+
+airco:TypeGebouwInstallatiePlus_bordes a skos:Concept ;
+    skos:definition "Een verhard oppervlak, eventueel verhoogd en/of uitgevoerd met treden, grenzend aan een pand en primair bedoeld voor gebruik door voetgangers."@nl ;
+    skos:exactMatch begrip:Bordes ;
+    skos:inScheme airco:list_TypeGebouwInstallatiePlus ;
+    skos:prefLabel "bordes"@nl ;
+    skos:topConceptOf airco:list_TypeGebouwInstallatiePlus .
+
+airco:TypeGebouwInstallatiePlus_luifel a skos:Concept ;
+    skos:definition "Afdak aangebracht aan de gevel van een pand, eventueel rustend op kolommen."@nl ;
+    skos:exactMatch begrip:Luifel ;
+    skos:inScheme airco:list_TypeGebouwInstallatiePlus ;
+    skos:prefLabel "luifel"@nl ;
+    skos:topConceptOf airco:list_TypeGebouwInstallatiePlus .
+
+airco:TypeGebouwInstallatiePlus_toegangstrap a skos:Concept ;
+    skos:definition "Niet afsluitbare trap (of trappenhuis) die toegang biedt aan een gebouw."@nl ;
+    skos:exactMatch begrip:Toegangstrap ;
+    skos:inScheme airco:list_TypeGebouwInstallatiePlus ;
+    skos:prefLabel "toegangstrap"@nl ;
+    skos:topConceptOf airco:list_TypeGebouwInstallatiePlus .
+
+airco:TypeGebouwInstallatie_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeGebouwInstallatie ;
+    skos:inScheme airco:list_TypeGebouwInstallatie ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeGebouwInstallatie .
+
+airco:TypeInstallatiePlus_pomp a skos:Concept ;
+    skos:definition "Werktuig dat door middel van een verschil in druk vloeistoffen of gassen verplaatst."@nl ;
+    skos:exactMatch begrip:Pomp ;
+    skos:inScheme airco:list_TypeInstallatiePlus ;
+    skos:prefLabel "pomp"@nl ;
+    skos:topConceptOf airco:list_TypeInstallatiePlus .
+
+airco:TypeInstallatiePlus_zonnepaneel a skos:Concept ;
+    skos:definition "Een zonnepaneel is een paneel dat zonne-energie omzet in elektriciteit."@nl ;
+    skos:exactMatch begrip:Zonnepaneel ;
+    skos:inScheme airco:list_TypeInstallatiePlus ;
+    skos:prefLabel "zonnepaneel"@nl ;
+    skos:topConceptOf airco:list_TypeInstallatiePlus .
+
+airco:TypeInstallatie_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeInstallatie ;
+    skos:inScheme airco:list_TypeInstallatie ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeInstallatie .
+
+airco:TypeKastPlus_CAI-kast a skos:Concept ;
+    skos:definition "Kast ten behoeve van de regeling van radio- en televisiesignalen."@nl ;
+    skos:exactMatch begrip:Cai-kast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "CAI-kast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_GMS_kast a skos:Concept ;
+    skos:definition "Kast ten behoeve van het meten van weers- en wegdekomstandigheden."@nl ;
+    skos:exactMatch begrip:GmsKast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "GMS kast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_elektrakast a skos:Concept ;
+    skos:definition "Kast ten behoeve van de regeling van het transport van elektriciteit."@nl ;
+    skos:exactMatch begrip:Elektrakast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "elektrakast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_gaskast a skos:Concept ;
+    skos:definition "Kast ten behoeve van de regeling van het transport van gas."@nl ;
+    skos:exactMatch begrip:Gaskast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "gaskast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_openbare_verlichtingkast a skos:Concept ;
+    skos:definition "Kast ten behoeve van de regeling van de openbare verlichting."@nl ;
+    skos:exactMatch begrip:OpenbareVerlichtingkast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "openbare verlichtingkast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_rioolkast a skos:Concept ;
+    skos:definition "Kast ten behoeve van de regeling van het transport van rioolwater."@nl ;
+    skos:exactMatch begrip:Rioolkast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "rioolkast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_telecom_kast a skos:Concept ;
+    skos:definition "Kast ten behoeve van de regeling van telecommunicatie."@nl ;
+    skos:exactMatch begrip:TelecomKast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "telecom kast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_telkast a skos:Concept ;
+    skos:definition "Kast ten behoeve van het meten van permanente verkeertellingen."@nl ;
+    skos:exactMatch begrip:Telkast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "telkast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKastPlus_verkeersregelinstallatiekast a skos:Concept ;
+    skos:definition "Kast ten behoeve van de regeling van het verkeer."@nl ;
+    skos:exactMatch begrip:Verkeersregelinstallatiekast ;
+    skos:inScheme airco:list_TypeKastPlus ;
+    skos:prefLabel "verkeersregelinstallatiekast"@nl ;
+    skos:topConceptOf airco:list_TypeKastPlus .
+
+airco:TypeKast_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeKast ;
+    skos:inScheme airco:list_TypeKast ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeKast .
+
+airco:TypeKunstwerkPlus_bodemval a skos:Concept ;
+    skos:definition "Sprong in de bodem van een waterloop."@nl ;
+    skos:exactMatch begrip:Bodemval ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "bodemval"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_coupure a skos:Concept ;
+    skos:definition "Een onderbreking in een waterkering voor de doorvoer van een weg of spoorweg, die bij extreme waterstanden afsluitbaar is."@nl ;
+    skos:exactMatch begrip:Coupure ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "coupure"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_duiker a skos:Concept ;
+    skos:definition "Kunstwerk voor de waterhuishouding, bestaande uit een gesloten kokervormige constructie met een in- en uitstroomopening, niet de gehele waterbreedte beslaand en aangebracht onder een weg of spoorweg of in een dam. (bron: CROW)"@nl ;
+    skos:exactMatch begrip:Duiker ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "duiker"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_faunavoorziening a skos:Concept ;
+    skos:definition "Voorziening bij een weg of spoorweg, niet zijnde een ecoduct, om de uit dat werk voortvloeiende negatieve gevolgen voor de fauna zoveel mogelijk te voorkomen of te beperken."@nl ;
+    skos:exactMatch begrip:Faunavoorziening ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "faunavoorziening"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_keermuur a skos:Concept ;
+    skos:definition "Een keermuur of keerwand is een stijf, grond- of waterkerend kunstwerk dat door een groot gewicht en een brede voet een grote standzekerheid kan bereiken. Een keermuur is meestal van gewapend beton, maar er kan ook ander materiaal gebruikt worden."@nl ;
+    skos:exactMatch begrip:Keermuur ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "keermuur"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_overkluizing a skos:Concept ;
+    skos:definition "Een overkluizing is een civieltechnisch kunstwerk waarmee een weg een andere weg, een plein of een waterloop (kruiselings) overwelft. In het geval van een waterweg is er onder het bouwwerk (vaak) geen scheepvaart mogelijk, maar ligt het wateroppervlak nog wel vrij. Een overkluizing is te vergelijken met een brug, alleen bestaat de brug in dit geval vaak niet uit een wegdek maar uit een opstal. Anders gesteld: het maakt meestal geen deel uit van een weg."@nl ;
+    skos:exactMatch begrip:Overkluizing ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "overkluizing"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_ponton a skos:Concept ;
+    skos:definition "Drijvende, dichte bak, waarover soms een dek is gelegd."@nl ;
+    skos:exactMatch begrip:Ponton ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "ponton"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_vispassage a skos:Concept ;
+    skos:definition "Een kunstmatige passage ten behoeve van de vistrek bij kunstwerken in wateren."@nl ;
+    skos:exactMatch begrip:Vispassage ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "vispassage"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerkPlus_voorde a skos:Concept ;
+    skos:definition "Een doorwaadbare, doorgaans verharde, plaats in de waterloop, die dient voor de oversteek van die waterloop."@nl ;
+    skos:exactMatch begrip:Voorde ;
+    skos:inScheme airco:list_TypeKunstwerkPlus ;
+    skos:prefLabel "voorde"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerkPlus .
+
+airco:TypeKunstwerk_gemaal a skos:Concept ;
+    skos:definition "Een kunstwerk in principe bedoeld om water van een laag peil naar een hoog peil te brengen."@nl ;
+    skos:exactMatch begrip:Gemaal ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "gemaal"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeKunstwerk_hoogspanningsmast a skos:Concept ;
+    skos:definition "Metalen mast of stellage ter ondersteuning van geleidedraden voor het transport van elektriciteit met een hoog voltage."@nl ;
+    skos:exactMatch begrip:Hoogspanningsmast ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "hoogspanningsmast"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeKunstwerk_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeKunstwerk ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeKunstwerk_perron a skos:Concept ;
+    skos:definition "Verhoogde constructie langs een spoorrail of tramrail voor het in- en uitstappen van passagiers of voor het laden en lossen van goederen."@nl ;
+    skos:exactMatch begrip:Perron ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "perron"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeKunstwerk_sluis a skos:Concept ;
+    skos:definition "Een kunstmatige, beweegbare waterkering die de verbinding tussen twee wateren kan afsluiten of openstellen en daartoe van deuren of schuiven is voorzien."@nl ;
+    skos:exactMatch begrip:Sluis ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "sluis"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeKunstwerk_steiger a skos:Concept ;
+    skos:definition "Vaste (niet drijvende) waterbouwkundige constructie voor het aanleggen van schepen en bedoeld om deze schepen vanaf de wal te laden en te lossen."@nl ;
+    skos:exactMatch begrip:Steiger ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "steiger"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeKunstwerk_strekdam a skos:Concept ;
+    skos:definition "Constructie in het water ter verdediging van de kust/oever."@nl ;
+    skos:exactMatch begrip:Strekdam ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "strekdam"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeKunstwerk_stuw a skos:Concept ;
+    skos:definition "Een constructie met een vaste drempel of een beweegbare klep, die dient om de waterstand boven- en benedenstrooms te regelen."@nl ;
+    skos:exactMatch begrip:Stuw ;
+    skos:inScheme airco:list_TypeKunstwerk ;
+    skos:prefLabel "stuw"@nl ;
+    skos:topConceptOf airco:list_TypeKunstwerk .
+
+airco:TypeMastPlus_bovenleidingmast a skos:Concept ;
+    skos:definition "Mast die een onderdeel vormt van de bovenleidingdraagconstructie."@nl ;
+    skos:exactMatch begrip:Bovenleidingmast ;
+    skos:inScheme airco:list_TypeMastPlus ;
+    skos:prefLabel "bovenleidingmast"@nl ;
+    skos:topConceptOf airco:list_TypeMastPlus .
+
+airco:TypeMastPlus_laagspanningsmast a skos:Concept ;
+    skos:definition "Houten of metalen mast waaraan kabels voor het transport van elektrische energie met een spannning lager dan 500 V zijn bevestigd."@nl ;
+    skos:exactMatch begrip:Laagspanningsmast ;
+    skos:inScheme airco:list_TypeMastPlus ;
+    skos:prefLabel "laagspanningsmast"@nl ;
+    skos:topConceptOf airco:list_TypeMastPlus .
+
+airco:TypeMastPlus_radarmast a skos:Concept ;
+    skos:definition "Vaste of neerklapbare constructie waarop de radarantenne bevestigd is."@nl ;
+    skos:exactMatch begrip:Radarmast ;
+    skos:inScheme airco:list_TypeMastPlus ;
+    skos:prefLabel "radarmast"@nl ;
+    skos:topConceptOf airco:list_TypeMastPlus .
+
+airco:TypeMastPlus_straalzender a skos:Concept ;
+    skos:definition "Zender voor radio, televisie en telecommunicatie signalen die in smalle stralenbundels uitzendt."@nl ;
+    skos:exactMatch begrip:Straalzender ;
+    skos:inScheme airco:list_TypeMastPlus ;
+    skos:prefLabel "straalzender"@nl ;
+    skos:topConceptOf airco:list_TypeMastPlus .
+
+airco:TypeMastPlus_zendmast a skos:Concept ;
+    skos:definition "Mast bestemd voor het uitzenden van radio, televisie of telecommunicatie signalen."@nl ;
+    skos:exactMatch begrip:Zendmast ;
+    skos:inScheme airco:list_TypeMastPlus ;
+    skos:prefLabel "zendmast"@nl ;
+    skos:topConceptOf airco:list_TypeMastPlus .
+
+airco:TypeMast_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeMast ;
+    skos:inScheme airco:list_TypeMast ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeMast .
+
+airco:TypeOndersteunendWaterdeel_oever__slootkant a skos:Concept ;
+    skos:definition "De strook land die in direct contact staat met water, inclusief het gebied tussen de hoogwaterlijn en laagwaterlijn."@nl ;
+    skos:exactMatch begrip:OeverSlootkant ;
+    skos:inScheme airco:list_TypeOndersteunendWaterdeel ;
+    skos:prefLabel "oever, slootkant"@nl ;
+    skos:topConceptOf airco:list_TypeOndersteunendWaterdeel .
+
+airco:TypeOndersteunendWaterdeel_slik a skos:Concept ;
+    skos:definition "Buitendijks aangeslibde, onbegroeide grond die bij vrijwel elk hoogwater onderloopt."@nl ;
+    skos:exactMatch begrip:Slik ;
+    skos:inScheme airco:list_TypeOndersteunendWaterdeel ;
+    skos:prefLabel "slik"@nl ;
+    skos:topConceptOf airco:list_TypeOndersteunendWaterdeel .
+
+airco:TypeOpenbareRuimte_Administratief_gebied a skos:Concept ;
+    skos:definition "Een niet tastbaar begrensd grondoppervlak dat als eenheid geldt voor bestuurlijke verantwoordelijkheid, voor bedrijfsvoering, waarbinnen een specifieke rechtsverhouding te onderscheiden is of waarvoor een specifieke functie of bestemming geldt."@nl ;
+    skos:exactMatch begrip:AdministratiefGebied ;
+    skos:inScheme airco:list_TypeOpenbareRuimte ;
+    skos:prefLabel "Administratief gebied"@nl ;
+    skos:topConceptOf airco:list_TypeOpenbareRuimte .
+
+airco:TypeOpenbareRuimte_Kunstwerk a skos:Concept ;
+    skos:definition "Civiel-technisch werk voor de infrastructuur van wegen, water, spoorbanen, waterkeringen en/of leidingen en niet bedoeld voor permanent menselijk verblijf."@nl ;
+    skos:exactMatch begrip:Kunstwerk ;
+    skos:inScheme airco:list_TypeOpenbareRuimte ;
+    skos:prefLabel "Kunstwerk"@nl ;
+    skos:topConceptOf airco:list_TypeOpenbareRuimte .
+
+airco:TypeOpenbareRuimte_Landschappelijk_gebied a skos:Concept ;
+    skos:definition "Definitie ontbreekt in de BAG."@nl ;
+    skos:exactMatch begrip:LandschappelijkGebied ;
+    skos:inScheme airco:list_TypeOpenbareRuimte ;
+    skos:prefLabel "Landschappelijk gebied"@nl ;
+    skos:topConceptOf airco:list_TypeOpenbareRuimte .
+
+airco:TypeOpenbareRuimte_Spoorbaan a skos:Concept ;
+    skos:definition "Gebaand gedeelte voor het verkeer over rails."@nl ;
+    skos:exactMatch begrip:Spoorbaan_typeOpenbareRuimte ;
+    skos:inScheme airco:list_TypeOpenbareRuimte ;
+    skos:prefLabel "Spoorbaan"@nl ;
+    skos:topConceptOf airco:list_TypeOpenbareRuimte .
+
+airco:TypeOpenbareRuimte_Terrein a skos:Concept ;
+    skos:definition "Door een fysiek voorkomen gekarakteriseerd zichtbaar begrensd stuk grond."@nl ;
+    skos:exactMatch begrip:Terrein ;
+    skos:inScheme airco:list_TypeOpenbareRuimte ;
+    skos:prefLabel "Terrein"@nl ;
+    skos:topConceptOf airco:list_TypeOpenbareRuimte .
+
+airco:TypeOpenbareRuimte_Water a skos:Concept ;
+    skos:definition "Grondoppervlak in principe bedekt met water."@nl ;
+    skos:exactMatch begrip:Water ;
+    skos:inScheme airco:list_TypeOpenbareRuimte ;
+    skos:prefLabel "Water"@nl ;
+    skos:topConceptOf airco:list_TypeOpenbareRuimte .
+
+airco:TypeOpenbareRuimte_Weg a skos:Concept ;
+    skos:definition "Gebaand gedeelte voor het wegverkeer en vliegverkeer te land."@nl ;
+    skos:exactMatch begrip:Weg ;
+    skos:inScheme airco:list_TypeOpenbareRuimte ;
+    skos:prefLabel "Weg"@nl ;
+    skos:topConceptOf airco:list_TypeOpenbareRuimte .
+
+airco:TypeOverbrugging__ecoduct a skos:Concept ;
+    skos:definition "Wildwissel in de vorm van een viaduct voor passages van dieren over een weg of spoorweg."@nl ;
+    skos:exactMatch begrip:Ecoduct ;
+    skos:inScheme airco:list_TypeOverbrugging ;
+    skos:prefLabel " ecoduct"@nl ;
+    skos:topConceptOf airco:list_TypeOverbrugging .
+
+airco:TypeOverbrugging__fly-over a skos:Concept ;
+    skos:definition "Kunstwerk in de vorm van een viaduct dat deel uitmaakt van een verkeersbaan en waarmee een verkeersstroom over twee of meer ongelijkvloerse verkeersstromen wordt geleid."@nl ;
+    skos:exactMatch begrip:Fly-over ;
+    skos:inScheme airco:list_TypeOverbrugging ;
+    skos:prefLabel " fly-over"@nl ;
+    skos:topConceptOf airco:list_TypeOverbrugging .
+
+airco:TypeOverbrugging_aquaduct a skos:Concept ;
+    skos:definition "Kunstwerk waarmee een watergang door een bakvormige constructie over een weg, een spoorweg, een andere watergang, een leiding of een terrein wordt geleid."@nl ;
+    skos:exactMatch begrip:Aquaduct ;
+    skos:inScheme airco:list_TypeOverbrugging ;
+    skos:prefLabel "aquaduct"@nl ;
+    skos:topConceptOf airco:list_TypeOverbrugging .
+
+airco:TypeOverbrugging_brug a skos:Concept ;
+    skos:definition "Kunstwerk over een watervlakte of waterloop, bestaande uit een brugdek gesteund door pijlers en/of landhoofden."@nl ;
+    skos:exactMatch begrip:Brug ;
+    skos:inScheme airco:list_TypeOverbrugging ;
+    skos:prefLabel "brug"@nl ;
+    skos:topConceptOf airco:list_TypeOverbrugging .
+
+airco:TypeOverbrugging_viaduct a skos:Concept ;
+    skos:definition "Kunstwerk over een weg, spoorweg of terreinverdieping, bestaande uit een dek gesteund door pijlers en/of landhoofden."@nl ;
+    skos:exactMatch begrip:Viaduct ;
+    skos:inScheme airco:list_TypeOverbrugging ;
+    skos:prefLabel "viaduct"@nl ;
+    skos:topConceptOf airco:list_TypeOverbrugging .
+
+airco:TypeOverbruggingsdeel_dek a skos:Concept ;
+    skos:definition "Direct door het verkeer belaste deel van de bovenbouw van de brug."@nl ;
+    skos:exactMatch begrip:Dek ;
+    skos:inScheme airco:list_TypeOverbruggingsdeel ;
+    skos:prefLabel "dek"@nl ;
+    skos:topConceptOf airco:list_TypeOverbruggingsdeel .
+
+airco:TypeOverbruggingsdeel_landhoofd a skos:Concept ;
+    skos:definition "Ondersteuningsconstructie ter plaatse van een overgang van de aardebaan naar een kunstwerk."@nl ;
+    skos:exactMatch begrip:Landhoofd ;
+    skos:inScheme airco:list_TypeOverbruggingsdeel ;
+    skos:prefLabel "landhoofd"@nl ;
+    skos:topConceptOf airco:list_TypeOverbruggingsdeel .
+
+airco:TypeOverbruggingsdeel_pijler a skos:Concept ;
+    skos:definition "Ondersteuningsconstructie van bruggen en soortgelijke kunstwerken."@nl ;
+    skos:exactMatch begrip:Pijler ;
+    skos:inScheme airco:list_TypeOverbruggingsdeel ;
+    skos:prefLabel "pijler"@nl ;
+    skos:topConceptOf airco:list_TypeOverbruggingsdeel .
+
+airco:TypeOverbruggingsdeel_pyloon a skos:Concept ;
+    skos:definition "Boven de bovenbouw uitstekende draagconstructie voor tuien (kabels)."@nl ;
+    skos:exactMatch begrip:Pyloon ;
+    skos:inScheme airco:list_TypeOverbruggingsdeel ;
+    skos:prefLabel "pyloon"@nl ;
+    skos:topConceptOf airco:list_TypeOverbruggingsdeel .
+
+airco:TypeOverbruggingsdeel_sloof a skos:Concept ;
+    skos:definition "Deel van de pijler voor de overdracht van krachten naar de ondergrond of de fundering."@nl ;
+    skos:exactMatch begrip:Sloof ;
+    skos:inScheme airco:list_TypeOverbruggingsdeel ;
+    skos:prefLabel "sloof"@nl ;
+    skos:topConceptOf airco:list_TypeOverbruggingsdeel .
+
+airco:TypeOverigBouwwerkPlus_bunker a skos:Concept ;
+    skos:definition "Een bunker is een van oorsprong militair verdedigingswerk dat een zekere mate van bescherming biedt tegen beschietingen en bombardementen."@nl ;
+    skos:exactMatch begrip:Bunker ;
+    skos:inScheme airco:list_TypeOverigBouwwerkPlus ;
+    skos:prefLabel "bunker"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerkPlus .
+
+airco:TypeOverigBouwwerkPlus_schuur a skos:Concept ;
+    skos:definition "Een vrijstaand, al of niet prefab, niet-vergunningsplichtig bouwwerk dat gebruikt wordt om goederen in op te slaan en ook als werkruimte kan dienen."@nl ;
+    skos:exactMatch begrip:Schuur ;
+    skos:inScheme airco:list_TypeOverigBouwwerkPlus ;
+    skos:prefLabel "schuur"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerkPlus .
+
+airco:TypeOverigBouwwerkPlus_voedersilo a skos:Concept ;
+    skos:definition "Opslagfaciliteit voor veevoer, bestaande uit een verticale container met een opening aan de onderkant."@nl ;
+    skos:exactMatch begrip:Voedersilo ;
+    skos:inScheme airco:list_TypeOverigBouwwerkPlus ;
+    skos:prefLabel "voedersilo"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerkPlus .
+
+airco:TypeOverigBouwwerk_bassin a skos:Concept ;
+    skos:definition "Waterbak, zoals een zwembad of een dok."@nl ;
+    skos:exactMatch begrip:Bassin ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "bassin"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypeOverigBouwwerk_bezinkbak a skos:Concept ;
+    skos:definition "Een gesloten reservoir waarin het afvalwater tijdelijk wordt opgevangen met een slibreinigende voorziening."@nl ;
+    skos:exactMatch begrip:Bezinkbak ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "bezinkbak"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypeOverigBouwwerk_lage_trafo a skos:Concept ;
+    skos:definition "Bouwwerk waarin transformator(en) zijn geplaatst voor elektriciteitsvoorziening."@nl ;
+    skos:exactMatch begrip:LageTrafo ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "lage trafo"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypeOverigBouwwerk_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeOverigBouwwerk ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypeOverigBouwwerk_open_loods a skos:Concept ;
+    skos:definition "Niet verplaatsbaar licht gebouw met een open gevel, bestemd als berg- of werkplaats of als tijdelijk onderdak voor andere doeleinden."@nl ;
+    skos:exactMatch begrip:OpenLoods ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "open loods"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypeOverigBouwwerk_opslagtank a skos:Concept ;
+    skos:definition "Opslagfaciliteit voor vloeistoffen, gassen of energie."@nl ;
+    skos:exactMatch begrip:Opslagtank ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "opslagtank"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypeOverigBouwwerk_overkapping a skos:Concept ;
+    skos:definition "Een afzonderlijk staande overdekking rustend op kolommen."@nl ;
+    skos:exactMatch begrip:Overkapping ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "overkapping"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypeOverigBouwwerk_windturbine a skos:Concept ;
+    skos:definition "Turbine waarin winddruk omgezet wordt in mechanische energie."@nl ;
+    skos:exactMatch begrip:Windturbine ;
+    skos:inScheme airco:list_TypeOverigBouwwerk ;
+    skos:prefLabel "windturbine"@nl ;
+    skos:topConceptOf airco:list_TypeOverigBouwwerk .
+
+airco:TypePaalPlus_afsluitpaal a skos:Concept ;
+    skos:definition "Al dan niet verwijderbare paal in de grond om de weg of een gedeelte hiervan af te sluiten."@nl ;
+    skos:exactMatch begrip:Afsluitpaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "afsluitpaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_dijkpaal a skos:Concept ;
+    skos:definition "Een markant punt op de waterkering of op het strand dat dient als referentiepunt voor afstandsaanduidingen."@nl ;
+    skos:exactMatch begrip:Dijkpaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "dijkpaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_drukknoppaal a skos:Concept ;
+    skos:definition "Paal met een lengte van ongeveer 1 m, met drukknop waarmee de verkeersdeelnemer zich meldt bij een verkeersregelinstallatie."@nl ;
+    skos:exactMatch begrip:Drukknoppaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "drukknoppaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_grensmarkering a skos:Concept ;
+    skos:definition "Paal ter afbakening van een grens."@nl ;
+    skos:exactMatch begrip:Grensmarkering ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "grensmarkering"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_haltepaal a skos:Concept ;
+    skos:definition "Paal met daarop de dienstregeling ten behoeve van het openbaar vervoer."@nl ;
+    skos:exactMatch begrip:Haltepaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "haltepaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_hectometerpaal a skos:Concept ;
+    skos:definition "Paaltje of bordje geplaatst langs de weg, waarop een hectometerwaarde (weg) of kilometrering (vaarweg) is vermeld eventueel gevolgd door een letter."@nl ;
+    skos:exactMatch begrip:Hectometerpaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "hectometerpaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_lichtmast a skos:Concept ;
+    skos:definition "Mast bestemd voor het dragen van een of meer verlichtingsarmaturen."@nl ;
+    skos:exactMatch begrip:Lichtmast ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "lichtmast"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_poller a skos:Concept ;
+    skos:definition "Een poller of inzinkbare paal is een paal die door een elektrische of hydraulische aandrijving uit een wegdek omhoog wordt gestuurd en die dient om het autoverkeer te reguleren."@nl ;
+    skos:exactMatch begrip:Poller ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "poller"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_portaal a skos:Concept ;
+    skos:definition "Geheel van twee of meer ondersteuningsconstructies die door een ligger zijn verbonden, bedoelt voor het aanbrengen van verkeersaanduidingen."@nl ;
+    skos:exactMatch begrip:Portaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "portaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_praatpaal a skos:Concept ;
+    skos:definition "Stalen of kunststof paal langs verkeerswegen welke bedoeld is telefonisch contact te leggen met een centrale meldkamer (ANWB)."@nl ;
+    skos:exactMatch begrip:Praatpaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "praatpaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_sirene a skos:Concept ;
+    skos:definition "Een apparaat dat geluiden van variabele toonhoogte kan voortbrengen met als functie waarschuwingsdoeleinden."@nl ;
+    skos:exactMatch begrip:Sirene ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "sirene"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_telpaal a skos:Concept ;
+    skos:definition "Paal waaraan de verkeersteller is bevestigd."@nl ;
+    skos:exactMatch begrip:Telpaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "telpaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_verkeersbordpaal a skos:Concept ;
+    skos:definition "Paal waaraan een of meerdere verkeersborden zijn bevestigd."@nl ;
+    skos:exactMatch begrip:Verkeersbordpaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "verkeersbordpaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_verkeersregelinstallatiepaal a skos:Concept ;
+    skos:definition "Paal met daaraan bevestigd de verkeersregelinstallatie."@nl ;
+    skos:exactMatch begrip:Verkeersregelinstallatiepaal ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "verkeersregelinstallatiepaal"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaalPlus_vlaggenmast a skos:Concept ;
+    skos:definition "Paal bedoeld om vlaggen aan te hangen."@nl ;
+    skos:exactMatch begrip:Vlaggenmast ;
+    skos:inScheme airco:list_TypePaalPlus ;
+    skos:prefLabel "vlaggenmast"@nl ;
+    skos:topConceptOf airco:list_TypePaalPlus .
+
+airco:TypePaal_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typePaal ;
+    skos:inScheme airco:list_TypePaal ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypePaal .
+
+airco:TypePutPlus_benzine-___olieput a skos:Concept ;
+    skos:definition "Putdeksel die toegang geeft tot een benzine- of olietank ten behoeve van vullen, onderhoud of inspectie."@nl ;
+    skos:exactMatch begrip:Benzine-Olieput ;
+    skos:inScheme airco:list_TypePutPlus ;
+    skos:prefLabel "benzine- / olieput"@nl ;
+    skos:topConceptOf airco:list_TypePutPlus .
+
+airco:TypePutPlus_brandkraan___-put a skos:Concept ;
+    skos:definition "Op de drinkwaterleiding aangesloten kraan, of deksel van een put voor het plaatsen van een brandkraan, op of nabij de openbare weg, voor brandbestrijding."@nl ;
+    skos:exactMatch begrip:Brandkraan-put ;
+    skos:inScheme airco:list_TypePutPlus ;
+    skos:notation "IMGeo" ;
+    skos:prefLabel "brandkraan / -put"@nl ;
+    skos:topConceptOf airco:list_TypePutPlus .
+
+airco:TypePutPlus_drainageput a skos:Concept ;
+    skos:definition "Putdeksel welke toegang geeft naar een poreuze of geperforeerde buisleiding, aangebracht onder de grond om de afwatering van de grond te verbeteren."@nl ;
+    skos:exactMatch begrip:Drainageput ;
+    skos:inScheme airco:list_TypePutPlus ;
+    skos:prefLabel "drainageput"@nl ;
+    skos:topConceptOf airco:list_TypePutPlus .
+
+airco:TypePutPlus_gasput a skos:Concept ;
+    skos:definition "Putdeksel met afsluitkraan ten behoeve van het ondergrondse leidingenstelsel voor gastransport."@nl ;
+    skos:exactMatch begrip:Gasput ;
+    skos:inScheme airco:list_TypePutPlus ;
+    skos:prefLabel "gasput"@nl ;
+    skos:topConceptOf airco:list_TypePutPlus .
+
+airco:TypePutPlus_inspectie-___rioolput a skos:Concept ;
+    skos:definition "Putdeksel die toegang geeft tot een (riool)leiding."@nl ;
+    skos:exactMatch begrip:Inspectie-Rioolput ;
+    skos:inScheme airco:list_TypePutPlus ;
+    skos:prefLabel "inspectie- / rioolput"@nl ;
+    skos:topConceptOf airco:list_TypePutPlus .
+
+airco:TypePutPlus_kolk a skos:Concept ;
+    skos:definition "Deksel van een op het riool aangesloten voorziening voor de opvang van hemel- en afvalwater afkomstig van erop aangesloten oppervlakken."@nl ;
+    skos:exactMatch begrip:Kolk ;
+    skos:inScheme airco:list_TypePutPlus ;
+    skos:prefLabel "kolk"@nl ;
+    skos:topConceptOf airco:list_TypePutPlus .
+
+airco:TypePutPlus_waterleidingput a skos:Concept ;
+    skos:definition "Putdeksel met afsluitkraan ten behoeve van het ondergrondse leidingenstelsel voor watertransport."@nl ;
+    skos:exactMatch begrip:Waterleidingput ;
+    skos:inScheme airco:list_TypePutPlus ;
+    skos:prefLabel "waterleidingput"@nl ;
+    skos:topConceptOf airco:list_TypePutPlus .
+
+airco:TypePut_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typePut ;
+    skos:inScheme airco:list_TypePut ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypePut .
+
+airco:TypeScheidingPlus_draadraster a skos:Concept ;
+    skos:definition "Kunstmatige terreinafscheiding, niet zijnde een faunaraster, in de vorm van een overwegend houten, metalen of kunststoffen rechtopstaande palen met daartussen een of meerdere draden."@nl ;
+    skos:exactMatch begrip:Draadraster ;
+    skos:inScheme airco:list_TypeScheidingPlus ;
+    skos:prefLabel "draadraster"@nl ;
+    skos:topConceptOf airco:list_TypeScheidingPlus .
+
+airco:TypeScheidingPlus_faunaraster a skos:Concept ;
+    skos:definition "Kunstmatig aangebrachte scheiding van metaaldraad tussen palen, bedoeld voor het leiden van dieren."@nl ;
+    skos:exactMatch begrip:Faunaraster ;
+    skos:inScheme airco:list_TypeScheidingPlus ;
+    skos:prefLabel "faunaraster"@nl ;
+    skos:topConceptOf airco:list_TypeScheidingPlus .
+
+airco:TypeScheiding_damwand a skos:Concept ;
+    skos:definition "Een grondkerende constructie die bestaat uit een verticaal in de grond geplaatste wand."@nl ;
+    skos:exactMatch begrip:Damwand ;
+    skos:inScheme airco:list_TypeScheiding ;
+    skos:prefLabel "damwand"@nl ;
+    skos:topConceptOf airco:list_TypeScheiding .
+
+airco:TypeScheiding_geluidsscherm a skos:Concept ;
+    skos:definition "Een scheiding bedoeld om geluidshinder in de buitenlucht te verminderen."@nl ;
+    skos:exactMatch begrip:Geluidsscherm ;
+    skos:inScheme airco:list_TypeScheiding ;
+    skos:prefLabel "geluidsscherm"@nl ;
+    skos:topConceptOf airco:list_TypeScheiding .
+
+airco:TypeScheiding_hek a skos:Concept ;
+    skos:definition "Een hekwerk of schutting, typisch ten behoeve van erfafscheiding."@nl ;
+    skos:exactMatch begrip:Hek ;
+    skos:inScheme airco:list_TypeScheiding ;
+    skos:prefLabel "hek"@nl ;
+    skos:topConceptOf airco:list_TypeScheiding .
+
+airco:TypeScheiding_kademuur a skos:Concept ;
+    skos:definition "Verticale wand ter scheiding van land en water, opgebouwd uit een muur van gemetselde stenen of gestort beton."@nl ;
+    skos:exactMatch begrip:Kademuur ;
+    skos:inScheme airco:list_TypeScheiding ;
+    skos:prefLabel "kademuur"@nl ;
+    skos:topConceptOf airco:list_TypeScheiding .
+
+airco:TypeScheiding_muur a skos:Concept ;
+    skos:definition "Een scheiding gemaakt van steen."@nl ;
+    skos:exactMatch begrip:Muur ;
+    skos:inScheme airco:list_TypeScheiding ;
+    skos:prefLabel "muur"@nl ;
+    skos:topConceptOf airco:list_TypeScheiding .
+
+airco:TypeScheiding_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeScheiding ;
+    skos:inScheme airco:list_TypeScheiding ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeScheiding .
+
+airco:TypeScheiding_walbescherming a skos:Concept ;
+    skos:definition "Een nagenoeg verticale wand tot kering van grond om afkalving van water te voorkomen, niet zijnde een kademuur."@nl ;
+    skos:exactMatch begrip:Walbescherming ;
+    skos:inScheme airco:list_TypeScheiding ;
+    skos:prefLabel "walbescherming"@nl ;
+    skos:topConceptOf airco:list_TypeScheiding .
+
+airco:TypeSensorPlus_GMS_sensor a skos:Concept ;
+    skos:definition "Gladheidsmeldsysteem (GMS) waarmee de kans op gladheid wordt voorspeld aan de hand van meting en interpretatie van de parameters die een rol spelen bij het ontstaan van gladheid."@nl ;
+    skos:exactMatch begrip:GmsSensor ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "GMS sensor"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_camera a skos:Concept ;
+    skos:definition "Installatie voor de registratie van beelden van situaties, waarvan direkte observatie moeilijk of niet permanent mogelijk is."@nl ;
+    skos:exactMatch begrip:Camera ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "camera"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_debietmeter a skos:Concept ;
+    skos:definition "Een instrument dat de (afvoer)capaciteit van de volumestroom meet."@nl ;
+    skos:exactMatch begrip:Debietmeter ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "debietmeter"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_detectielus a skos:Concept ;
+    skos:definition "In de verharding opgenomen lusvormig onderdeel van een verkeersdetector."@nl ;
+    skos:exactMatch begrip:Detectielus ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "detectielus"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_flitser a skos:Concept ;
+    skos:definition "Een flitser bevat een mechanisme om een snelheidsmeting uit te voeren om snelheidsovertredingen in het verkeer te kunnen vaststellen."@nl ;
+    skos:exactMatch begrip:Flitser ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "flitser"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_hoogtedetectieapparaat a skos:Concept ;
+    skos:definition "Een mechanisch of elektronisch waarschuwingssysteem, dat in werking treedt bij overschrijding van de aangegeven maximale doorrijhoogte."@nl ;
+    skos:exactMatch begrip:Hoogtedetectieapparaat ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "hoogtedetectieapparaat"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_lichtcel a skos:Concept ;
+    skos:definition "Lichtcel waarmee het verlichtingsniveau naar een lager verlichtingsniveau omgeschakeld wordt (dimmen) wanneer de situatie dit toelaat."@nl ;
+    skos:exactMatch begrip:Lichtcel ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "lichtcel"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_radar_detector a skos:Concept ;
+    skos:definition "Met een radardetector wordt het verkeer gedetecteerd, bijvoorbeeld voor het beïnvloeden van verkeerslichten."@nl ;
+    skos:exactMatch begrip:RadarDetector ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "radar detector"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_waterstandmeter a skos:Concept ;
+    skos:definition "Een meter die de waterstand, over het algemeen ten opzichte van NAP, meet."@nl ;
+    skos:exactMatch begrip:Waterstandmeter ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "waterstandmeter"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_weerstation a skos:Concept ;
+    skos:definition "Een weerstation is een verzameling instrumenten die het weer kunnen meten."@nl ;
+    skos:exactMatch begrip:Weerstation ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "weerstation"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensorPlus_windmeter a skos:Concept ;
+    skos:definition "Apparatuur waarmee de snelheid en de richting van de wind kan worden gemeten."@nl ;
+    skos:exactMatch begrip:Windmeter ;
+    skos:inScheme airco:list_TypeSensorPlus ;
+    skos:prefLabel "windmeter"@nl ;
+    skos:topConceptOf airco:list_TypeSensorPlus .
+
+airco:TypeSensor_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeSensor ;
+    skos:inScheme airco:list_TypeSensor ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeSensor .
+
+airco:TypeStraatmeubilairPlus_abri a skos:Concept ;
+    skos:definition "Overdekte wachtplaats voor passagiers van het openbaar vervoer."@nl ;
+    skos:exactMatch begrip:Abri ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "abri"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_bank a skos:Concept ;
+    skos:definition "Aaneengesloten zitplaats voor verscheidene personen, bedoeld voor openbaar gebruik en geplaatst in de openbare ruimte (vnl. in parken, plantsoenen, bossen en langs wegen)."@nl ;
+    skos:exactMatch begrip:Bank ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "bank"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_betaalautomaat a skos:Concept ;
+    skos:definition "Een apparaat dat betaalkaarten en/of contant geld accepteert om betalingen uit te voeren."@nl ;
+    skos:exactMatch begrip:Betaalautomaat ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "betaalautomaat"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_bolder a skos:Concept ;
+    skos:definition "Een inrichting aan de wal, waar een schip, door middel van een tros of landvast, aan vastgelegd kan worden."@nl ;
+    skos:exactMatch begrip:Bolder ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "bolder"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_brievenbus a skos:Concept ;
+    skos:definition "Uitpandige kast waar post in kan worden gedeponeerd ter bezorging."@nl ;
+    skos:exactMatch begrip:Brievenbus ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "brievenbus"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_fietsenkluis a skos:Concept ;
+    skos:definition "Een fietskluis is een kluis om een fiets in te bewaren, meestal ter voorkoming van diefstal of beschadiging."@nl ;
+    skos:exactMatch begrip:Fietsenkluis ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "fietsenkluis"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_fietsenrek a skos:Concept ;
+    skos:definition "Een duurzaam verankerd rek in de openbare ruimte voor het stallen van fietsen."@nl ;
+    skos:exactMatch begrip:Fietsenrek ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "fietsenrek"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_fontein a skos:Concept ;
+    skos:definition "Een fontein is een natuurlijke of kunstmatige installatie die water spuit."@nl ;
+    skos:exactMatch begrip:Fontein ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "fontein"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_herdenkingsmonument a skos:Concept ;
+    skos:definition "Langs de weg of elders in het terrein aangelegd object ter herdenking van personen of evenementen."@nl ;
+    skos:exactMatch begrip:Herdenkingsmonument ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "herdenkingsmonument"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_kunstobject a skos:Concept ;
+    skos:definition "Een object dat als kunst gezien wordt en een bepaalde schoonheid heeft, niet door de natuur gemaakt."@nl ;
+    skos:exactMatch begrip:Kunstobject ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "kunstobject"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_lichtpunt a skos:Concept ;
+    skos:definition "Een lichtpunt is een lamp die licht uitzendt niet verbonden met een mast die het maaiveld raakt."@nl ;
+    skos:exactMatch begrip:Lichtpunt ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "lichtpunt"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_openbaar_toilet a skos:Concept ;
+    skos:definition "Voor mensen bedoeld toilet niet zijnde een pand, langs de openbare weg."@nl ;
+    skos:exactMatch begrip:OpenbaarToilet ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "openbaar toilet"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_parkeerbeugel a skos:Concept ;
+    skos:definition "Een omklapbare beugel voor het afschermen van een parkeerplaats."@nl ;
+    skos:exactMatch begrip:Parkeerbeugel ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "parkeerbeugel"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_picknicktafel a skos:Concept ;
+    skos:definition "Een `picknicktafel` is een tafel met vaak daaraan gemonteerde zitbanken of stoelen die kan gebruikt worden om te picknicken."@nl ;
+    skos:exactMatch begrip:Picknicktafel ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "picknicktafel"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_reclamezuil a skos:Concept ;
+    skos:definition "Vrijstaand bord/zuil waarop rondom of aan één of meer zijden affiches kunnen worden (of zijn) geplakt."@nl ;
+    skos:exactMatch begrip:Reclamezuil ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "reclamezuil"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_slagboom a skos:Concept ;
+    skos:definition "Boom of balk om de weg of een gedeelte hiervan af te sluiten."@nl ;
+    skos:exactMatch begrip:Slagboom ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "slagboom"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_speelvoorziening a skos:Concept ;
+    skos:definition "Aard en nagelvast met de grond verbonden constructie in de openbare ruimte, bedoeld als speelmateriaal voor kinderen."@nl ;
+    skos:exactMatch begrip:Speelvoorziening ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "speelvoorziening"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilairPlus_telefooncel a skos:Concept ;
+    skos:definition "Niet-inpandige ruimte in openbaar gebied louter bestemd voor telefoneren."@nl ;
+    skos:exactMatch begrip:Telefooncel ;
+    skos:inScheme airco:list_TypeStraatmeubilairPlus ;
+    skos:prefLabel "telefooncel"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilairPlus .
+
+airco:TypeStraatmeubilair_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeStraatmeubilair ;
+    skos:inScheme airco:list_TypeStraatmeubilair ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeStraatmeubilair .
+
+airco:TypeVegetatieObjectPlus_boom a skos:Concept ;
+    skos:definition "Een markante boom die geen onderdeel uitmaakt van een ander boom- of struikbeplanting."@nl ;
+    skos:exactMatch begrip:Boom ;
+    skos:inScheme airco:list_TypeVegetatieObjectPlus ;
+    skos:prefLabel "boom"@nl ;
+    skos:topConceptOf airco:list_TypeVegetatieObjectPlus .
+
+airco:TypeVegetatieObjectPlus_haag a skos:Concept ;
+    skos:definition "Een rijvormige afscheiding van zeer beperkte breedte bestaande uit aangeplante aaneengesloten struiken."@nl ;
+    skos:exactMatch begrip:Haag ;
+    skos:inScheme airco:list_TypeVegetatieObjectPlus ;
+    skos:prefLabel "haag"@nl ;
+    skos:topConceptOf airco:list_TypeVegetatieObjectPlus .
+
+airco:TypeVegetatieObject_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeVegetatieObject ;
+    skos:inScheme airco:list_TypeVegetatieObject ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeVegetatieObject .
+
+airco:TypeWaterPlus_beek a skos:Concept ;
+    skos:broadMatch airco:TypeWater_waterloop ;
+    skos:definition "Een natuurlijke smalle waterloop zonder getij."@nl ;
+    skos:exactMatch begrip:Beek ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "beek"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWaterPlus_bron a skos:Concept ;
+    skos:broadMatch airco:TypeWater_waterloop ;
+    skos:definition "Grondwater dat op natuurlijke wijze uit het aardoppervlak tevoorschijn komt."@nl ;
+    skos:exactMatch begrip:Bron ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "bron"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWaterPlus_gracht a skos:Concept ;
+    skos:broadMatch airco:TypeWater_waterloop ;
+    skos:definition "Een gracht is een gegraven greppel met water, die hoofdzakelijk voorkomt in oude steden."@nl ;
+    skos:exactMatch begrip:Gracht ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "gracht"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWaterPlus_haven a skos:Concept ;
+    skos:broadMatch airco:TypeWater_watervlakte ;
+    skos:definition "Een tot ligplaats van schepen geschikt, natuurlijk of gegraven waterbekken aan zee of aan de oever van een rivier of binnenwater, dat beschutting biedt tegen wind en golven."@nl ;
+    skos:exactMatch begrip:Haven ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "haven"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWaterPlus_kanaal a skos:Concept ;
+    skos:broadMatch airco:TypeWater_waterloop ;
+    skos:definition "Een gegraven grote waterloop die dient voor scheepvaart en/of watertransport."@nl ;
+    skos:exactMatch begrip:Kanaal ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "kanaal"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWaterPlus_meer__plas__ven__vijver a skos:Concept ;
+    skos:broadMatch airco:TypeWater_watervlakte ;
+    skos:definition "Een massa stilstaand landoppervlaktewater."@nl ;
+    skos:exactMatch begrip:MeerPlasVenVijver ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "meer, plas, ven, vijver"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWaterPlus_rivier a skos:Concept ;
+    skos:broadMatch airco:TypeWater_waterloop ;
+    skos:definition "Het water, dat ten atmosferische neerslag op hellende terreinen valt, vloeit, voor zover het niet verdampt of door planten wordt opgenomen, tezamen tot een waterloop en stroomt naar laaggelegen streken. Zulk een natuurlijke afvloeiing heet een rivier."@nl ;
+    skos:exactMatch begrip:Rivier ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "rivier"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWaterPlus_sloot a skos:Concept ;
+    skos:broadMatch airco:TypeWater_waterloop ;
+    skos:definition "Algemene benaming voor een waterloop van beperkte breedte die stilstaand of slechts langzaam stromend water bevat."@nl ;
+    skos:exactMatch begrip:Sloot ;
+    skos:inScheme airco:list_TypeWaterPlus ;
+    skos:prefLabel "sloot"@nl ;
+    skos:topConceptOf airco:list_TypeWaterPlus .
+
+airco:TypeWater_greppel__droge_sloot a skos:Concept ;
+    skos:definition "Een ten behoeve van de waterbeheersing gegraven geul die al dan niet met water bedekt is."@nl ;
+    skos:exactMatch begrip:GreppelDrogeSloot ;
+    skos:inScheme airco:list_TypeWater ;
+    skos:prefLabel "greppel, droge sloot"@nl ;
+    skos:topConceptOf airco:list_TypeWater .
+
+airco:TypeWater_zee a skos:Concept ;
+    skos:definition "Uitgestrekt oppervlak zout water."@nl ;
+    skos:exactMatch begrip:Zee ;
+    skos:inScheme airco:list_TypeWater ;
+    skos:prefLabel "zee"@nl ;
+    skos:topConceptOf airco:list_TypeWater .
+
+airco:TypeWaterinrichtingPlus_betonning a skos:Concept ;
+    skos:definition "Een systeem van boeien en bakens, waarmee in open zee of in een vaarwater ondiepten of de aanwezigheid van gevaarlijke objecten worden aangegeven."@nl ;
+    skos:exactMatch begrip:Betonning ;
+    skos:inScheme airco:list_TypeWaterinrichtingPlus ;
+    skos:prefLabel "betonning"@nl ;
+    skos:topConceptOf airco:list_TypeWaterinrichtingPlus .
+
+airco:TypeWaterinrichtingPlus_geleidewerk a skos:Concept ;
+    skos:definition "Fuikvormige constructie aansluitend aan het hoofd van een kunstwerk voor het geven van mechanische en visuele geleiding tijdens het invaren van dat kunstwerk."@nl ;
+    skos:exactMatch begrip:Geleidewerk ;
+    skos:inScheme airco:list_TypeWaterinrichtingPlus ;
+    skos:prefLabel "geleidewerk"@nl ;
+    skos:topConceptOf airco:list_TypeWaterinrichtingPlus .
+
+airco:TypeWaterinrichtingPlus_hoogtemerk a skos:Concept ;
+    skos:definition "Relatief permanent merk, natuurlijk of kunstmatig, met daarin een punt met een bekende hoogte ten opzichte van een bepaald referentievlak."@nl ;
+    skos:exactMatch begrip:Hoogtemerk ;
+    skos:inScheme airco:list_TypeWaterinrichtingPlus ;
+    skos:prefLabel "hoogtemerk"@nl ;
+    skos:topConceptOf airco:list_TypeWaterinrichtingPlus .
+
+airco:TypeWaterinrichtingPlus_meerpaal a skos:Concept ;
+    skos:definition "Paal voor een kade of in een haven waaraan een schip kan worden afgemeerd."@nl ;
+    skos:exactMatch begrip:Meerpaal ;
+    skos:inScheme airco:list_TypeWaterinrichtingPlus ;
+    skos:prefLabel "meerpaal"@nl ;
+    skos:topConceptOf airco:list_TypeWaterinrichtingPlus .
+
+airco:TypeWaterinrichtingPlus_remmingswerk a skos:Concept ;
+    skos:definition "Constructie langs de opstelruimte en wachtruimte bedoeld voor het afmeren van schepen."@nl ;
+    skos:exactMatch begrip:Remmingswerk ;
+    skos:inScheme airco:list_TypeWaterinrichtingPlus ;
+    skos:prefLabel "remmingswerk"@nl ;
+    skos:topConceptOf airco:list_TypeWaterinrichtingPlus .
+
+airco:TypeWaterinrichtingPlus_vuilvang a skos:Concept ;
+    skos:definition "Een voorziening om de waterloop dan wel één of meerdere objecten benedenstrooms te vrijwaren van drijvend vuil en dergelijke."@nl ;
+    skos:exactMatch begrip:Vuilvang ;
+    skos:inScheme airco:list_TypeWaterinrichtingPlus ;
+    skos:prefLabel "vuilvang"@nl ;
+    skos:topConceptOf airco:list_TypeWaterinrichtingPlus .
+
+airco:TypeWaterinrichting_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeWaterinrichting ;
+    skos:inScheme airco:list_TypeWaterinrichting ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeWaterinrichting .
+
+airco:TypeWeginrichtingPlus_balustrade a skos:Concept ;
+    skos:definition "Een balustrade is een hekwerk of afzetting aan de rand van een overbrugging. Een balustrade beveiligt tegen het vallen."@nl ;
+    skos:exactMatch begrip:Balustrade ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "balustrade"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_boomspiegel a skos:Concept ;
+    skos:definition "Het stuk grond rondom de stam van een boom dat van boven toegankelijk is voor lucht en water."@nl ;
+    skos:exactMatch begrip:Boomspiegel ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "boomspiegel"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_geleideconstructie a skos:Concept ;
+    skos:definition "Bermbeveiligingsconstructie bedoeld voor fysieke geleiding van voertuigen die uit de koers zijn geraakt."@nl ;
+    skos:exactMatch begrip:Geleideconstructie ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "geleideconstructie"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_lijnafwatering a skos:Concept ;
+    skos:definition "Goot in de lengterichting van de verharding, niet zijnde molgoot. Bijvoorbeeld roostergoot en verholen goot."@nl ;
+    skos:exactMatch begrip:Lijnafwatering ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "lijnafwatering"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_molgoot a skos:Concept ;
+    skos:definition "Smalle goot (lijngeometrie) in de lengterichting van de verharding, met veelal een cirkelsegment als dwarsprofiel."@nl ;
+    skos:exactMatch begrip:Molgoot ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "molgoot"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_rooster a skos:Concept ;
+    skos:definition "Een rooster niet zijnde lijnafwatering of wildrooster."@nl ;
+    skos:exactMatch begrip:Rooster ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "rooster"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_verblindingswering a skos:Concept ;
+    skos:definition "Constructie bedoeld om verblinding van weggebruikers door tegenlicht te voorkomen."@nl ;
+    skos:exactMatch begrip:Verblindingswering ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "verblindingswering"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_wegmarkering a skos:Concept ;
+    skos:definition "Op of in het oppervlak van de verharding aangebrachte tekens ter geleiding, waarschuwing, regeling of informatie van het verkeer."@nl ;
+    skos:exactMatch begrip:Wegmarkering ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "wegmarkering"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichtingPlus_wildrooster a skos:Concept ;
+    skos:definition "Horizontaal raamwerk dat dient om wild de doorgang te beletten."@nl ;
+    skos:exactMatch begrip:Wildrooster ;
+    skos:inScheme airco:list_TypeWeginrichtingPlus ;
+    skos:prefLabel "wildrooster"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichtingPlus .
+
+airco:TypeWeginrichting_niet-bgt a skos:Concept ;
+    skos:definition "Het object is geen BGT object."@nl ;
+    skos:exactMatch begrip:Niet-bgt_typeWeginrichting ;
+    skos:inScheme airco:list_TypeWeginrichting ;
+    skos:prefLabel "niet-bgt"@nl ;
+    skos:topConceptOf airco:list_TypeWeginrichting .
+
+airco:VoidReasonValue_geenWaarde a skos:Concept ;
+    skos:definition "Element heeft in werkelijkheid geen waarde."@nl ;
+    skos:exactMatch begrip:Geenwaarde ;
+    skos:inScheme airco:list_VoidReasonValue ;
+    skos:prefLabel "geenWaarde"@nl ;
+    skos:topConceptOf airco:list_VoidReasonValue .
+
+airco:VoidReasonValue_nietGeautoriseerd a skos:Concept ;
+    skos:definition "Deze zender vindt dat de ontvanger niet geautoriseerd is om de waarde te kennen."@nl ;
+    skos:exactMatch begrip:Nietgeautoriseerd ;
+    skos:inScheme airco:list_VoidReasonValue ;
+    skos:prefLabel "nietGeautoriseerd"@nl ;
+    skos:topConceptOf airco:list_VoidReasonValue .
+
+airco:VoidReasonValue_nietOndersteund a skos:Concept ;
+    skos:definition "Zender houdt in zijn registratie geen waarde voor dit attribuut bij. Geldt voor alle objecten van dit objecttype."@nl ;
+    skos:exactMatch begrip:Nietondersteund ;
+    skos:inScheme airco:list_VoidReasonValue ;
+    skos:prefLabel "nietOndersteund"@nl ;
+    skos:topConceptOf airco:list_VoidReasonValue .
+
+airco:VoidReasonValue_vastgesteldOnbekend a skos:Concept ;
+    skos:definition "Er is vastgesteld dat de waarde van het attribuut onbekend is en hoogst waarschijnlijk niet meer kan worden achterhaald (bijvoorbeeld omdat het brondocument onleesbaar is of het object niet meer bestaat in de werkelijkheid)."@nl ;
+    skos:exactMatch begrip:Vastgesteldonbekend ;
+    skos:inScheme airco:list_VoidReasonValue ;
+    skos:prefLabel "vastgesteldOnbekend"@nl ;
+    skos:topConceptOf airco:list_VoidReasonValue .
+
+airco:VoidReasonValue_waardeOnbekend a skos:Concept ;
+    skos:definition "Element is verplicht maar de waarde is bij de zender niet bekend."@nl ;
+    skos:exactMatch begrip:Waardeonbekend ;
+    skos:inScheme airco:list_VoidReasonValue ;
+    skos:prefLabel "waardeOnbekend"@nl ;
+    skos:topConceptOf airco:list_VoidReasonValue .
+
+airco:FunctieWeg_rijbaan_lokale_weg a skos:Concept ;
+    skos:definition "Wegdeel dat onderdeel is van een weg van lokaal belang."@nl ;
+    skos:exactMatch begrip:RijbaanLokaleWeg ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "rijbaan lokale weg"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FysiekVoorkomenBegroeidTerrein_loofbos a skos:Concept ;
+    skos:definition "Terreindeel begroeid met een dusdanige aantal loofbomen dat deze een min of meer gesloten geheel vormen of, na volgroeiing van de bomen, zullen vormen."@nl ;
+    skos:exactMatch begrip:Loofbos ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "loofbos"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FunctieWeg_rijbaan_autosnelweg a skos:Concept ;
+    skos:definition "Wegdeel dat onderdeel is van een weg uitsluitend bestemd voor snelverkeer en met gescheiden rijbanen en ongelijkvloerse kruisingen, daartoe aangeduid met het betreffende verkeersbord."@nl ;
+    skos:exactMatch begrip:RijbaanAutosnelweg ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "rijbaan autosnelweg"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_rijbaan_autoweg a skos:Concept ;
+    skos:definition "Wegdeel dat onderdeel is van een weg uitsluitend bestemd voor snelverkeer, daartoe aangeduid met het betreffende verkeersbord."@nl ;
+    skos:exactMatch begrip:RijbaanAutoweg ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "rijbaan autoweg"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FunctieWeg_rijbaan_regionale_weg a skos:Concept ;
+    skos:definition "Wegdeel dat onderdeel is van een weg die een verbinding vormt tussen bewoonde oorden of tussen wijken binnen een dorp of stad."@nl ;
+    skos:exactMatch begrip:RijbaanRegionaleWeg ;
+    skos:inScheme airco:list_FunctieWeg ;
+    skos:prefLabel "rijbaan regionale weg"@nl ;
+    skos:topConceptOf airco:list_FunctieWeg .
+
+airco:FysiekVoorkomenBegroeidTerrein_duin a skos:Concept ;
+    skos:definition "Verhoging of heuvel van zand of fijne losse aarde  en verpulverd gesteente opgeworpen door wind of door stromend water."@nl ;
+    skos:exactMatch begrip:Duin ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "duin"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenOnbegroeidTerrein_onverhard a skos:Concept ;
+    skos:definition "Terreindeel waar geen verharding of aaneengesloten vegetatie aanwezig is, niet zijnde zand. Braakliggend valt hier wel onder."@nl ;
+    skos:exactMatch begrip:Onverhard_fysiekVoorkomenOnbegroeidTerrein ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerrein ;
+    skos:prefLabel "onverhard"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerrein .
+
+airco:FysiekVoorkomenOnbegroeidTerrein_zand a skos:Concept ;
+    skos:definition "Terreindeel dat grotendeels bedekt is met zand."@nl ;
+    skos:exactMatch begrip:Zand_fysiekVoorkomenOnbegroeidTerrein ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerrein ;
+    skos:prefLabel "zand"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerrein .
+
+airco:FysiekVoorkomenOndersteunendWegdeel_gesloten_verharding a skos:Concept ;
+    skos:definition "Verharding bestaande uit een materiaal dat niet verwijderbaar is zonder definitieve destructie, zoals bijvoorbeeld bitumen, cement of kunststof."@nl ;
+    skos:exactMatch begrip:GeslotenVerharding_fysiekVoorkomenOndersteunendWegdeel ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeel ;
+    skos:prefLabel "gesloten verharding"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeel .
+
+airco:FysiekVoorkomenOndersteunendWegdeel_onverhard a skos:Concept ;
+    skos:definition "Wegdelen waar geen verharding of aaneengesloten vegetatie aanwezig is."@nl ;
+    skos:exactMatch begrip:Onverhard_fysiekVoorkomenOndersteunendWegdeel ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeel ;
+    skos:prefLabel "onverhard"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeel .
+
+airco:FysiekVoorkomenWeg_gesloten_verharding a skos:Concept ;
+    skos:definition "Verharding bestaande uit een materiaal dat niet verwijderbaar is zonder definitieve destructie, zoals bijvoorbeeld bitumen, cement of kunststof."@nl ;
+    skos:exactMatch begrip:GeslotenVerharding_fysiekVoorkomenWeg ;
+    skos:inScheme airco:list_FysiekVoorkomenWeg ;
+    skos:prefLabel "gesloten verharding"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWeg .
+
+airco:FysiekVoorkomenWeg_onverhard a skos:Concept ;
+    skos:definition "Wegdelen waar geen verharding of aaneengesloten vegetatie aanwezig is."@nl ;
+    skos:exactMatch begrip:Onverhard_fysiekVoorkomenWeg ;
+    skos:inScheme airco:list_FysiekVoorkomenWeg ;
+    skos:prefLabel "onverhard"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWeg .
+
+airco:TypeWater_watervlakte a skos:Concept ;
+    skos:definition "Alle oppervlakken die vrij permanent met zoet water zijn bedekt. (zoals meer, plas, ven, vijver)."@nl ;
+    skos:exactMatch begrip:Watervlakte ;
+    skos:inScheme airco:list_TypeWater ;
+    skos:prefLabel "watervlakte"@nl ;
+    skos:topConceptOf airco:list_TypeWater .
+
+airco:list_FunctieSpoorPlus a skos:ConceptScheme ;
+    dcterms:title "FunctieSpoorPlus"@nl .
+
+airco:list_Status a skos:ConceptScheme ;
+    dcterms:title "Status"@nl .
+
+airco:list_StatusPlus a skos:ConceptScheme ;
+    dcterms:title "StatusPlus"@nl .
+
+airco:list_TypeBak a skos:ConceptScheme ;
+    dcterms:title "TypeBak"@nl .
+
+airco:list_TypeBord a skos:ConceptScheme ;
+    dcterms:title "TypeBord"@nl .
+
+airco:list_TypeGebouwInstallatie a skos:ConceptScheme ;
+    dcterms:title "TypeGebouwInstallatie"@nl .
+
+airco:list_TypeInstallatie a skos:ConceptScheme ;
+    dcterms:title "TypeInstallatie"@nl .
+
+airco:list_TypeKast a skos:ConceptScheme ;
+    dcterms:title "TypeKast"@nl .
+
+airco:list_TypeMast a skos:ConceptScheme ;
+    dcterms:title "TypeMast"@nl .
+
+airco:list_TypePaal a skos:ConceptScheme ;
+    dcterms:title "TypePaal"@nl .
+
+airco:list_TypePut a skos:ConceptScheme ;
+    dcterms:title "TypePut"@nl .
+
+airco:list_TypeSensor a skos:ConceptScheme ;
+    dcterms:title "TypeSensor"@nl .
+
+airco:list_TypeStraatmeubilair a skos:ConceptScheme ;
+    dcterms:title "TypeStraatmeubilair"@nl .
+
+airco:list_TypeVegetatieObject a skos:ConceptScheme ;
+    dcterms:title "TypeVegetatieObject"@nl .
+
+airco:list_TypeWaterinrichting a skos:ConceptScheme ;
+    dcterms:title "TypeWaterinrichting"@nl .
+
+airco:list_TypeWeginrichting a skos:ConceptScheme ;
+    dcterms:title "TypeWeginrichting"@nl .
+
+airco:FysiekVoorkomenOnbegroeidTerrein_gesloten_verharding a skos:Concept ;
+    skos:definition "Verharding bestaande uit een materiaal dat niet verwijderbaar is zonder definitieve destructie, zoals bijvoorbeeld bitumen, cement of kunststof."@nl ;
+    skos:exactMatch begrip:GeslotenVerharding_fysiekVoorkomenOnbegroeidTerrein ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerrein ;
+    skos:prefLabel "gesloten verharding"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_bouwland a skos:Concept ;
+    skos:definition "Terreindeel in gebruik als akker, met gewassen die in een teelt roulatieschema zijn opgenomen. Kan tijdelijk zonder gewas zijn of braak liggen."@nl ;
+    skos:exactMatch begrip:Bouwland ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "bouwland"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenBegroeidTerrein_fruitteelt a skos:Concept ;
+    skos:definition "Terreindeel begroeid met fruitbomen in de vorm van hoogstam en laagstamboomgaard, druiven of kleinfruit."@nl ;
+    skos:exactMatch begrip:Fruitteelt ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "fruitteelt"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:list_FunctieOndersteunendWegdeel a skos:ConceptScheme ;
+    dcterms:title "FunctieOndersteunendWegdeel"@nl .
+
+airco:list_TypeFunctioneelGebied a skos:ConceptScheme ;
+    dcterms:title "TypeFunctioneelGebied"@nl .
+
+airco:list_TypeInstallatiePlus a skos:ConceptScheme ;
+    dcterms:title "TypeInstallatiePlus"@nl .
+
+airco:list_TypeOndersteunendWaterdeel a skos:ConceptScheme ;
+    dcterms:title "TypeOndersteunendWaterdeel"@nl .
+
+airco:list_TypeScheidingPlus a skos:ConceptScheme ;
+    dcterms:title "TypeScheidingPlus"@nl .
+
+airco:list_TypeVegetatieObjectPlus a skos:ConceptScheme ;
+    dcterms:title "TypeVegetatieObjectPlus"@nl .
+
+airco:FysiekVoorkomenOnbegroeidTerrein_half_verhard a skos:Concept ;
+    skos:definition "Verharding bestaande uit een door verdichting gebonden materiaal, of onsamenhangend materiaal."@nl ;
+    skos:exactMatch begrip:HalfVerhard_fysiekVoorkomenOnbegroeidTerrein ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerrein ;
+    skos:prefLabel "half verhard"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerrein .
+
+airco:FysiekVoorkomenOnbegroeidTerrein_open_verharding a skos:Concept ;
+    skos:definition "Verharding gevormd door in verband aangebrachte elementen van beperkte afmetingen, zoals bijvoorbeeld klinkers en tegels."@nl ;
+    skos:exactMatch begrip:OpenVerharding_fysiekVoorkomenOnbegroeidTerrein ;
+    skos:inScheme airco:list_FysiekVoorkomenOnbegroeidTerrein ;
+    skos:prefLabel "open verharding"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOnbegroeidTerrein .
+
+airco:FysiekVoorkomenOndersteunendWegdeel_half_verhard a skos:Concept ;
+    skos:definition "Verharding bestaande uit een door verdichting gebonden materiaal, of onsamenhangend materiaal."@nl ;
+    skos:exactMatch begrip:HalfVerhard_fysiekVoorkomenOndersteunendWegdeel ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeel ;
+    skos:prefLabel "half verhard"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeel .
+
+airco:FysiekVoorkomenOndersteunendWegdeel_open_verharding a skos:Concept ;
+    skos:definition "Verharding gevormd door in verband aangebrachte elementen van beperkte afmetingen, zoals bijvoorbeeld klinkers en tegels."@nl ;
+    skos:exactMatch begrip:OpenVerharding_fysiekVoorkomenOndersteunendWegdeel ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeel ;
+    skos:prefLabel "open verharding"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeel .
+
+airco:FysiekVoorkomenWeg_half_verhard a skos:Concept ;
+    skos:definition "Verharding bestaande uit een door verdichting gebonden materiaal, of onsamenhangend materiaal."@nl ;
+    skos:exactMatch begrip:HalfVerhard_fysiekVoorkomenWeg ;
+    skos:inScheme airco:list_FysiekVoorkomenWeg ;
+    skos:prefLabel "half verhard"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWeg .
+
+airco:FysiekVoorkomenWeg_open_verharding a skos:Concept ;
+    skos:definition "Verharding gevormd door in verband aangebrachte elementen van beperkte afmetingen, zoals bijvoorbeeld klinkers en tegels."@nl ;
+    skos:exactMatch begrip:OpenVerharding_fysiekVoorkomenWeg ;
+    skos:inScheme airco:list_FysiekVoorkomenWeg ;
+    skos:prefLabel "open verharding"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenWeg .
+
+airco:FysiekVoorkomenBegroeidTerrein_groenvoorziening a skos:Concept ;
+    skos:definition "Terreindeel met aangelegde beplanting, meestal gras, heesters of struiken."@nl ;
+    skos:exactMatch begrip:Groenvoorziening_fysiekVoorkomenBegroeidTerrein ;
+    skos:inScheme airco:list_FysiekVoorkomenBegroeidTerrein ;
+    skos:prefLabel "groenvoorziening"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenBegroeidTerrein .
+
+airco:FysiekVoorkomenOndersteunendWegdeel_groenvoorziening a skos:Concept ;
+    skos:definition "Terreindeel met aangelegde beplanting, meestal gras, heesters of struiken."@nl ;
+    skos:exactMatch begrip:Groenvoorziening_fysiekVoorkomenOndersteunendWegdeel ;
+    skos:inScheme airco:list_FysiekVoorkomenOndersteunendWegdeel ;
+    skos:prefLabel "groenvoorziening"@nl ;
+    skos:topConceptOf airco:list_FysiekVoorkomenOndersteunendWegdeel .
+
+airco:TypeWater_waterloop a skos:Concept ;
+    skos:definition "Een voor de waterbeheersing bestemde geul die meestal permanent water bevat (zoals rivier, kanaal, beek, sloot, gracht)."@nl ;
+    skos:exactMatch begrip:Waterloop ;
+    skos:inScheme airco:list_TypeWater ;
+    skos:prefLabel "waterloop"@nl ;
+    skos:topConceptOf airco:list_TypeWater .
+
+airco:list_FunctieWegPlus a skos:ConceptScheme ;
+    dcterms:title "FunctieWegPlus"@nl .
+
+airco:list_TypeGebouwInstallatiePlus a skos:ConceptScheme ;
+    dcterms:title "TypeGebouwInstallatiePlus"@nl .
+
+airco:list_TypeOverigBouwwerkPlus a skos:ConceptScheme ;
+    dcterms:title "TypeOverigBouwwerkPlus"@nl .
+
+airco:list_FunctieSpoor a skos:ConceptScheme ;
+    dcterms:title "FunctieSpoor"@nl .
+
+airco:list_FysiekVoorkomenWeg a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenWeg"@nl .
+
+airco:list_Inwinningsmethode a skos:ConceptScheme ;
+    dcterms:title "Inwinningsmethode"@nl .
+
+airco:list_TypeWater a skos:ConceptScheme ;
+    dcterms:title "TypeWater"@nl .
+
+airco:list_FysiekVoorkomenOndersteunendWegdeel a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenOndersteunendWegdeel"@nl .
+
+airco:list_TypeMastPlus a skos:ConceptScheme ;
+    dcterms:title "TypeMastPlus"@nl .
+
+airco:list_TypeOverbrugging a skos:ConceptScheme ;
+    dcterms:title "TypeOverbrugging"@nl .
+
+airco:list_TypeOverbruggingsdeel a skos:ConceptScheme ;
+    dcterms:title "TypeOverbruggingsdeel"@nl .
+
+airco:list_VoidReasonValue a skos:ConceptScheme ;
+    dcterms:title "VoidReasonValue"@nl .
+
+airco:list_FysiekVoorkomenOnbegroeidTerrein a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenOnbegroeidTerrein"@nl .
+
+airco:list_TypeBakPlus a skos:ConceptScheme ;
+    dcterms:title "TypeBakPlus"@nl .
+
+airco:list_TypeWaterinrichtingPlus a skos:ConceptScheme ;
+    dcterms:title "TypeWaterinrichtingPlus"@nl .
+
+airco:list_TypeOpenbareRuimte a skos:ConceptScheme ;
+    dcterms:title "TypeOpenbareRuimte"@nl .
+
+airco:list_TypePutPlus a skos:ConceptScheme ;
+    dcterms:title "TypePutPlus"@nl .
+
+airco:list_TypeScheiding a skos:ConceptScheme ;
+    dcterms:title "TypeScheiding"@nl .
+
+airco:list_TypeKunstwerk a skos:ConceptScheme ;
+    dcterms:title "TypeKunstwerk"@nl .
+
+airco:list_TypeOverigBouwwerk a skos:ConceptScheme ;
+    dcterms:title "TypeOverigBouwwerk"@nl .
+
+airco:list_TypeWaterPlus a skos:ConceptScheme ;
+    dcterms:title "TypeWaterPlus"@nl .
+
+airco:list_TypeKastPlus a skos:ConceptScheme ;
+    dcterms:title "TypeKastPlus"@nl .
+
+airco:list_TypeKunstwerkPlus a skos:ConceptScheme ;
+    dcterms:title "TypeKunstwerkPlus"@nl .
+
+airco:list_TypeWeginrichtingPlus a skos:ConceptScheme ;
+    dcterms:title "TypeWeginrichtingPlus"@nl .
+
+airco:list_TypeBordPlus a skos:ConceptScheme ;
+    dcterms:title "TypeBordPlus"@nl .
+
+airco:list_TypeSensorPlus a skos:ConceptScheme ;
+    dcterms:title "TypeSensorPlus"@nl .
+
+airco:list_FysiekVoorkomenWegPlus a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenWegPlus"@nl .
+
+airco:list_TypePaalPlus a skos:ConceptScheme ;
+    dcterms:title "TypePaalPlus"@nl .
+
+airco:list_FunctieWeg a skos:ConceptScheme ;
+    dcterms:title "FunctieWeg"@nl .
+
+airco:list_FysiekVoorkomenBegroeidTerrein a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenBegroeidTerrein"@nl .
+
+airco:list_FysiekVoorkomenBegroeidTerreinPlus a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenBegroeidTerreinPlus"@nl .
+
+airco:list_FysiekVoorkomenOnbegroeidTerreinPlus a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenOnbegroeidTerreinPlus"@nl .
+
+airco:list_TypeStraatmeubilairPlus a skos:ConceptScheme ;
+    dcterms:title "TypeStraatmeubilairPlus"@nl .
+
+airco:list_FysiekVoorkomenOndersteunendWegdeelPlus a skos:ConceptScheme ;
+    dcterms:title "FysiekVoorkomenOndersteunendWegdeelPlus"@nl .
+
+airco:list_TypeFunctioneelGebiedPlus a skos:ConceptScheme ;
+    dcterms:title "TypeFunctioneelGebiedPlus"@nl .
+

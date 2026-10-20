@@ -1,0 +1,18 @@
+{
+  "rule": "fields",
+  "expected": {
+    "objecttype": {
+      "one_of": [
+        "OverigBouwwerk",
+        "Overig bouwwerk"
+      ]
+    },
+    "type": "bassin"
+  },
+  "term_fields": [
+    "objecttype",
+    "type"
+  ],
+  "source": "BGT catalog 9.11, TypeOverigBouwwerk: \"bassin: Waterbak, zoals een zwembad of een dok.\" BGT catalog 10.8.2: \"Bassins en bezinkbakken bij zuiveringsinstallaties zijn geen waterdelen, maar worden geclassificeerd als overig bouwwerk. Zwembaden worden als type bassin vastgelegd.\"",
+  "answer_schema": "answer.schema.json"
+}

@@ -1,0 +1,25 @@
+# Prices in dollars per million tokens, per model as named on the command line.
+# Inspect prices every call with them, logs the cost per run, and stops a run at
+# cost_limit. Check them against the price pages before a matrix against paid
+# models, and update the date here when you change them.
+#
+# List prices read on 19 October 2026 from
+# https://platform.claude.com/docs/en/about-claude/pricing and
+# https://docs.mistral.ai/inference/pricing. A model that charges more above a
+# prompt length gets the higher price, so that the cost limit never stops a run
+# too late. Mistral publishes no cache-write price, so input_cache_write equals
+# input. Mistral Large 4 is at its regular price, not the launch sale price.
+# The local Ollama model costs nothing. Qwen3.5-27B at Kadaster gets an agreed
+# GPU rate once the endpoint exists.
+openai-api/local/qwen3:0.6b: {input: 0, output: 0, input_cache_write: 0, input_cache_read: 0}
+anthropic/claude-haiku-5-5: {input: 0.10, output: 0.50, input_cache_write: 0.125, input_cache_read: 0.01, long_prompt: {above: 100000, input: 0.50, output: 2.50, input_cache_write: 0.625, input_cache_read: 0.05}}
+anthropic/claude-sonnet-5-5: {input: 2.00, output: 10.00, input_cache_write: 2.50, input_cache_read: 0.10}
+anthropic/claude-opus-5-5: {input: 4.00, output: 20.00, input_cache_write: 5.00, input_cache_read: 0.20}
+anthropic/claude-fable-5-1: {input: 10.00, output: 50.00, input_cache_write: 12.50, input_cache_read: 0.25}
+mistral/mistral-large-4: {input: 1.36, output: 4.18, input_cache_write: 1.36, input_cache_read: 0.14}
+mistral/mistral-large-2512: {input: 0.50, output: 1.50, input_cache_write: 0.50, input_cache_read: 0.05}
+mistral/mistral-medium-2604: {input: 1.50, output: 7.50, input_cache_write: 1.50, input_cache_read: 0.15}
+mistral/mistral-small-2603: {input: 0.15, output: 0.60, input_cache_write: 0.15, input_cache_read: 0.015}
+mistral/ministral-14b-2512: {input: 0.20, output: 0.20, input_cache_write: 0.20, input_cache_read: 0.02}
+mistral/ministral-8b-2512: {input: 0.15, output: 0.15, input_cache_write: 0.15, input_cache_read: 0.015}
+mistral/ministral-3b-2512: {input: 0.10, output: 0.10, input_cache_write: 0.10, input_cache_read: 0.01}

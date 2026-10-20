@@ -1,0 +1,14 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.audit/
+/logs/
+.DS_Store
+/rescore/
+# The viewer of a log bundle is the same Inspect code every time; inspect view rebuilds it. Only the logs are kept.
+/reports/*/logs/assets/
+/reports/*/logs/index.html
+/reports/*/logs/robots.txt
+/site/

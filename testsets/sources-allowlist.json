@@ -1,0 +1,18 @@
+{
+  "imgeo-2.2": {
+    "note": "Patterns (regular expressions) on retrieved URLs. source = 1 when at least one retrieved URL is authoritative and none is non-authoritative.",
+    "authoritative": [
+      "^https?://docs\\.geostandaarden\\.nl/imgeo/catalogus/(bgt|imgeo)/",
+      "^https?://docs\\.geostandaarden\\.nl/imgeo/def-im-(BGT|IMGeo)-20200701/",
+      "^https?://docs\\.geostandaarden\\.nl/imgeo/def-al-wijzigingsvoorstel-imgeo22-20200701/",
+      "^https?://definities\\.geostandaarden\\.nl/imgeo/",
+      "^https?://register\\.geostandaarden\\.nl/(informatiemodel/imgeo/2\\.2|gmlapplicatieschema/imgeo/2\\.1\\.1)",
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com)/Geonovum/IMGeo/"
+    ],
+    "non_authoritative": [
+      "^https?://geonovum\\.github\\.io/IMGeo-dev/",
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com)/Geonovum/IMGeo-dev/",
+      "^https?://docs\\.geostandaarden\\.nl/imgeo/def-im-(BGT|IMGeo)-(?!20200701)"
+    ]
+  }
+}
