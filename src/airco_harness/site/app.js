@@ -147,6 +147,18 @@ function sortedAgents(runs) {
   const order = ["model", "inspect", "claude-code"];
   return [...new Set(runs.map(r => r.agent))].sort((a, b) => (order.indexOf(a) + 99 * (order.indexOf(a) < 0)) - (order.indexOf(b) + 99 * (order.indexOf(b) < 0)) || a.localeCompare(b));
 }
+/** The question the agent got, as the reader should see it first: large for one sample, a list to choose from for several. */
+function questionBlock(m, sample, onChoose) {
+  const asked = Object.entries(m.questions || {}).filter(([s]) => !sample || s === sample);
+  if (!asked.length) return null;
+  if (asked.length === 1) {
+    const [s, text] = asked[0];
+    return h("figure", {class: "question"}, h("figcaption", {}, "Question to the agent · ", h("span", {class: "chip", text: s})), h("blockquote", {text}));
+  }
+  return h("section", {class: "questions"}, h("h2", {text: "Questions to the agent"}),
+    h("ol", {}, asked.map(([s, text]) => h("li", {}, onChoose ? h("button", {class: "chip linklike", text: s, onclick: () => onChoose(s)}) : h("span", {class: "chip", text: s}), " ", h("span", {text})))));
+}
+
 function testsetLabel(m) {
   return m.testset_versions.length ? m.testset_versions.join(", ") : m.testsets.join(", ");
 }
@@ -239,6 +251,7 @@ function measurementPage() {
       h("a", {href: `../compare.html#by=model&measurement=${encodeURIComponent(name)}`, text: "Compare"})),
     h("h1", {text: `Measurement of ${when(name)}`}),
     h("p", {class: "facts"}, facts.map(([k, v]) => h("span", {}, `${k} `, h("b", {text: v})))),
+    questionBlock(m, sample, s => { setParams({sample: s}); render(); }),
     h("div", {class: "kpis"}, kpi("Runs", String(m.runs), `${m.models.length} models · ${m.agents.length} agents`), kpi("Samples", String(m.samples.length), m.samples.slice(0, 3).join(", ")),
       kpi("Cost", money(m.cost), "all runs"), kpi("Errors / at a limit", `${m.failed} / ${m.at_limit}`, "a run at a limit counts as answered")),
     h("div", {class: "filters"},
@@ -364,6 +377,10 @@ function comparePage() {
       by !== "measurement" ? select("Measurement", [["all", "All, pooled"], ...measurementsHere.map(n => [n, when(n)])], fixedMeasurement, v => update({measurement: v, groups: null})) : null,
       by !== "variant" ? select("Variant", [["", variants.length > 1 ? "All, pooled" : `${variants[0] ?? "none"}`], ...(variants.length > 1 ? variants.map(v => [v, v]) : [])], fixedVariant, v => update({variant: v, groups: null})) : null),
   ];
+  if (sample) {
+    const asked = data.measurements.find(m => m.questions && m.questions[sample]);
+    if (asked) body.push(questionBlock(asked, sample));
+  }
   if (!capped.length) return [...body, h("p", {class: "empty", text: "No runs for this selection."})];
   body.push(h("div", {class: "groups", role: "group", "aria-label": "Groups"}, h("span", {class: "muted", text: `${DIMENSIONS[by]}s:`}), capped.map(v =>
     h("label", {}, h("input", {type: "checkbox", checked: chosen.includes(v), onchange: e => {

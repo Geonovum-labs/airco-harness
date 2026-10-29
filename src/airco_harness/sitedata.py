@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from pathlib import Path
 
 import pandas as pd
+from inspect_ai.analysis import SampleSummary, samples_df
 
 from validators import sources
 
@@ -52,6 +54,20 @@ def _clean(value: object) -> object:
 
 def _distinct(series: pd.Series) -> list:
     return sorted({v for v in series.dropna().tolist() if v != ""}, key=str)
+
+
+def question(text: object) -> str:
+    """The question as the agent got it. samples_df writes the input with its role, "user:" and a newline;
+    a single user message loses that prefix, a conversation of several messages keeps its roles."""
+    text = str(text or "").strip()
+    single = re.fullmatch(r"user:\n(.*)", text, re.DOTALL)
+    return single[1].strip() if single and not re.search(r"\n(?:user|assistant|system|tool):\n", single[1]) else text
+
+
+def questions(log_dir: Path) -> dict[str, str]:
+    """Per sample, the question of its first run in the logs."""
+    df = samples_df(str(log_dir), columns=SampleSummary, quiet=True)
+    return {sample: question(text) for sample, text in df.drop_duplicates("id")[["id", "input"]].itertuples(index=False)}
 
 
 def reference_file(reference: str) -> str:
@@ -105,6 +121,7 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
         "models": _distinct(table["model"]),
         "agents": _distinct(table["agent"]),
         "variants": _distinct(table["variant"]),
+        "questions": questions(log_dir),
     }
     maps = {sample: {"must": e["must"], "panden": reference_file(e["reference"]), "reference": e["reference"]} for sample, e in shown["samples"].items()}
     return facts, runs, maps

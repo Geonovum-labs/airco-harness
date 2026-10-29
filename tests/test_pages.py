@@ -44,6 +44,8 @@ def test_site_has_an_overview_a_comparison_and_a_dashboard_and_viewer_per_measur
     [run] = data["runs"]
     assert (run["m"], run["sample"], run["correct"], run["log"].endswith(".eval"), "map" in run) == ("2026-10-19T21-45-03", "imgeo-G04-03", 1.0, True, False)
     assert data["measurements"][0]["limits"]["cost"] == [] and "commits" in data["measurements"][0]
+    # The question as the agent got it, without the role that samples_df puts in front.
+    assert data["measurements"][0]["questions"]["imgeo-G04-03"].startswith("Een openluchtzwembad")
     for page, kind in [("index.html", "overview"), ("compare.html", "compare"), ("2026-10-19T21-45-03/report.html", "measurement")]:
         shell = (site / page).read_text(encoding="utf-8")
         assert f'data-page="{kind}"' in shell and 'assets/app.js"' in shell and "plot@0.6.17" in shell, page
@@ -100,3 +102,12 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     assert len(strict(site / entry["panden"])["features"]) == len(panden)
     assert "proj4leaflet" in (site / name / "report.html").read_text(encoding="utf-8")
     assert "leaflet" not in (site / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")
+
+
+def test_a_question_loses_only_the_role_of_a_single_user_message():
+    from airco_harness.sitedata import question
+
+    assert question("user:\nVind alle gebouwen met sportfunctie in Arnhem.\n") == "Vind alle gebouwen met sportfunctie in Arnhem."
+    conversation = "system:\nJe bent een assistent.\n\nuser:\nVind de gebouwen.\n"
+    assert question(conversation) == conversation.strip()
+    assert question(None) == ""

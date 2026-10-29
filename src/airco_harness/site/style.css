@@ -78,6 +78,15 @@ details > summary { cursor: pointer; font-weight: 600; }
 .warning ul { margin: 0.25rem 0 0; padding-left: 1.2rem; }
 .empty { color: var(--muted); font-style: italic; }
 
+/* The question to the agent: the first thing a reader of a measurement needs. */
+figure.question { margin: 1rem 0; padding: 0.9rem 1.1rem 1rem; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--series-1); border-radius: 8px; }
+figure.question figcaption { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.35rem; }
+figure.question figcaption .chip { text-transform: none; letter-spacing: 0; font-weight: 400; }
+figure.question blockquote { margin: 0; font-size: 1.25rem; line-height: 1.45; white-space: pre-wrap; max-width: 50rem; }
+section.questions { margin: 1rem 0; }
+section.questions ol { margin: 0; padding-left: 1.4rem; display: grid; gap: 0.35rem; font-size: 0.95rem; }
+button.linklike { cursor: pointer; color: var(--accent); }
+
 /* Heatmap: model x agent, one cell per pair; the cell is the button and the hit target. */
 .heatmap { display: grid; gap: 2px; align-items: stretch; overflow-x: auto; }
 .heatmap .colhead { font-size: 0.8rem; color: var(--muted); font-weight: 600; padding: 0.2rem 0.4rem; align-self: end; }
