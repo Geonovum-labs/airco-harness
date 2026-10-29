@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 
 from inspect_ai.model import ChatMessage, ContentToolUse
 from inspect_ai.scorer import Score, Target, mean, scorer, stderr
@@ -57,14 +58,23 @@ def map_shown(messages: list[ChatMessage]) -> str:
     return shown[-1] if isinstance(shown[-1], str) else json.dumps(shown[-1], ensure_ascii=False)
 
 
+URL_IN_CODE = re.compile(r"https?://[^\s'\"<>`|\\]+")
+CODE_ARGUMENTS = ("command", "code")  # Claude Code's Bash, a provider's code execution
+
+
+def _urls(use: dict) -> list[str]:
+    """The url argument of a fetch, or every URL in the shell command or code of a tool use."""
+    url = use["arguments"].get("url")
+    if isinstance(url, str):
+        return [url]
+    code = " ".join(v for k, v in use["arguments"].items() if k in CODE_ARGUMENTS and isinstance(v, str))
+    return [u.rstrip(".,;:)]}") for u in URL_IN_CODE.findall(code)]
+
+
 def retrievals(messages: list[ChatMessage]) -> list[dict]:
-    """Every web retrieval in the conversation: a tool use with a url argument. A search is not a retrieval."""
-    out = []
-    for use in tool_uses(messages):
-        url = use["arguments"].get("url")
-        if isinstance(url, str):
-            out.append({"tool": use["tool"], "url": url, "status": 0 if use["failed"] else 200})
-    return out
+    """Every web retrieval in the conversation: a tool use with a url argument, or a URL in a shell
+    command or code that ran, as when an agent uses curl. A search is not a retrieval."""
+    return [{"tool": use["tool"], "url": url, "status": 0 if use["failed"] else 200} for use in tool_uses(messages) for url in _urls(use)]
 
 
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})

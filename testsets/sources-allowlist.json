@@ -18,7 +18,7 @@
   "dsfl": {
     "note": "The registrations the dsfl questions need: the BAG and EP-Online. A retrieval from either counts; source does not check that the agent used both.",
     "authoritative": [
-      "^https?://service\\.pdok\\.nl/lv/bag/",
+      "^https?://service\\.pdok\\.nl/(lv|kadaster)/bag/",
       "^https?://api\\.pdok\\.nl/(lv|kadaster)/bag/",
       "^https?://bagviewer\\.kadaster\\.nl/",
       "^https?://api\\.bag\\.kadaster\\.nl/",

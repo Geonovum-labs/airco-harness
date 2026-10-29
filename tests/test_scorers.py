@@ -129,3 +129,22 @@ def test_the_map_is_the_last_show_on_map_call_that_succeeded():
     assert map_shown([*call(0, "show_on_map", first), *call(1, "mcp__map__show_on_map", second)]) == json.dumps(second)
     assert map_shown([*call(0, "show_on_map", first), *call(1, "show_on_map", "not geojson", "invalid")]) == json.dumps(first)
     assert map_shown(call(0, "mcp__map__show_on_map", json.dumps(second))) == json.dumps(second)
+
+
+def test_a_url_in_a_shell_command_or_code_that_ran_is_a_retrieval():
+    """Claude Code often fetches with curl or a script in Bash; the URLs in the command count, as the command ran."""
+    bag = "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/items?f=json&limit=5"
+    command = f'cd /tmp && curl -s "{bag}" | head; echo "(see https://www.pdok.nl/)."'
+    messages = [
+        ChatMessageAssistant(content="", tool_calls=[ToolCall(id="b1", function="Bash", arguments={"command": command, "description": "x"})]),
+        ChatMessageTool(content="ok", tool_call_id="b1", function="Bash"),
+        ChatMessageAssistant(content="", tool_calls=[ToolCall(id="b2", function="Bash", arguments={"command": "curl https://example.org/down"})]),
+        ChatMessageTool(content="", tool_call_id="b2", function="Bash", error=ToolCallError("unknown", "exit 7")),
+        ChatMessageAssistant(content="", tool_calls=[ToolCall(id="b3", function="Read", arguments={"file_path": "/tmp/notes-https://x"})]),
+        ChatMessageTool(content="", tool_call_id="b3", function="Read"),
+    ]
+    assert retrievals(messages) == [
+        {"tool": "Bash", "url": bag, "status": 200},
+        {"tool": "Bash", "url": "https://www.pdok.nl/", "status": 200},
+        {"tool": "Bash", "url": "https://example.org/down", "status": 0},
+    ]
