@@ -123,7 +123,16 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
         "variants": _distinct(table["variant"]),
         "questions": questions(log_dir),
     }
-    maps = {sample: {"must": e["must"], "panden": reference_file(e["reference"]), "reference": e["reference"]} for sample, e in shown["samples"].items()}
+    maps = {
+        sample: {
+            "must": e["must"],
+            "optional": len(panden(e["reference"])["features"]) - len(e["must"]),
+            "note": e["note"],
+            "panden": reference_file(e["reference"]),
+            "reference": e["reference"],
+        }  # fmt: skip
+        for sample, e in shown["samples"].items()
+    }
     return facts, runs, maps
 
 

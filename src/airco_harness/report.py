@@ -163,7 +163,7 @@ def maps(log_dir: str) -> dict | None:
     samples, runs = {}, []
     for r in done.sort_values(["model", "id", "epoch"]).itertuples():
         expected = rules.Case.load(r.target).expected
-        samples[r.id] = {key: expected[key] for key in ("reference", "must", "tolerance_m")}
+        samples[r.id] = {key: expected[key] for key in ("reference", "must", "tolerance_m")} | {"note": expected.get("note", "")}
         details = json.loads(r.details) if isinstance(r.details, str) else r.details
         runs.append(
             {

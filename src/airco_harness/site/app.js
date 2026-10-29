@@ -299,16 +299,25 @@ function pairDetail(name, [model, agent], runs) {
     const result = h("p", {class: "result"});
     const counts = h("ul", {class: "legend"});
     const element = h("div", {id: "map", role: "img", "aria-label": "Map of the chosen run"});
+    // How the rule reads the map, per sample: which panden count, and why, from the note in its expected.json.
+    const scoring = [...new Set(onMap.map(r => r.sample))].map(s => {
+      const entry = data.maps[s];
+      return h("div", {class: "scoring"},
+        h("p", {}, h("b", {text: "Required: "}), `the ${entry.must.length} panden the map has to show; each one missing lowers complete. `,
+          h("b", {text: "Optional: "}), `the other ${entry.optional} panden of the BAG extract; the map may show them or leave them out, without effect on the score. `,
+          h("b", {text: "Invented: "}), "a place on none of these panden."),
+        entry.note ? h("details", {}, h("summary", {text: `Why these panden${onMap.some(r => r.sample !== s) ? ` (${s})` : ""}`}), h("p", {text: entry.note})) : null);
+    });
     section.append(h("p", {class: "muted", style: "margin:0.25rem 0"}, "What the agent showed with ", h("code", {text: "show_on_map"}),
-      ", on the BRT achtergrondkaart in RD. Each pand of the BAG extract the rule scores against has a marker in its colour; a place on no pand is a yellow dot."),
-      result, element, counts);
+      ", on the BRT achtergrondkaart in RD; each pand has a marker in its colour."),
+      ...scoring, result, element, counts);
     const draw = createMap(element);
     showOnMap = async run => {
       const sample = data.maps[run.sample];
       const c = draw(run, sample.must, await panden(root, sample.panden));
       result.textContent = `${run.sample} · epoch ${run.epoch}: ${run.explanation}`;
       counts.replaceChildren(...Object.entries(KINDS).map(([k, kind]) => h("li", {}, h("span", {class: "key sq", style: `border-color:${kind.style.color};background:${kind.style.fillOpacity ? kind.style.fillColor : "transparent"}`}), `${kind.label}: `, h("b", {text: String(c[k])}))),
-        h("li", {}, h("span", {class: "key", style: `background:${PLACE_STYLE.fillColor};border:2px solid ${PLACE_STYLE.color}`}), "place on no pand: ", h("b", {text: String(c.unmatched)})));
+        h("li", {}, h("span", {class: "key", style: `background:${PLACE_STYLE.fillColor};border:2px solid ${PLACE_STYLE.color}`}), "invented, on no pand: ", h("b", {text: String(c.unmatched)})));
       section.querySelectorAll("tr.selected").forEach(tr => tr.classList.remove("selected"));
       document.getElementById(`run-${run.sample}-${run.epoch}`)?.classList.add("selected");
     };

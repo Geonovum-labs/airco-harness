@@ -8,8 +8,8 @@ const RESOLUTIONS = [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76, 26
 export const KINDS = {
   hit: {label: "required and shown", style: {color: "#1a7f37", fillColor: "#2da44e", fillOpacity: 0.65, weight: 2}},
   missing: {label: "required, not shown", style: {color: "#cf222e", fillColor: "#cf222e", fillOpacity: 0.15, weight: 2, dashArray: "4 3"}},
-  extra: {label: "allowed, shown", style: {color: "#0969da", fillColor: "#218bff", fillOpacity: 0.5, weight: 2}},
-  rest: {label: "allowed, not shown", style: {color: "#6e7781", fillOpacity: 0, weight: 1}},
+  extra: {label: "optional, shown", style: {color: "#0969da", fillColor: "#218bff", fillOpacity: 0.5, weight: 2}},
+  rest: {label: "optional, not shown", style: {color: "#6e7781", fillOpacity: 0, weight: 1}},
 };
 const PLACE = {radius: 6, color: "#9a6700", fillColor: "#d4a72c", fillOpacity: 0.9, weight: 2};
 

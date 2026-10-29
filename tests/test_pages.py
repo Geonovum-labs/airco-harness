@@ -98,7 +98,7 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     [run] = [r for r in data["runs"] if r["m"] == name]
     assert (run["agent"], len(run["map"]["shown"]), run["map"]["missing"], run["map"]["unmatched"]) == ("inspect", len(must), [], [[5.905, 51.976]])
     entry = data["maps"]["dsfl-02"]
-    assert entry["must"] == must
+    assert entry["must"] == must and entry["optional"] == len(panden) - len(must) and entry["note"].startswith("The question is ambiguous on purpose")
     assert len(strict(site / entry["panden"])["features"]) == len(panden)
     assert "proj4leaflet" in (site / name / "report.html").read_text(encoding="utf-8")
     assert "leaflet" not in (site / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")

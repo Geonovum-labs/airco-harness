@@ -116,4 +116,8 @@ ul.legend .key.sq { border-radius: 3px; border: 2px solid; }
 /* Map of a map question */
 #map { height: clamp(20rem, 60vh, 34rem); border: 1px solid var(--line); border-radius: 8px; margin: 0.5rem 0; }
 p.result { font-weight: 600; margin: 0.25rem 0; }
+.scoring { font-size: 0.9rem; margin: 0.4rem 0 0.6rem; }
+.scoring p { margin: 0; }
+.scoring details { margin: 0.3rem 0 0; }
+.scoring details summary { font-weight: 400; color: var(--accent); }
 @media (max-width: 40rem) { header .tagline { display: none; } .kpi .value { font-size: 1.3rem; } }
