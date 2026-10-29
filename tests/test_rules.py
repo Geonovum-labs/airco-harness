@@ -107,3 +107,5 @@ def test_map_details_name_what_is_missing_and_flag_swapped_coordinates():
     assert (result.details["places"], result.details["swapped"], sorted(result.details["missing"])) == (len(MUST), len(MUST), sorted(MUST))
     result = rules.assess(shown([point(*RIVER)]), case)
     assert (result.details["unmatched"], result.details["swapped"]) == ([list(RIVER)], 0)
+    result = rules.assess(shown([*PANDEN, point(*RIVER)]), case)
+    assert result.details["shown"] == sorted(f["properties"]["identificatie"] for f in PANDEN)

@@ -144,7 +144,7 @@ def rule_map(answer: str, case: Case) -> Assessment:
     must = set(case.expected["must"])
     missing = sorted(must - shown)
     unmatched = [[round(place.x, 6), round(place.y, 6)] for place, pand in matched if pand is None]
-    details = {"places": len(places), "missing": missing, "unmatched": unmatched,
+    details = {"places": len(places), "shown": sorted(shown), "missing": missing, "unmatched": unmatched,
                "swapped": sum(geo.swapped(place) for place, _ in matched)}  # fmt: skip
     complete = 1 - len(missing) / len(must)
     return Assessment(not missing and not unmatched, complete, len(unmatched), True,

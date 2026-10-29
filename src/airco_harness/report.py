@@ -10,7 +10,8 @@ it counts with the scores Inspect gave it, 0 where it gave none; a run with an
 error is the harness failing, so it is counted separately and left out of the
 metrics. Tool calls are counted from the tool messages in the conversation.
 For a question answered on a map, the report adds a line per run: what the
-rule found on the map, and the hosts the agent retrieved from.
+rule found on the map, and the hosts the agent retrieved from. It also writes
+maps.json, from which airco-pages draws each map on the BRT achtergrondkaart.
 Cost per correct answer is the cost of all runs, failed ones included, over the
 number of correct runs; the cost is what Inspect logged from the prices in
 model-costs.yaml during the run.
@@ -26,6 +27,8 @@ from pathlib import Path
 
 import pandas as pd
 from inspect_ai.analysis import EvalInfo, EvalModel, EvalTask, SampleColumn, SampleSummary, messages_df, samples_df
+
+from validators import rules
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
 TRAJECTORY = ["tool_calls", "tokens", "total_time_s", "working_time_s"]
@@ -54,6 +57,7 @@ RETRIEVED = SampleColumn("retrieved", path="scores.source.metadata.retrieved", f
 TOOL_CALLS = SampleColumn("tool_calls_scored", path="scores.source.metadata.tool_calls", full=True)
 RULE = SampleColumn("rule", path="scores.quality.metadata.rule", full=True)
 EXPLANATION = SampleColumn("explanation", path="scores.quality.explanation", full=True)
+DETAILS = SampleColumn("details", path="scores.quality.metadata", full=True)
 
 
 def _classes(value: object) -> dict:
@@ -131,6 +135,33 @@ def runs(log_dir: str) -> pd.DataFrame:
     return out.sort_values(["model", "variant", "sample", "epoch"]).reset_index(drop=True)
 
 
+def maps(log_dir: str) -> dict | None:
+    """What every completed run of a map question showed, with the expected outcome of its sample, for the map view of airco-pages; None without map questions."""
+    df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RULE, EXPLANATION, DETAILS], quiet=True)
+    if "rule" not in df:
+        return None
+    done = df[df["rule"].eq("map") & df["error"].fillna("").astype(str).eq("")] if "error" in df else df[df["rule"].eq("map")]
+    if not len(done):
+        return None
+    samples, runs = {}, []
+    for r in done.sort_values(["model", "id", "epoch"]).itertuples():
+        expected = rules.Case.load(r.target).expected
+        samples[r.id] = {key: expected[key] for key in ("reference", "must", "tolerance_m")}
+        details = json.loads(r.details) if isinstance(r.details, str) else r.details
+        runs.append(
+            {
+                "model": r.model,
+                "agent": str(getattr(r, "task_arg_agent", "model")),
+                "variant": str(r.task_arg_variant),
+                "sample": r.id,
+                "epoch": int(r.epoch),
+                "explanation": r.explanation,
+                **{key: details.get(key, []) for key in ("shown", "missing", "unmatched")},
+            }
+        )
+    return {"samples": samples, "runs": runs}
+
+
 def _mean_se(per_sample: pd.Series) -> tuple[float, float]:
     s = per_sample.dropna()
     if not len(s):
@@ -204,16 +235,16 @@ def markdown(table: pd.DataFrame, log_dir: str) -> str:
             f"{_fmt(r['total_time_s'], 1)} | {_fmt(r['working_time_s'], 1)} | {_fmt(r['cost_per_correct'], 4)} |"
         )
     lines += ["", "## `correct` / `complete` per sample (mean over epochs)", "", _per_sample(table), ""]
-    maps = table[~table["failed"] & table["rule"].eq("map")]
-    if len(maps):
+    map_runs = table[~table["failed"] & table["rule"].eq("map")]
+    if len(map_runs):
         lines += [
             "## Map questions per run",
             "",
             "| Model | Agent | Variant | Sample | Epoch | On the map | Retrieved from |",
             "| --- | --- | --- | --- | --- | --- | --- |",
         ]
-        lines += [f"| {r.model} | {r.agent} | {r.variant} | {r.sample} | {r.epoch} | {r.explanation} | {r.hosts or 'nothing'} |" for r in maps.itertuples()]
-        lines.append("")
+        lines += [f"| {r.model} | {r.agent} | {r.variant} | {r.sample} | {r.epoch} | {r.explanation} | {r.hosts or 'nothing'} |" for r in map_runs.itertuples()]
+        lines += ["", "On the site, the page Maps of this measurement draws each map on the BRT achtergrondkaart.", ""]
     failed = table[table["failed"] | table["limit"].ne("")]
     if len(failed):
         lines += [
@@ -256,4 +287,7 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     table.to_csv(out / "runs.csv", index=False)
     (out / "report.md").write_text(markdown(table, args.log_dir), encoding="utf-8")
+    shown = maps(args.log_dir)
+    if shown:
+        (out / "maps.json").write_text(json.dumps(shown, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{len(table)} run{'' if len(table) == 1 else 's'}; {out / 'report.md'}")

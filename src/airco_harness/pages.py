@@ -5,7 +5,10 @@
 
 For each reports/<name>/logs/logs with .eval files, the site gets the Inspect
 viewer (inspect view bundle) under <name>/viewer/ and report.md as
-<name>/report.html, plus an index of all measurements, newest first. The site
+<name>/report.html, plus an index of all measurements, newest first. A
+measurement with map questions also gets <name>/maps.html: each run's map on
+the BRT achtergrondkaart of PDOK in RD (EPSG:28992), from the maps.json that
+airco-report wrote and the BAG extract under sources/. The site
 is built from what is in git and is not committed itself;
 .github/workflows/pages.yml builds and deploys it on every push to main.
 """
@@ -14,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import os
 import shutil
 import subprocess
@@ -23,6 +27,8 @@ from pathlib import Path
 
 import markdown
 import pandas as pd
+
+from validators import sources
 
 from .matrix import strip_absolute_log_dir
 
@@ -92,13 +98,13 @@ def summary(measurement: Path) -> dict:
     }
 
 
-def page(title: str, body: str, home: str = "./") -> str:
+def page(title: str, body: str, home: str = "./", head: str = "") -> str:
     """One page in the site's layout: header with the site name, the body in main, a footer with the source."""
     commit = os.environ.get("GITHUB_SHA", "")[:7]
     built = f"Built from commit <code>{commit}</code> of " if commit else "Built from "
     return (
         '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-        f"<title>{html.escape(title)}</title>\n<style>{STYLE}</style>\n</head>\n<body>\n"
+        f"<title>{html.escape(title)}</title>\n<style>{STYLE}</style>\n{head}</head>\n<body>\n"
         f'<header><div class="inner"><a class="site" href="{home}">{SITE}</a><span class="tagline">{TAGLINE}</span></div></header>\n'
         f"<main>\n{body}\n</main>\n"
         f'<footer>{built}the repository <a href="https://github.com/Geonovum-labs/airco-harness">airco-harness</a>. '
@@ -146,6 +152,119 @@ def index(rows: list[dict]) -> str:
     return page(f"{SITE}: measurements", "\n".join(body))
 
 
+# Leaflet with Proj4Leaflet draws the BRT achtergrondkaart in RD; NL Maps (nlmaps.nl) offers it only in Web Mercator.
+MAP_HEAD = """<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
+<style>
+#map { height: 70vh; min-height: 22rem; border: 1px solid var(--line); border-radius: 8px; margin: 0.75rem 0; }
+label { font-weight: 600; margin-right: 0.5rem; }
+select { font: inherit; max-width: 100%; padding: 0.2rem 0.4rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
+ul.legend { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-size: 0.92rem; }
+ul.legend span.key { display: inline-block; width: 0.9rem; height: 0.9rem; border-radius: 3px; margin-right: 0.4rem; vertical-align: -0.1rem; border: 2px solid; }
+ul.legend span.dot { border-radius: 50%; }
+p.result { font-weight: 600; }
+</style>
+"""
+
+# Pand fill and outline by what the run did with it; the colours read on the grey BRT in light and dark mode.
+MAP_SCRIPT = """
+const data = JSON.parse(document.getElementById("maps-data").textContent);
+const rd = new L.Proj.CRS("EPSG:28992",
+  "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel " +
+  "+towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs",
+  {resolutions: [3440.64, 1720.32, 860.16, 430.08, 215.04, 107.52, 53.76, 26.88, 13.44, 6.72, 3.36, 1.68, 0.84, 0.42, 0.21],
+   origin: [-285401.92, 903401.92], bounds: L.bounds([-285401.92, 22598.08], [595401.92, 903401.92])});
+const map = L.map("map", {crs: rd, center: [52.1, 5.3], zoom: 3, maxZoom: 14});
+L.tileLayer("https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/grijs/EPSG:28992/{z}/{x}/{y}.png",
+  {minZoom: 0, maxZoom: 14, attribution: 'BRT achtergrondkaart: <a href="https://www.pdok.nl/">PDOK</a>, Kadaster'}).addTo(map);
+const STYLES = {
+  hit: {color: "#1a7f37", fillColor: "#2da44e", fillOpacity: 0.65, weight: 2},
+  missing: {color: "#cf222e", fillColor: "#cf222e", fillOpacity: 0.15, weight: 2, dashArray: "4 3"},
+  extra: {color: "#0969da", fillColor: "#218bff", fillOpacity: 0.5, weight: 2},
+  rest: {color: "#6e7781", fillOpacity: 0, weight: 1},
+};
+const select = document.getElementById("run");
+data.runs.forEach((r, i) => select.add(new Option(`${r.sample} · ${r.model} · ${r.agent} · variant ${r.variant} · epoch ${r.epoch}`, i)));
+let layer = null;
+function show(i) {
+  const run = data.runs[i], sample = data.samples[run.sample];
+  const must = new Set(sample.must), shown = new Set(run.shown);
+  const kind = id => must.has(id) ? (shown.has(id) ? "hit" : "missing") : (shown.has(id) ? "extra" : "rest");
+  const counts = {hit: 0, missing: 0, extra: 0, rest: 0};
+  // A pand is a few meters wide, so at city scale a dot in its colour marks it too.
+  const dots = [];
+  const panden = L.geoJSON(sample.panden, {style: f => { const k = kind(f.properties.identificatie); counts[k]++; return STYLES[k]; },
+    onEachFeature: (f, l) => {
+      const k = kind(f.properties.identificatie), tip = `pand ${f.properties.identificatie}`;
+      l.bindTooltip(tip);
+      dots.push(L.circleMarker(l.getBounds().getCenter(), {...STYLES[k], radius: k === "rest" ? 3 : 5, fillOpacity: k === "rest" ? 0 : 0.9}).bindTooltip(tip));
+    }});
+  const places = run.unmatched.map(([lon, lat]) => L.circleMarker([lat, lon], {radius: 6, color: "#9a6700", fillColor: "#d4a72c", fillOpacity: 0.9, weight: 2})
+    .bindTooltip(`on no pand: ${lat.toFixed(5)}, ${lon.toFixed(5)}`));
+  if (layer) layer.remove();
+  layer = L.layerGroup([panden, ...dots, ...places]).addTo(map);
+  map.fitBounds(panden.getBounds(), {padding: [20, 20]});
+  for (const k in counts) document.getElementById(`n-${k}`).textContent = counts[k];
+  document.getElementById("n-unmatched").textContent = run.unmatched.length;
+  document.getElementById("result").textContent = run.explanation;
+}
+select.addEventListener("change", () => show(select.value));
+show(0);
+"""
+
+
+def _rounded(coordinates: object) -> object:
+    """Coordinates to 6 decimals, about 10 cm, so the page carries less than the extract."""
+    return [_rounded(c) for c in coordinates] if isinstance(coordinates, list) and not isinstance(coordinates[0], float) else [round(c, 6) for c in coordinates]
+
+
+def _panden(reference: str) -> dict:
+    features = json.loads(sources.path(reference).read_text(encoding="utf-8"))["features"]
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"identificatie": f["properties"]["identificatie"]},
+                "geometry": {"type": f["geometry"]["type"], "coordinates": _rounded(f["geometry"]["coordinates"])},
+            }  # fmt: skip
+            for f in features
+        ],
+    }
+
+
+def maps_page(name: str, shown: dict) -> str:
+    """Each run of a map question on the BRT achtergrondkaart: the panden of the sample's extract, coloured by what the run showed."""
+    data = {"samples": {s: {"must": e["must"], "panden": _panden(e["reference"])} for s, e in shown["samples"].items()}, "runs": shown["runs"]}
+    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    legend = [
+        ("hit", "#1a7f37", "#2da44e", "required and shown"),
+        ("missing", "#cf222e", "transparent", "required, not shown"),
+        ("extra", "#0969da", "#218bff", "allowed, shown"),
+        ("rest", "#6e7781", "transparent", "allowed, not shown"),
+    ]
+    items = "".join(
+        f'<li><span class="key" style="border-color:{line};background:{fill}"></span>{text}: <b id="n-{key}">0</b></li>' for key, line, fill, text in legend
+    )
+    items += '<li><span class="key dot" style="border-color:#9a6700;background:#d4a72c"></span>place on no pand: <b id="n-unmatched">0</b></li>'
+    body = (
+        f'<nav class="crumbs"><a href="../">All measurements</a> &rsaquo; {html.escape(when(name))} &middot; <a href="report.html">Report</a> &middot; <a href="viewer/">Viewer</a></nav>\n'
+        "<h1>Maps</h1>\n"
+        '<p class="lead">What each agent showed with <code>show_on_map</code>, on the BRT achtergrondkaart in RD. '
+        "The panden are those of the BAG extract the rule scores against, each with a marker in its colour; a place the agent put on no pand is a yellow dot. "
+        "A dot outside the Netherlands, such as with longitude and latitude swapped, is counted but not in view.</p>\n"
+        '<p><label for="run">Run</label><select id="run"></select></p>\n'
+        '<p class="result" id="result"></p>\n'
+        '<div id="map" role="img" aria-label="Map of the run"></div>\n'
+        f'<ul class="legend">{items}</ul>\n'
+        f'<script type="application/json" id="maps-data">{payload}</script>\n'
+        f"<script>{MAP_SCRIPT}</script>"
+    )
+    return page(f"{SITE}: maps {name}", body, home="../", head=MAP_HEAD)
+
+
 def build(reports: Path, out: Path) -> list[dict]:
     if out.exists():
         shutil.rmtree(out)
@@ -155,9 +274,11 @@ def build(reports: Path, out: Path) -> list[dict]:
         target = out / m.name
         bundle(m / "logs" / "logs", target / "viewer", Path("reports") / m.name / "logs" / "logs")
         report = tables_scrollable(markdown.markdown((m / "report.md").read_text(encoding="utf-8"), extensions=["tables"]))
-        crumbs = (
-            f'<nav class="crumbs"><a href="../">All measurements</a> &rsaquo; {html.escape(when(m.name))} &middot; <a href="viewer/">Open the viewer</a></nav>'
-        )
+        has_maps = (m / "maps.json").exists()
+        if has_maps:
+            (target / "maps.html").write_text(maps_page(m.name, json.loads((m / "maps.json").read_text(encoding="utf-8"))), encoding="utf-8")
+        to_maps = ' &middot; <a href="maps.html">Maps</a>' if has_maps else ""
+        crumbs = f'<nav class="crumbs"><a href="../">All measurements</a> &rsaquo; {html.escape(when(m.name))} &middot; <a href="viewer/">Open the viewer</a>{to_maps}</nav>'
         (target / "report.html").write_text(page(f"{SITE}: report {m.name}", f"{crumbs}\n{report}", home="../"), encoding="utf-8")
         rows.append(summary(m))
     (out / "index.html").write_text(index(rows), encoding="utf-8")
