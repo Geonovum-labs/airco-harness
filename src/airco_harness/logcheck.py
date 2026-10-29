@@ -32,7 +32,16 @@ PATTERNS = {
 # Addresses that are part of the published standard or of tools, not personal data.
 # Public addresses in the sources and in Claude Code's own configuration, the git remote, and the fixed dummy token that
 # Inspect SWE gives Claude Code for the bridge to Inspect (inspect_swe/_claude_code/env.py); none of them is a secret.
-ALLOWED = {"imgeo@geonovum.nl", "bgt@minbzk.nl", "info@geonovum.nl", "git@github.com", "noreply@anthropic.com", "sk-ant-api03-DOq5tyLPrk9M4hPE"}
+# huren@geldersepoort.nl is the public leasing address of the office park of the dsfl test set, allowed for now.
+ALLOWED = {
+    "imgeo@geonovum.nl",
+    "bgt@minbzk.nl",
+    "info@geonovum.nl",
+    "git@github.com",
+    "noreply@anthropic.com",
+    "sk-ant-api03-DOq5tyLPrk9M4hPE",
+    "huren@geldersepoort.nl",
+}
 # Inspect writes the traceback of a retried provider error into the log, with the host path of its own
 # installation in the virtualenv. That names the home folder, but nothing else; a home path anywhere else is a finding.
 TRACEBACK_PATH = re.compile(r"^[^\s\"']*/\.venv/")
