@@ -287,6 +287,59 @@ function measurementPage() {
   return body;
 }
 
+// ---------- retrieved URLs: per host a button, its exact URLs in a popover ----------
+
+const urlPopover = h("div", {id: "urls", popover: "auto", role: "dialog", "aria-label": "Retrieved URLs"});
+document.body.append(urlPopover);
+
+const safeHref = url => { try { return ["http:", "https:"].includes(new URL(url).protocol) ? url : null; } catch { return null; } };
+const hostOf = url => { try { return new URL(url).host; } catch { return url; } };
+
+const CLASSES = {
+  authoritative: {label: "authoritative", note: "counts for source"},
+  non_authoritative: {label: "non-authoritative", note: "makes source 0"},
+  other: {label: "other", note: "does not count for source"},
+};
+const badge = cls => h("span", {class: `badge ${cls}`, text: (CLASSES[cls] || CLASSES.other).label});
+
+/** A URL with its origin muted, so the path and query that differ between URLs of one host stand out. */
+function urlText(url) {
+  try {
+    const u = new URL(url);
+    return [h("span", {class: "origin", text: u.origin}), h("span", {class: "path", text: `${u.pathname}${u.search}${u.hash}`})];
+  } catch {
+    return [h("span", {class: "path", text: url})];
+  }
+}
+
+/** The hosts a run retrieved from, each a button that lists the exact URLs; links only for http(s), as the URLs come from the logs. */
+function retrievedFrom(run) {
+  const list = run.retrieved || [];
+  if (!list.length) return h("span", {class: "muted", text: run.hosts || "nothing retrieved"});
+  const hosts = groupBy(list, x => hostOf(x.url));
+  return [...hosts].map(([host, items]) => {
+    const cls = items[0].class;
+    // The usual class, other, goes without a badge in the table; the popover always names it.
+    const button = h("button", {class: "hostbtn", type: "button", "aria-haspopup": "dialog", title: `${items.length} URL${items.length === 1 ? "" : "s"} from ${host}`},
+      h("span", {class: "host", text: host}), cls !== "other" ? badge(cls) : null, items.length > 1 ? h("span", {class: "count", text: `×${items.length}`}) : null);
+    button.addEventListener("click", () => {
+      const close = h("button", {class: "close", type: "button", "aria-label": "Close", text: "×", onclick: () => urlPopover.hidePopover()});
+      urlPopover.replaceChildren(
+        h("div", {class: "pophead"}, h("div", {}, h("b", {class: "host", text: host}), badge(cls)), close),
+        h("p", {class: "popnote", text: `${items.length} URL${items.length === 1 ? "" : "s"} retrieved with success · ${(CLASSES[cls] || CLASSES.other).note}`}),
+        h("ol", {class: "urls"}, items.map(x => h("li", {}, safeHref(x.url)
+          ? h("a", {href: x.url, target: "_blank", rel: "noopener noreferrer", title: "Open in a new tab"}, ...urlText(x.url), h("span", {class: "ext", "aria-hidden": "true", text: "↗"}))
+          : h("span", {}, ...urlText(x.url))))));
+      urlPopover.showPopover();
+      const r = button.getBoundingClientRect(), w = urlPopover.offsetWidth, ht = urlPopover.offsetHeight;
+      urlPopover.style.left = `${Math.max(8, Math.min(r.left, innerWidth - w - 8))}px`;
+      urlPopover.style.top = `${r.bottom + 6 + ht > innerHeight ? Math.max(8, r.top - ht - 6) : r.bottom + 6}px`;
+      close.focus();
+    });
+    return h("div", {class: "hostline"}, button);
+  });
+}
+
 function pairDetail(name, [model, agent], runs) {
   const ordered = [...runs].sort((a, b) => a.sample.localeCompare(b.sample) || a.epoch - b.epoch);
   const viewer = r => `viewer/#/logs/${encodeURIComponent(r.log)}/samples/sample/${encodeURIComponent(r.sample)}/${r.epoch}/`;
@@ -328,7 +381,7 @@ function pairDetail(name, [model, agent], runs) {
     h("td", {class: "nowrap", text: r.sample}), h("td", {class: "num", text: String(r.epoch)}),
     ...["correct", "complete", "invented", "source"].map(k => h("td", {class: "num", text: r.failed ? "error" : fmt(r[k], k === "invented" ? 0 : 2)})),
     h("td", {style: "min-width:14rem", text: r.limit ? `${r.explanation} (stopped at the ${r.limit} limit)` : r.explanation || ""}),
-    h("td", {class: "small"}, r.hosts ? r.hosts.split(", ").map(host => { const [name, cls] = host.split(" ("); return h("div", {}, name, " ", h("span", {class: "muted", text: `(${cls}`})); }) : "nothing retrieved"),
+    h("td", {class: "small"}, retrievedFrom(r)),
     h("td", {class: "num", text: money(r.cost)})));
   section.append(table(["", "Sample", "Epoch", "correct", "complete", "invented", "source", "Outcome", "Retrieved from", "Cost"], rows, [2, 3, 4, 5, 6, 9]));
   if (showOnMap) {

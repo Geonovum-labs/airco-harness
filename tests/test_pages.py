@@ -42,7 +42,14 @@ def test_site_has_an_overview_a_comparison_and_a_dashboard_and_viewer_per_measur
     ]
     data = strict(site / "data.json")
     [run] = data["runs"]
-    assert (run["m"], run["sample"], run["correct"], run["log"].endswith(".eval"), "map" in run) == ("2026-10-19T21-45-03", "imgeo-G04-03", 1.0, True, False)
+    assert (run["m"], run["sample"], run["correct"], run["log"].endswith(".eval"), "map" in run, run["retrieved"]) == (
+        "2026-10-19T21-45-03",
+        "imgeo-G04-03",
+        1.0,
+        True,
+        False,
+        [],
+    )
     assert data["measurements"][0]["limits"]["cost"] == [] and "commits" in data["measurements"][0]
     # The question as the agent got it, without the role that samples_df puts in front.
     assert data["measurements"][0]["questions"]["imgeo-G04-03"].startswith("Een openluchtzwembad")
@@ -102,6 +109,17 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     assert len(strict(site / entry["panden"])["features"]) == len(panden)
     assert "proj4leaflet" in (site / name / "report.html").read_text(encoding="utf-8")
     assert "leaflet" not in (site / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")
+
+
+def test_retrieved_urls_are_parsed_with_their_class_for_the_popover():
+    from airco_harness.sitedata import retrieved
+
+    text = "https://api.pdok.nl/kadaster/bag/ogc/v2/collections?f=json (authoritative); https://nominatim.openstreetmap.org/search?q=a;b (other)"
+    assert retrieved(text) == [
+        {"url": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections?f=json", "class": "authoritative"},
+        {"url": "https://nominatim.openstreetmap.org/search?q=a;b", "class": "other"},
+    ]
+    assert retrieved("") == retrieved(None) == []
 
 
 def test_a_question_loses_only_the_role_of_a_single_user_message():

@@ -70,6 +70,15 @@ def questions(log_dir: Path) -> dict[str, str]:
     return {sample: question(text) for sample, text in df.drop_duplicates("id")[["id", "input"]].itertuples(index=False)}
 
 
+RETRIEVAL = re.compile(r"(\S+) \((authoritative|non_authoritative|other)\)(?:; |$)")
+
+
+def retrieved(text: object) -> list[dict]:
+    """The URLs a run retrieved with success and their class for source, from report's `url (class); url (class)`.
+    A URL holds no whitespace, so the separator cannot occur inside one."""
+    return [{"url": url, "class": cls} for url, cls in RETRIEVAL.findall(str(text or ""))]
+
+
 def reference_file(reference: str) -> str:
     """Where the site keeps the panden of a reference extract, relative to the site root."""
     return f"data/panden/{reference.replace('/', '__')}"
@@ -102,7 +111,7 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     on_map = {(r["model"], r["agent"], r["variant"], r["sample"], r["epoch"]): r for r in shown["runs"]}
     runs = []
     for row in table.to_dict("records"):
-        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}}
+        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, "retrieved": retrieved(row["retrieved"])}
         found = on_map.get((row["model"], row["agent"], row["variant"], row["sample"], row["epoch"]))
         if found:
             run["map"] = {k: found[k] for k in ("shown", "missing", "unmatched")}
