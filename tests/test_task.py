@@ -60,7 +60,8 @@ def test_unknown_variant_agent_sample_or_test_set():
     assert [s.id for s in airco(ids=" imgeo-G04-03 ,").dataset] == ["imgeo-G04-03"]
     with pytest.raises(ValueError, match="unknown sample ids: imgeo-G99-01"):
         airco(ids="imgeo-G04-03,imgeo-G99-01")
-    with pytest.raises(ValueError, match="unknown test set 'nl-sbb'; choose from imgeo"):
+    assert [s.id for s in airco(testset="dsfl").dataset] == ["dsfl-01"]
+    with pytest.raises(ValueError, match="unknown test set 'nl-sbb'; choose from dsfl, imgeo"):
         airco(testset="nl-sbb")
 
 

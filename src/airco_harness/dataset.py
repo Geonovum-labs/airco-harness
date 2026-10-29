@@ -50,7 +50,7 @@ def load(testset: str = DEFAULT_TESTSET, ids: list[str] | None = None) -> Memory
             id=r["id"],
             input=r["input"],
             target=f"{testset}/samples/{r['id']}/expected.json",
-            metadata={"defect": r["defect"], "task": r["task"], "standard": r["standard"], **r["metadata"]},
+            metadata={"defect": r.get("defect"), "task": r["task"], "standard": r["standard"], **r["metadata"]},
         )
         for r in rows
         if ids is None or r["id"] in ids

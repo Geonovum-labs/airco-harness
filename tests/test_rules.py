@@ -8,11 +8,12 @@ import pytest
 from validators import rules
 from validators.rules import Case
 
-SAMPLES = {p.name for p in (rules.TESTSETS_DIR / "imgeo" / "samples").iterdir()}
+TARGETS = {p.parent.name: p.relative_to(rules.TESTSETS_DIR).as_posix() for p in rules.TESTSETS_DIR.glob("*/samples/*/expected.json")}
+SAMPLES = set(TARGETS)
 
 
 def score(sample_id: str, answer: str) -> dict:
-    return rules.assess(answer, Case.load(f"imgeo/samples/{sample_id}/expected.json")).score_value()
+    return rules.assess(answer, Case.load(TARGETS[sample_id])).score_value()
 
 
 def full(correct=1, complete=1.0, invented=0, parseable=1) -> dict:
@@ -32,6 +33,12 @@ CASES = [
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk", "type": "zwembad"}), full(0, 0.5, 1)),
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk"}), full(0, 0.0, 0, 0)),
     ("imgeo-G04-03", "An open-air pool is a Waterdeel.", full(0, 0.0, 0, 0)),
+    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A+", "floor_area_m2": 6921}), full()),
+    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "a+", "floor_area_m2": 6921.0}, fenced=False), full()),
+    # The area of the thermal zone in EP-Online is not the floor area.
+    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A+", "floor_area_m2": 6630.96}), full(0, 0.6667, 0)),
+    ("dsfl-01", as_json({"year_built": 2000, "energy_label": "A", "floor_area_m2": 7000}), full(0, 0.0, 0)),
+    ("dsfl-01", as_json({"year_built": "1999", "energy_label": "A+", "floor_area_m2": 6921}), full(0, 0.0, 0, 0)),
 ]
 
 
@@ -46,7 +53,7 @@ def test_every_sample_has_a_known_good_answer():
 
 def test_rules_are_repeatable():
     sample_id, answer, _ = CASES[2]
-    case = Case.load(f"imgeo/samples/{sample_id}/expected.json")
+    case = Case.load(TARGETS[sample_id])
     first, second = rules.assess(answer, case), rules.assess(answer, case)
     assert (first.score_value(), first.explanation, first.details) == (second.score_value(), second.explanation, second.details)
 

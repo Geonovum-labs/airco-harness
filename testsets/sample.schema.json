@@ -3,7 +3,7 @@
   "$id": "airco-harness/testsets/sample",
   "title": "sample.json of a sample in testsets/<name>/samples/<id>/; the folder name is the id",
   "type": "object",
-  "required": ["defect", "task", "standard", "input", "metadata"],
+  "required": ["task", "standard", "input", "metadata"],
   "additionalProperties": false,
   "properties": {
     "defect": {"type": "string", "pattern": "^G\\d{1,2}$"},

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "year_built": {
+      "type": "integer"
+    },
+    "energy_label": {
+      "type": "string"
+    },
+    "floor_area_m2": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "year_built",
+    "energy_label",
+    "floor_area_m2"
+  ],
+  "additionalProperties": true
+}

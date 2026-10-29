@@ -20,6 +20,20 @@ def test_classify(url, expected):
     assert source_check.classify(url, "imgeo-2.2") == expected
 
 
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("https://service.pdok.nl/lv/bag/wfs/v2_0?service=WFS&request=GetFeature&typeNames=bag:verblijfsobject", "authoritative"),
+        ("https://bagviewer.kadaster.nl/lvbag/bag-viewer/?objectId=0202010000417964", "authoritative"),
+        ("https://www.ep-online.nl/Energylabel/Search", "authoritative"),
+        ("https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=6842CV%208", "other"),
+        ("https://www.funda.nl/", "other"),
+    ],
+)
+def test_classify_dsfl(url, expected):
+    assert source_check.classify(url, "dsfl") == expected
+
+
 def test_assess_needs_an_authoritative_hit_and_no_other_version():
     ok = {"url": "https://docs.geostandaarden.nl/imgeo/catalogus/bgt/", "status": 200}
     old = {"url": "https://geonovum.github.io/IMGeo-dev/", "status": 200}

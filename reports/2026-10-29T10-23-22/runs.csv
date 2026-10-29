@@ -1,0 +1,16 @@
+model,variant,agent,sample,epoch,task,defect,failed,limit,reason,tool_calls,tokens,tokens_input,tokens_output,tokens_cache_read,tokens_cache_write,tokens_reasoning,total_time_s,working_time_s,cost,retrieved,correct,complete,invented,parseable,source
+anthropic/claude-haiku-5-5,0,inspect,dsfl-01,1,lookup,,False,,,2,33840,6,826,14030,18978,598,5.905,5.896,0.0029261499999999998,,1.0,1.0,0.0,1.0,0.0
+anthropic/claude-haiku-5-5,0,model,dsfl-01,1,lookup,,False,,,0,501,91,410,0,0,292,3.247,3.24,0.0002141,,0.0,0.0,0.0,0.0,0.0
+anthropic/claude-haiku-5-5,0,claude-code,dsfl-01,1,lookup,,False,,,3,103920,16,2754,50841,50309,1199,38.02,37.951,0.008175635,https://www.google.com/search?q=Mr.+E.N.+van+Kleffensstraat+8+Arnhem (other); https://allecijfers.nl/weg/mr-e-n-van-kleffensstraat-arnhem/ (other),1.0,1.0,0.0,1.0,0.0
+anthropic/claude-haiku-5-5,0,inspect,dsfl-01,2,lookup,,False,,,2,35042,6,809,14030,20197,577,7.65,7.641,0.003070025,,1.0,1.0,0.0,1.0,0.0
+anthropic/claude-haiku-5-5,0,model,dsfl-01,2,lookup,,False,,,0,612,91,521,0,0,376,3.733,3.725,0.0002696,,0.0,0.0,0.0,0.0,0.0
+anthropic/claude-haiku-5-5,0,claude-code,dsfl-01,2,lookup,,False,,,2,65761,308,2420,52087,10946,1153,36.784,33.053,0.0031299199999999996,https://bagviewer.kadaster.nl/lvbag/bag-viewer/?zoekterm=Mr.%20E.N.%20van%20Kleffensstraat%208%20Arnhem (authoritative),0.0,0.0,0.0,0.0,1.0
+anthropic/claude-haiku-5-5,0,inspect,dsfl-01,3,lookup,,False,,,2,33846,6,782,14030,19028,552,5.796,5.786,0.0029104,,1.0,1.0,0.0,1.0,0.0
+anthropic/claude-haiku-5-5,0,model,dsfl-01,3,lookup,,False,,,0,499,91,408,0,0,296,3.236,3.228,0.0002131,,0.0,0.0,0.0,0.0,0.0
+anthropic/claude-haiku-5-5,0,claude-code,dsfl-01,3,lookup,,False,,,1,65594,10,2051,52210,11323,1075,38.576,31.451,0.002963975,,1.0,1.0,0.0,1.0,0.0
+mistral/mistral-small-2603,0,inspect,dsfl-01,1,lookup,,False,,,3,15749,1103,148,0,0,0,4.039,4.021,0.00025425,,0.0,0.0,0.0,0.0,0.0
+mistral/mistral-small-2603,0,model,dsfl-01,1,lookup,,False,,,0,95,64,31,0,0,0,0.832,0.635,2.8199999999999998e-05,,0.0,0.0,0.0,0.0,0.0
+mistral/mistral-small-2603,0,inspect,dsfl-01,2,lookup,,False,,,3,32044,17353,207,0,0,0,6.054,6.03,0.0027271500000000002,,0.0,0.0,0.0,0.0,0.0
+mistral/mistral-small-2603,0,model,dsfl-01,2,lookup,,False,,,0,95,64,31,0,0,0,0.714,0.512,2.8199999999999998e-05,,0.0,0.0,0.0,0.0,0.0
+mistral/mistral-small-2603,0,inspect,dsfl-01,3,lookup,,False,,,4,37799,20480,195,0,0,0,9.73,9.696,0.003189,https://www.postcode.nl/6842CV/8 (other); https://allecijfers.nl/weg/mr-e-n-van-kleffensstraat-arnhem/ (other),1.0,1.0,0.0,1.0,0.0
+mistral/mistral-small-2603,0,model,dsfl-01,3,lookup,,False,,,0,118,64,54,0,0,0,0.998,0.794,4.2000000000000004e-05,,0.0,0.0,0.0,0.0,0.0

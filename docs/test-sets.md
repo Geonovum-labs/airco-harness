@@ -13,13 +13,13 @@ A test set is a folder under `testsets/` with questions for one purpose. Each qu
 | `testsets/sample.schema.json` | JSON Schema of a sample, shared by all test sets |
 | `testsets/sources-allowlist.json` | Per standard, which fetched URLs count as an authoritative source |
 
-The sample id is `<name>-G<nn>-<nn>`, where `<name>` is the short name of the standard, such as `imgeo-G04-03`. `sample.json` has these fields:
+The sample id is `<name>-G<nn>-<nn>`, where `<name>` is the short name of the standard, such as `imgeo-G04-03`. A sample without a defect has the id `<name>-<nn>`, such as `dsfl-01`. `sample.json` has these fields:
 
 | Field | Content |
 | --- | --- |
-| `defect` | `G1` to `G13`, a publication defect from the test set note |
+| `defect` | Optional. `G1` to `G13`, a publication defect from the IMGeo test set note |
 | `task` | Task type, one of the values in `sample.schema.json`, such as `lookup` or `classify` |
-| `standard` | Standard with version, such as `imgeo-2.2`. The allowlist for `source` uses the same name |
+| `standard` | Standard with version, such as `imgeo-2.2`, or the name of a group of sources, such as `dsfl`. The allowlist for `source` uses the same name |
 | `input` | The question to the agent, with the requested answer format. It may be in Dutch, and then so are the answer keys |
 | `metadata.status` | `draft`, `approved` or `withdrawn` |
 | `metadata.hypothesis` | Why the question may fail |
@@ -114,6 +114,6 @@ Make a new test set when questions serve another purpose than an existing set, s
 	{"purpose": "...", "version": "0.1", "date": "2026-11-02"}
 	```
 
-2. Add samples as above. To reuse a sample of another test set, copy its folder. Every sample names its standard; for now that must be `imgeo-2.2`, because the publication forms and the reference model exist only for IMGeo. [Architecture](architecture.md) lists what another standard needs.
+2. Add samples as above. To reuse a sample of another test set, copy its folder. Every sample names its standard, and the standard needs a section in `testsets/sources-allowlist.json`. The reference model exists only for IMGeo, so a sample of another standard has no `term_fields`; [Architecture](architecture.md) lists what another standard needs.
 
 3. Run the tests and then the test set with `-T testset=<name>` or `--testset <name>`.

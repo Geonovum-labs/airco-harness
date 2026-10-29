@@ -14,5 +14,17 @@
       "^https?://(github\\.com|raw\\.githubusercontent\\.com)/Geonovum/IMGeo-dev/",
       "^https?://docs\\.geostandaarden\\.nl/imgeo/def-im-(BGT|IMGeo)-(?!20200701)"
     ]
+  },
+  "dsfl": {
+    "note": "The registrations the dsfl questions need: the BAG and EP-Online. A retrieval from either counts; source does not check that the agent used both.",
+    "authoritative": [
+      "^https?://service\\.pdok\\.nl/lv/bag/",
+      "^https?://api\\.pdok\\.nl/(lv|kadaster)/bag/",
+      "^https?://bagviewer\\.kadaster\\.nl/",
+      "^https?://api\\.bag\\.kadaster\\.nl/",
+      "^https?://bag\\.basisregistraties\\.overheid\\.nl/",
+      "^https?://(www\\.|public\\.)?ep-online\\.nl/"
+    ],
+    "non_authoritative": []
   }
 }

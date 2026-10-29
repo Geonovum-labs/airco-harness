@@ -1,0 +1,12 @@
+{
+  "task": "lookup",
+  "standard": "dsfl",
+  "input": "I work at Mr. E.N. van Kleffensstraat 8 in Arnhem. What year was this building built? What's the energy label and floor area? Answer with only a JSON object with the keys \"year_built\", \"energy_label\" and \"floor_area_m2\".",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The answer needs two registrations: the BAG for the building year and floor area, EP-Online for the energy label. A model without tools can only guess. EP-Online shows a label only after a POST of its search form, which a fetch by GET cannot do, but sites such as kadastralekaart.com republish both registrations and turn up in web search, so source stays 0 even when the answer is right",
+    "expected_variant": 1,
+    "location": "BAG verblijfsobject 0202010000417964 in pand 0202100000219642; EP-Online registration for that verblijfsobject",
+    "absence": false
+  }
+}

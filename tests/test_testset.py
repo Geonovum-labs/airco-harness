@@ -16,7 +16,7 @@ RULES = set(rules.RULES)
 
 
 def test_test_sets_are_the_folders_with_a_manifest():
-    assert NAMES == ["imgeo"]
+    assert NAMES == ["dsfl", "imgeo"]
 
 
 @pytest.mark.parametrize("name", NAMES)
@@ -27,8 +27,8 @@ def test_every_test_set_states_purpose_version_and_date(name):
 
 @pytest.mark.parametrize("folder", FOLDERS, ids=IDS)
 def test_sample_folder_is_named_by_its_id_and_holds_a_valid_sample(folder):
-    assert re.fullmatch(r"[a-z0-9.-]+-G\d{2}-\d{2}", folder.name)
     sample = json.loads((folder / "sample.json").read_text(encoding="utf-8"))
+    assert re.fullmatch(r"[a-z0-9.-]+-G\d{2}-\d{2}" if "defect" in sample else r"[a-z0-9.-]+-\d{2}", folder.name)
     assert list(validators.validator_for(SAMPLE_SCHEMA)(SAMPLE_SCHEMA).iter_errors(sample)) == []
 
 

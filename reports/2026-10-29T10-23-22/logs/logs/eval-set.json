@@ -1,0 +1,80 @@
+{
+  "eval_set_id": "fNZZdtoaknRs8X5xHHDvnE",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "eNkgqwp4F87BVf3ECYXEvP",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "model",
+        "ids": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 0.5
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "9riet5VsmgDTkdyGknWUnA",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "model",
+        "ids": null,
+        "model": "mistral/mistral-small-2603",
+        "cost_limit": 0.5
+      },
+      "model": "mistral/mistral-small-2603",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "acDoN3zGgx34tXbFNk2Ekd",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 0.5
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "mzJgkeS6mzX7ECXrf4feUo",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "model": "mistral/mistral-small-2603",
+        "cost_limit": 0.5
+      },
+      "model": "mistral/mistral-small-2603",
+      "model_args": {},
+      "sequence": 3
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "A2ZhJJZWNWyUUW788Tw4qB",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 0.5
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 4
+    }
+  ]
+}
