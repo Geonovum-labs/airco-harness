@@ -65,3 +65,11 @@ def test_home_path_in_a_traceback_of_the_virtualenv_is_not_a_finding(tmp_path):
     traceback = 'Traceback (most recent call last):\n  File "/Users/someone/work/airco-harness/.venv/lib/python3.15/site-packages/inspect_ai/x.py", line 1'
     (tmp_path / "log.json").write_text(json.dumps({"traceback": traceback, "note": "see /Users/someone/notes.txt"}), encoding="utf-8")
     assert hits(tmp_path) == ["home path /Users/someone"]
+
+
+def test_google_key_in_a_map_url_from_a_web_search_is_not_a_finding(tmp_path):
+    """A provider's web search returns the thumbnail of a page that embeds a Google map, with the site's public browser key."""
+    site_key, leaked_key = "AIza" + "B" * 35, "AIza" + "C" * 35
+    thumbnail = f"https://maps.google.com/maps/api/staticmap?center=51.95%2C5.87&amp;zoom=10&amp;sensor=false&amp;key={site_key}"
+    (tmp_path / "log.json").write_text(json.dumps({"thumbnail": thumbnail, "leak": f"GOOGLE_KEY={leaked_key}"}), encoding="utf-8")
+    assert hits(tmp_path) == [f"api key {leaked_key}"]

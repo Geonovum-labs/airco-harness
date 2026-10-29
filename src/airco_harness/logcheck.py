@@ -35,11 +35,18 @@ ALLOWED = {"imgeo@geonovum.nl", "bgt@minbzk.nl", "info@geonovum.nl", "git@github
 # Inspect writes the traceback of a retried provider error into the log, with the host path of its own
 # installation in the virtualenv. That names the home folder, but nothing else; a home path anywhere else is a finding.
 TRACEBACK_PATH = re.compile(r"^[^\s\"']*/\.venv/")
+# A web page that embeds a Google map carries the site's browser key in the map URL, and a provider's web search
+# returns that URL with the result; the key is the site's and public by design. A Google key anywhere else is a finding.
+MAPS_URL_KEY = re.compile(r"maps\.google(?:apis)?\.com/maps/api/[^\s\"']*[?&;]key=$")
 
 
 def _allowed(match: re.Match, text: str) -> bool:
     value = match.group(0)
-    return value in ALLOWED or bool(TRACEBACK_PATH.match(text[match.end() : match.end() + 200]))
+    return (
+        value in ALLOWED
+        or bool(TRACEBACK_PATH.match(text[match.end() : match.end() + 200]))
+        or bool(MAPS_URL_KEY.search(text[max(0, match.start() - 300) : match.start()]))
+    )
 
 
 TRIVIAL = {"", "ollama", "dummy", "none"}
