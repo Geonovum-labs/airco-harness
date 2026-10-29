@@ -69,7 +69,7 @@ The terms come from the tooling note. The code and the documentation use them in
 
 ## Background
 
-The decisions come from four working notes by ModelDesk, dated 9 October 2026, in Dutch and not in this repo. They are the tooling note (requirements C1 to C12, acceptance conditions), the approach note (setups, sprint plan), the test set note (variants, task types, sample schema, defects), and the cost note (models, analysis plan).
+The decisions come from four working notes of the project, dated 9 October 2026, in Dutch and not in this repo. They are the tooling note (requirements C1 to C12, acceptance conditions), the approach note (setups, sprint plan), the test set note (variants, task types, sample schema, defects), and the cost note (models, analysis plan).
 
 ## License
 

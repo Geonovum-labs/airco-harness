@@ -6,4 +6,4 @@ Questions for the Dataspace Fysieke Leefomgeving. Each question asks for facts a
 | --- | --- | --- |
 | `dsfl-01` | Building year, energy label and floor area of an office in Arnhem | BAG, EP-Online |
 
-The samples have `status: draft`. ModelDesk retrieved the expected answers from the live registrations on the date in `expected.json`; the registrations change, so the values are checked again before approval. The samples name no defect, because the defects G1 to G13 belong to the IMGeo test set note. The version is in `testset.json`.
+The samples have `status: draft`. The expected answers come from the live registrations on the date in `expected.json`. The registrations change, so the values are checked again before approval. The samples name no defect, because the defects G1 to G13 belong to the IMGeo test set note. The version is in `testset.json`.

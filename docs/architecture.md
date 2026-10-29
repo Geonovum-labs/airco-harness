@@ -31,7 +31,7 @@ What differs is the agent, because the baseline is what a user gets from the age
 | `inspect` | Inspect's own agent, with Inspect's prompt, web search and fetch. The same loop for every model, so a model that Claude Code is not built for still gets a fair agent | 1 |
 | `claude-code` | Claude Code, with its own system prompt and tools, so it can search the web and read the catalog as it would for a user. Anthropic models only, because it is built for them | 2 |
 
-Earlier versions of the harness had more: variant 0a, where the harness handed the agent the URLs of the catalogs and a `fetch` tool with a recording for repeat runs, and two trial forms (the catalogs as markdown per chapter, and the MIM model as MIM-XML and SKOS). They were taken out on 20 October 2026, because the forms are not defined yet and handing the URLs is already an intervention. They are archived in the working notes of ModelDesk, outside this repo.
+Earlier versions of the harness had more: variant 0a, where the harness handed the agent the URLs of the catalogs and a `fetch` tool with a recording for repeat runs, and two trial forms (the catalogs as markdown per chapter, and the MIM model as MIM-XML and SKOS). They were taken out on 20 October 2026, because the forms are not defined yet and handing the URLs is already an intervention. They are archived in the project's working notes, outside this repo.
 
 ## Why the harness has no system prompt of its own
 
