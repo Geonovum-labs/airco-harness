@@ -129,3 +129,46 @@ def test_a_question_loses_only_the_role_of_a_single_user_message():
     conversation = "system:\nJe bent een assistent.\n\nuser:\nVind de gebouwen.\n"
     assert question(conversation) == conversation.strip()
     assert question(None) == ""
+
+
+def test_a_failed_retrieval_reaches_the_site_with_its_http_status(tmp_path):
+    """The agent fetches a page that is gone and one it may not read; the site lists both with their status."""
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(404 if self.path == "/gone" else 401)
+            self.end_headers()
+
+        def log_message(self, *args):
+            pass
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{server.server_address[1]}"
+    steps = [
+        ModelOutput.for_tool_call("mockllm/model", "fetch", {"url": f"{base}/gone"}),
+        ModelOutput.for_tool_call("mockllm/model", "fetch", {"url": f"{base}/secret"}),
+        ModelOutput.for_tool_call("mockllm/model", "fetch", {"url": f"{base}/gone"}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": GOOD}),
+    ]
+    log_dir = tmp_path / "reports" / "2026-10-30T09-00-00" / "logs" / "logs"
+    try:
+        eval(
+            airco(agent="inspect", ids="imgeo-G04-03", cost_limit=None),
+            model=get_model("mockllm/model", custom_outputs=steps),
+            log_dir=str(log_dir),
+            display="none",
+        )
+    finally:
+        server.shutdown()
+
+    pages.build(tmp_path / "reports", tmp_path / "site")
+
+    [run] = strict(tmp_path / "site" / "data.json")["runs"]
+    assert [(e["url"].rsplit("/", 1)[-1], e["status"], e["error"], e["times"]) for e in run["errors"]] == [
+        ("gone", 404, "HTTP 404", 2),
+        ("secret", 401, "HTTP 401", 1),
+    ]
+    assert run["retrieved"] == []

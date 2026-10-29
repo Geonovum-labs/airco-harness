@@ -302,34 +302,60 @@ const CLASSES = {
 };
 const badge = cls => h("span", {class: `badge ${cls}`, text: (CLASSES[cls] || CLASSES.other).label});
 
+/** Readable text for an encoded URL part (a SPARQL query, a filter); the link keeps the exact URL. */
+const readable = text => { try { return decodeURIComponent(text.replace(/\+/g, " ")); } catch { return text; } };
+
 /** A URL with its origin muted, so the path and query that differ between URLs of one host stand out. */
 function urlText(url) {
   try {
     const u = new URL(url);
-    return [h("span", {class: "origin", text: u.origin}), h("span", {class: "path", text: `${u.pathname}${u.search}${u.hash}`})];
+    return [h("span", {class: "origin", text: u.origin}), h("span", {class: "path", text: readable(`${u.pathname}${u.search}${u.hash}`)})];
   } catch {
     return [h("span", {class: "path", text: url})];
   }
 }
 
-/** The hosts a run retrieved from, each a button that lists the exact URLs; links only for http(s), as the URLs come from the logs. */
+/** A short name for why a retrieval failed: its HTTP status, or the kind of error. */
+function failure(x) {
+  if (x.status) return String(x.status);
+  if (/connect/i.test(x.error)) return "no connection";
+  if (/timeout/i.test(x.error)) return "timeout";
+  if (/^exit code/i.test(x.error)) return "command failed";
+  return "failed";
+}
+
+function urlItem(x) {
+  return safeHref(x.url)
+    ? h("a", {href: x.url, target: "_blank", rel: "noopener noreferrer", title: "Open in a new tab"}, ...urlText(x.url), h("span", {class: "ext", "aria-hidden": "true", text: "↗"}))
+    : h("span", {}, ...urlText(x.url));
+}
+
+/** The hosts a run retrieved from or failed to, each a button that lists the exact URLs; links only for http(s), as the URLs come from the logs. */
 function retrievedFrom(run) {
-  const list = run.retrieved || [];
-  if (!list.length) return h("span", {class: "muted", text: run.hosts || "nothing retrieved"});
-  const hosts = groupBy(list, x => hostOf(x.url));
-  return [...hosts].map(([host, items]) => {
-    const cls = items[0].class;
+  const ok = run.retrieved || [], failed = run.errors || [];
+  if (!ok.length && !failed.length) return h("span", {class: "muted", text: run.hosts || "nothing retrieved"});
+  const hosts = new Map();
+  for (const x of ok) { const k = hostOf(x.url); if (!hosts.has(k)) hosts.set(k, {ok: [], failed: []}); hosts.get(k).ok.push(x); }
+  for (const x of failed) { const k = hostOf(x.url); if (!hosts.has(k)) hosts.set(k, {ok: [], failed: []}); hosts.get(k).failed.push(x); }
+  return [...hosts].map(([host, {ok: good, failed: bad}]) => {
+    const cls = good.length ? good[0].class : null;
+    const kinds = [...new Set(bad.map(failure))];
+    const failPill = bad.length ? h("span", {class: "badge failed", text: kinds.length === 1 ? (bad.length > 1 ? `${kinds[0]} ×${bad.length}` : kinds[0]) : `${bad.length} failed`}) : null;
     // The usual class, other, goes without a badge in the table; the popover always names it.
-    const button = h("button", {class: "hostbtn", type: "button", "aria-haspopup": "dialog", title: `${items.length} URL${items.length === 1 ? "" : "s"} from ${host}`},
-      h("span", {class: "host", text: host}), cls !== "other" ? badge(cls) : null, items.length > 1 ? h("span", {class: "count", text: `×${items.length}`}) : null);
+    const button = h("button", {class: "hostbtn", type: "button", "aria-haspopup": "dialog",
+      title: [good.length ? `${good.length} URL${good.length === 1 ? "" : "s"} retrieved` : null, bad.length ? `${bad.length} failed` : null].filter(Boolean).join(", ") + ` from ${host}`},
+      h("span", {class: "host", text: host}), cls && cls !== "other" ? badge(cls) : null, good.length > 1 ? h("span", {class: "count", text: `×${good.length}`}) : null, failPill);
     button.addEventListener("click", () => {
       const close = h("button", {class: "close", type: "button", "aria-label": "Close", text: "×", onclick: () => urlPopover.hidePopover()});
-      urlPopover.replaceChildren(
-        h("div", {class: "pophead"}, h("div", {}, h("b", {class: "host", text: host}), badge(cls)), close),
-        h("p", {class: "popnote", text: `${items.length} URL${items.length === 1 ? "" : "s"} retrieved with success · ${(CLASSES[cls] || CLASSES.other).note}`}),
-        h("ol", {class: "urls"}, items.map(x => h("li", {}, safeHref(x.url)
-          ? h("a", {href: x.url, target: "_blank", rel: "noopener noreferrer", title: "Open in a new tab"}, ...urlText(x.url), h("span", {class: "ext", "aria-hidden": "true", text: "↗"}))
-          : h("span", {}, ...urlText(x.url))))));
+      const parts = [h("div", {class: "pophead"}, h("div", {}, h("b", {class: "host", text: host}), cls ? badge(cls) : null), close)];
+      if (good.length) parts.push(h("p", {class: "popnote", text: `${good.length} URL${good.length === 1 ? "" : "s"} retrieved with success · ${(CLASSES[cls] || CLASSES.other).note}`}),
+        h("ol", {class: "urls"}, good.map(x => h("li", {}, urlItem(x)))));
+      if (bad.length) parts.push(h("p", {class: "popnote failed", text: `${bad.length} URL${bad.length === 1 ? "" : "s"} failed · does not count for source`}),
+        h("ol", {class: "urls"}, bad.map(x => h("li", {class: "fail"},
+          h("span", {class: "badge failed", text: failure(x)}),
+          h("div", {class: "failurl"}, urlItem(x), x.error && x.error !== `HTTP ${x.status}` ? h("div", {class: "errmsg", text: x.error}) : null,
+            x.times > 1 ? h("div", {class: "errmsg", text: `${x.times} times`}) : null)))));
+      urlPopover.replaceChildren(...parts);
       urlPopover.showPopover();
       const r = button.getBoundingClientRect(), w = urlPopover.offsetWidth, ht = urlPopover.offsetHeight;
       urlPopover.style.left = `${Math.max(8, Math.min(r.left, innerWidth - w - 8))}px`;

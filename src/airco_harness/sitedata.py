@@ -16,10 +16,11 @@ from pathlib import Path
 
 import pandas as pd
 from inspect_ai.analysis import SampleSummary, samples_df
+from inspect_ai.log import read_eval_log
 
 from validators import sources
 
-from . import report
+from . import report, scorers
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
 RUN_FIELDS = [
@@ -79,6 +80,24 @@ def retrieved(text: object) -> list[dict]:
     return [{"url": url, "class": cls} for url, cls in RETRIEVAL.findall(str(text or ""))]
 
 
+def failures(log_dir: Path) -> dict[tuple[str, str, int], list[dict]]:
+    """Per run (log file, sample, epoch), the retrievals that failed: URL, HTTP status when the tool named one, and the
+    first line of the error. Read from the conversation, so a log scored before the status was kept shows it too."""
+    out: dict[tuple[str, str, int], list[dict]] = {}
+    for path in sorted(log_dir.glob("*.eval")):
+        for sample in read_eval_log(str(path)).samples or []:
+            seen: dict[tuple, dict] = {}
+            for r in scorers.retrievals(sample.messages):
+                if 200 <= r["status"] < 300:
+                    continue
+                error = (r.get("error") or "").strip().splitlines()[0][:200] if r.get("error") else ""
+                key = (r["url"], r["status"], error)
+                seen.setdefault(key, {"url": r["url"], "status": r["status"] or None, "error": error, "tool": r["tool"], "times": 0})["times"] += 1
+            if seen:
+                out[(path.name, str(sample.id), sample.epoch)] = list(seen.values())
+    return out
+
+
 def reference_file(reference: str) -> str:
     """Where the site keeps the panden of a reference extract, relative to the site root."""
     return f"data/panden/{reference.replace('/', '__')}"
@@ -109,9 +128,11 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     table = report.runs(str(log_dir))
     shown = report.maps(str(log_dir)) or {"samples": {}, "runs": []}
     on_map = {(r["model"], r["agent"], r["variant"], r["sample"], r["epoch"]): r for r in shown["runs"]}
+    failed = failures(log_dir)
     runs = []
     for row in table.to_dict("records"):
-        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, "retrieved": retrieved(row["retrieved"])}
+        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, "retrieved": retrieved(row["retrieved"]),
+               "errors": failed.get((row["log"], row["sample"], row["epoch"]), [])}  # fmt: skip
         found = on_map.get((row["model"], row["agent"], row["variant"], row["sample"], row["epoch"]))
         if found:
             run["map"] = {k: found[k] for k in ("shown", "missing", "unmatched")}

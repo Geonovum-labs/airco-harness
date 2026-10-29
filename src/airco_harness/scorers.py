@@ -17,7 +17,7 @@ from validators import rules, source_check
 
 
 def tool_uses(messages: list[ChatMessage]) -> list[dict]:
-    """Every tool use in the conversation, in order, with its arguments and whether it failed.
+    """Every tool use in the conversation, in order, with its arguments, whether it failed and the error it gave.
 
     Two kinds: a tool call the agent makes (fetch, Claude Code's WebFetch), answered by a tool
     message; and a tool the model's provider runs on its own servers (Anthropic's and Mistral's
@@ -31,11 +31,20 @@ def tool_uses(messages: list[ChatMessage]) -> list[dict]:
             continue
         for call in m.tool_calls or []:
             result = results.get(call.id)
-            out.append({"tool": call.function, "arguments": call.arguments or {}, "failed": result is None or result.error is not None, "server": False})
+            error = "no answer" if result is None else result.error.message if result.error is not None else None
+            out.append({"tool": call.function, "arguments": call.arguments or {}, "failed": error is not None, "error": error, "server": False})
         if not isinstance(m.content, str):
             for block in m.content:
                 if isinstance(block, ContentToolUse):
-                    out.append({"tool": block.name, "arguments": _arguments(block), "failed": bool(block.error), "server": True})
+                    out.append(
+                        {
+                            "tool": block.name,
+                            "arguments": _arguments(block),
+                            "failed": bool(block.error),
+                            "error": str(block.error) if block.error else None,
+                            "server": True,
+                        }
+                    )
     return out
 
 
@@ -71,10 +80,27 @@ def _urls(use: dict) -> list[str]:
     return [u.rstrip(".,;:)]}") for u in URL_IN_CODE.findall(code)]
 
 
+HTTP_STATUS = re.compile(r"\b(?:HTTP|status code)[: ]+([1-5]\d\d)\b")
+
+
+def _status(use: dict) -> int:
+    """200 for a retrieval that worked; for one that failed, the HTTP status its error names (fetch writes "HTTP 404"), else 0.
+    A shell command names no status per URL, and a curl that got a 404 still exits 0, so it counts as worked."""
+    if not use["failed"]:
+        return 200
+    found = HTTP_STATUS.search(use["error"] or "") if use["tool"] not in ("Bash", "code_execution") else None
+    return int(found[1]) if found else 0
+
+
 def retrievals(messages: list[ChatMessage]) -> list[dict]:
     """Every web retrieval in the conversation: a tool use with a url argument, or a URL in a shell
-    command or code that ran, as when an agent uses curl. A search is not a retrieval."""
-    return [{"tool": use["tool"], "url": url, "status": 0 if use["failed"] else 200} for use in tool_uses(messages) for url in _urls(use)]
+    command or code that ran, as when an agent uses curl. A search is not a retrieval.
+    A failed retrieval also carries its error, and its HTTP status when the tool gave one."""
+    return [
+        {"tool": use["tool"], "url": url, "status": _status(use), **({"error": use["error"]} if use["failed"] else {})}
+        for use in tool_uses(messages)
+        for url in _urls(use)
+    ]
 
 
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})

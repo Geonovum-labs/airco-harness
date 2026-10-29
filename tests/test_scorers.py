@@ -109,8 +109,8 @@ def test_retrievals_are_the_url_tool_calls_with_their_outcome():
     )
     assert retrievals(messages) == [
         {"tool": "WebFetch", "url": page, "status": 200},
-        {"tool": "WebFetch", "url": "https://example.org/missing", "status": 0},
-        {"tool": "WebFetch", "url": "https://example.org/unanswered", "status": 0},
+        {"tool": "WebFetch", "url": "https://example.org/missing", "status": 0, "error": "404 Not Found"},
+        {"tool": "WebFetch", "url": "https://example.org/unanswered", "status": 0, "error": "no answer"},
     ]
     assert retrievals([]) == []
 
@@ -146,5 +146,17 @@ def test_a_url_in_a_shell_command_or_code_that_ran_is_a_retrieval():
     assert retrievals(messages) == [
         {"tool": "Bash", "url": bag, "status": 200},
         {"tool": "Bash", "url": "https://www.pdok.nl/", "status": 200},
-        {"tool": "Bash", "url": "https://example.org/down", "status": 0},
+        {"tool": "Bash", "url": "https://example.org/down", "status": 0, "error": "exit 7"},
     ]
+
+
+def test_a_failed_retrieval_keeps_the_http_status_its_tool_names():
+    """The fetch tool fails with "HTTP 404"; a network error has no status; a shell command names none per URL."""
+    calls = [("f1", "fetch", {"url": "https://example.org/gone"}, "HTTP 404"), ("f2", "fetch", {"url": "https://example.org/secret"}, "HTTP 401"),
+             ("f3", "fetch", {"url": "https://example.org/far"}, "ConnectError: All connection attempts failed"),
+             ("b1", "Bash", {"command": "curl https://example.org/x"}, "Exit code 22 HTTP 404")]  # fmt: skip
+    messages = []
+    for call_id, tool, arguments, error in calls:
+        messages.append(ChatMessageAssistant(content="", tool_calls=[ToolCall(id=call_id, function=tool, arguments=arguments)]))
+        messages.append(ChatMessageTool(content="", tool_call_id=call_id, function=tool, error=ToolCallError("unknown", error)))
+    assert [(r["url"].rsplit("/", 1)[-1], r["status"]) for r in retrievals(messages)] == [("gone", 404), ("secret", 401), ("far", 0), ("x", 0)]
