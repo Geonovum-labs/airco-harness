@@ -73,3 +73,8 @@ def test_google_key_in_a_map_url_from_a_web_search_is_not_a_finding(tmp_path):
     thumbnail = f"https://maps.google.com/maps/api/staticmap?center=51.95%2C5.87&amp;zoom=10&amp;sensor=false&amp;key={site_key}"
     (tmp_path / "log.json").write_text(json.dumps({"thumbnail": thumbnail, "leak": f"GOOGLE_KEY={leaked_key}"}), encoding="utf-8")
     assert hits(tmp_path) == [f"api key {leaked_key}"]
+
+
+def test_image_name_with_a_pixel_density_is_not_an_email(tmp_path):
+    (tmp_path / "page.md").write_text("![](/img/stamkaart_1@2x.webp) mail huren@example.nl", encoding="utf-8")
+    assert hits(tmp_path) == ["email huren@example.nl"]

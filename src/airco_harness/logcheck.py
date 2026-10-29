@@ -25,7 +25,8 @@ from inspect_ai.log import read_eval_log
 SECRET_NAMES = re.compile(r"(KEY|TOKEN|SECRET|PASSWORD)$")
 PATTERNS = {
     "api key": re.compile(r"(?<![A-Za-z0-9_-])(sk-ant-[A-Za-z0-9_-]{16,}|sk-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{30,})"),
-    "email": re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
+    # Not an image name with a pixel density, such as icon_1@2x.webp.
+    "email": re.compile(r"[A-Za-z0-9._%+-]+@(?!\d+x\.(?:webp|png|jpe?g|gif|svg|avif)\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
     "home path": re.compile(r"(?:/(?:Users|home)/|[A-Za-z]:\\+Users\\+)[A-Za-z0-9._-]+(?=[/\\\"'\s]|$)"),
 }
 # Addresses that are part of the published standard or of tools, not personal data.
