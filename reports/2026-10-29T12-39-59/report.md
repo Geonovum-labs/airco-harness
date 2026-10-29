@@ -66,7 +66,7 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 ## Map questions per run
 
-On the site, this section has a map of each run on the BRT achtergrondkaart.
+On the site, the dashboard of this measurement draws each run on the BRT achtergrondkaart.
 
 | Model | Agent | Variant | Sample | Epoch | On the map | Retrieved from |
 | --- | --- | --- | --- | --- | --- | --- |

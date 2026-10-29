@@ -10,8 +10,8 @@ it counts with the scores Inspect gave it, 0 where it gave none; a run with an
 error is the harness failing, so it is counted separately and left out of the
 metrics. Tool calls are counted from the tool messages in the conversation.
 For a question answered on a map, the report adds a line per run: what the
-rule found on the map, and the hosts the agent retrieved from. It also writes
-maps.json, from which airco-pages draws each map on the BRT achtergrondkaart.
+rule found on the map, and the hosts the agent retrieved from; the site draws
+each map from the logs (maps() gives what it needs).
 Cost per correct answer is the cost of all runs, failed ones included, over the
 number of correct runs; the cost is what Inspect logged from the prices in
 model-costs.yaml during the run.
@@ -39,7 +39,7 @@ TOKEN_FIELDS = {
     "tokens_cache_write": "input_tokens_cache_write",
     "tokens_reasoning": "reasoning_tokens",
 }
-MAP_NOTE = "On the site, this section has a map of each run on the BRT achtergrondkaart."
+MAP_NOTE = "On the site, the dashboard of this measurement draws each run on the BRT achtergrondkaart."
 SCORERS = {"score_quality": ["correct", "complete", "invented", "parseable"], "score_source": ["source"]}
 
 
@@ -95,8 +95,19 @@ def _tool_calls(messages: pd.DataFrame) -> pd.Series:
     return messages[messages["role"] == "tool"].groupby("sample_id").size()
 
 
+def _testset_version(metadata: object) -> str:
+    """The test set version the task wrote into the eval metadata; empty for a log from before it did."""
+    meta = json.loads(metadata) if isinstance(metadata, str) else metadata if isinstance(metadata, dict) else {}
+    return str((meta.get("testset") or {}).get("version", ""))
+
+
+def _column(df: pd.DataFrame, name: str, default: object = "") -> pd.Series:
+    return df[name] if name in df else pd.Series(default, index=df.index)
+
+
 def runs(log_dir: str) -> pd.DataFrame:
-    """One row per run (sample x epoch x variant x agent x model) with the quality and trajectory metrics."""
+    """One row per run (sample x epoch x variant x agent x model) with the quality and trajectory metrics,
+    and what a comparison between measurements has to hold fixed: the test set and its version, the commit and the limits."""
     df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, RULE, EXPLANATION], quiet=True)
     if not len(df):
         raise FileNotFoundError(f"no samples in .eval logs under {log_dir}")
@@ -125,6 +136,11 @@ def runs(log_dir: str) -> pd.DataFrame:
             "hosts": df["retrieved"].map(_hosts) if "retrieved" in df else pd.Series("", index=df.index),
             "rule": df["rule"].fillna("") if "rule" in df else pd.Series("", index=df.index),
             "explanation": df["explanation"].fillna("") if "explanation" in df else pd.Series("", index=df.index),
+            "testset": _column(df, "task_arg_testset").fillna("").astype(str),
+            "testset_version": _column(df, "metadata").map(_testset_version),
+            "commit": _column(df, "git_commit").fillna("").astype(str),
+            **{f"{name}_limit": pd.to_numeric(_column(df, f"task_arg_{name}_limit", None), errors="coerce") for name in ("cost", "token", "message", "time")},
+            "log": _column(df, "log").map(lambda path: Path(str(path)).name),
         }
     )
     for column, keys in SCORERS.items():
@@ -137,7 +153,7 @@ def runs(log_dir: str) -> pd.DataFrame:
 
 
 def maps(log_dir: str) -> dict | None:
-    """What every completed run of a map question showed, with the expected outcome of its sample, for the map view of airco-pages; None without map questions."""
+    """What every completed run of a map question showed, with the expected outcome of its sample, for the maps of the site; None without map questions."""
     df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RULE, EXPLANATION, DETAILS], quiet=True)
     if "rule" not in df:
         return None
@@ -290,7 +306,4 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     table.to_csv(out / "runs.csv", index=False)
     (out / "report.md").write_text(markdown(table, args.log_dir), encoding="utf-8")
-    shown = maps(args.log_dir)
-    if shown:
-        (out / "maps.json").write_text(json.dumps(shown, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{len(table)} run{'' if len(table) == 1 else 's'}; {out / 'report.md'}")

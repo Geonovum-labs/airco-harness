@@ -107,11 +107,17 @@ The report averages each sample over its epochs first, then takes the mean and s
 | `explanation` | What the rule found, such as the wrong fields or how many required panden the map shows |
 | `correct`, `complete`, `invented`, `parseable`, `source` | The quality metrics |
 
-For a test set with a map question, `airco-report` also writes `maps.json`: per run of that question, which panden of the BAG extract the map showed, which required panden it missed, and the places on no pand, with the expected outcome of the sample.
-
 `airco-logcheck` searches the logs for keys, e-mail addresses and home directories. If it finds something, it exits with code 1: publish nothing and find the cause. An email address that an agent read on a web page, such as the contact address of a sports club, is not a leak of ours but still personal data: `airco-logcheck --mask-emails reports/<name>` replaces each one with `[email removed]` in the logs and then scans again. The scores do not change; `airco-rescore` confirms that. Then commit `reports/<name>/`. Keep `logs/` out of git; the bundle holds the same `.eval` files, and `.gitignore` leaves out the viewer files of the bundle.
 
-**GitHub Pages.** Every push to `main` runs `.github/workflows/pages.yml`, which runs `airco-logcheck` again, builds the site with `airco-pages` and deploys it. The site has an index of all committed measurements, newest first, and per measurement the report as HTML and the Inspect viewer. In the report of a measurement with a `maps.json`, the section of map questions has a map: the BRT achtergrondkaart of PDOK in RD (EPSG:28992) with the panden coloured by what the run did with them, for the run chosen with Show in the section's table. The map draws with Leaflet and Proj4Leaflet; NL Maps (nlmaps.nl) offers the BRT only in Web Mercator. To look at it before you push:
+**GitHub Pages.** Every push to `main` runs `.github/workflows/pages.yml`, which runs `airco-logcheck` again, builds the site with `airco-pages` and deploys it. The site is a dashboard over all committed measurements, read from their logs, so a measurement made before a column existed still takes part:
+
+| Page | What it shows |
+| --- | --- |
+| Measurements | Every measurement, and per test set the newest run of each sample as a heatmap of models by agents |
+| Measurement | One measurement: a heatmap of the chosen metric, and for the chosen model and agent its runs with a link into the Inspect viewer; for a map question, each run's map on the BRT achtergrondkaart of PDOK in RD (EPSG:28992) |
+| Compare | Measurements over time, variants, models or agents side by side, with the rest held fixed |
+
+The pages compute their numbers the way `airco-report` does: per sample over its epochs, then the mean and standard error over the samples; `tests/test_site_stats.py` holds the two to the same result. The comparison scores every group in a row on the samples all groups in that row have, so a difference is never a difference in questions, and it warns when the groups differ in test set version, commit or limits. Measurements of different samples have nothing to compare: comparing over time needs the same sample in more than one measurement. The map draws with Leaflet and Proj4Leaflet; NL Maps (nlmaps.nl) offers the BRT only in Web Mercator. To look at it before you push:
 
 ```bash
 uv run airco-pages && python3 -m http.server -d site

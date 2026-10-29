@@ -1,0 +1,110 @@
+/* The site of airco-harness: one stylesheet for the overview, the measurement and the comparison pages.
+   Colours are roles; dark mode has its own steps. Chart colours follow the dataviz reference palette. */
+:root {
+  color-scheme: light;
+  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d0d7de; --head: #f6f8fa; --accent: #0b5fa5; --chip: #eef3f8;
+  --card: #fcfcfb; --grid: #e1e0d9; --good: #006300; --bad: #b42318; --warn-bg: #fff8e5; --warn-line: #eda100;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0f1419; --fg: #e6edf3; --muted: #9da7b1; --line: #30363d; --head: #161b22; --accent: #79b8ff; --chip: #1c2530;
+    --card: #1a1a19; --grid: #2c2c2a; --good: #0ca30c; --bad: #e66767; --warn-bg: #2b2310; --warn-line: #c98500;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--head); }
+.inner { max-width: 72rem; margin: 0 auto; padding: 0.9rem 1.25rem; }
+header .inner { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; align-items: baseline; }
+header a.site { font-weight: 650; font-size: 1.1rem; color: var(--fg); text-decoration: none; }
+header nav { display: flex; gap: 1rem; font-size: 0.95rem; }
+header nav a { color: var(--muted); text-decoration: none; }
+header nav a[aria-current="page"] { color: var(--fg); font-weight: 600; }
+header .tagline { color: var(--muted); font-size: 0.9rem; margin-left: auto; }
+main { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1.25rem 2rem; }
+h1 { font-size: 1.75rem; line-height: 1.25; margin: 1.25rem 0 0.4rem; }
+h2 { font-size: 1.15rem; margin: 0 0 0.6rem; }
+h3 { font-size: 1rem; margin: 1.25rem 0 0.5rem; }
+p { max-width: 50rem; }
+p.lead { color: var(--muted); font-size: 1.05rem; margin-top: 0; }
+.muted { color: var(--muted); }
+a { color: var(--accent); }
+nav.crumbs { font-size: 0.9rem; color: var(--muted); margin-top: 1.25rem; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; background: var(--chip); padding: 0 0.25rem; border-radius: 3px; }
+footer { max-width: 72rem; margin: 0 auto; padding: 1rem 1.25rem 2rem; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); }
+
+/* Tables */
+.tablewrap { overflow-x: auto; margin: 0.75rem 0 0; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+th { background: var(--head); color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.nowrap { white-space: nowrap; }
+td.small { font-size: 0.85rem; min-width: 10rem; white-space: nowrap; }
+tr.selected td { background: var(--chip); }
+.chip { display: inline-block; font: 0.78rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--chip); border: 1px solid var(--line); border-radius: 4px; padding: 0 0.4rem; margin: 0.1rem 0.25rem 0.1rem 0; white-space: nowrap; }
+a.btn, button.btn { display: inline-block; font: inherit; font-size: 0.85rem; cursor: pointer; color: var(--accent); border: 1px solid var(--line); border-radius: 6px; padding: 0.1rem 0.55rem; margin: 0.1rem 0.25rem 0.1rem 0; text-decoration: none; background: var(--bg); white-space: nowrap; }
+a.btn:hover, button.btn:hover { border-color: var(--accent); }
+
+/* Dashboard layout */
+.filters { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: end; margin: 1rem 0; }
+.filters label { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+select { font: inherit; font-size: 0.95rem; text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.3rem 0.5rem; max-width: 22rem; }
+.segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.segmented button { font: inherit; font-size: 0.92rem; padding: 0.3rem 0.75rem; border: 0; background: var(--bg); color: var(--fg); cursor: pointer; }
+.segmented button + button { border-left: 1px solid var(--line); }
+.segmented button[aria-pressed="true"] { background: var(--chip); font-weight: 600; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 0.7rem 0.9rem; }
+.kpi .label { color: var(--muted); font-size: 0.85rem; }
+.kpi .value { font-size: 1.6rem; font-weight: 600; line-height: 1.2; }
+.kpi .note { color: var(--muted); font-size: 0.8rem; }
+.facts { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; color: var(--muted); font-size: 0.9rem; margin: 0.25rem 0 0; }
+.facts b { color: var(--fg); font-weight: 600; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.1rem; margin: 1rem 0; }
+.card > header { background: none; border: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: baseline; justify-content: space-between; margin-bottom: 0.5rem; }
+.card > header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: 1rem; }
+.grid-2 > .card { margin: 0; }
+details { margin: 1rem 0; }
+details > summary { cursor: pointer; font-weight: 600; }
+.warning { background: var(--warn-bg); border: 1px solid var(--warn-line); border-radius: 8px; padding: 0.6rem 0.9rem; margin: 0.75rem 0; font-size: 0.92rem; }
+.warning ul { margin: 0.25rem 0 0; padding-left: 1.2rem; }
+.empty { color: var(--muted); font-style: italic; }
+
+/* Heatmap: model x agent, one cell per pair; the cell is the button and the hit target. */
+.heatmap { display: grid; gap: 2px; align-items: stretch; overflow-x: auto; }
+.heatmap .colhead { font-size: 0.8rem; color: var(--muted); font-weight: 600; padding: 0.2rem 0.4rem; align-self: end; }
+.heatmap .rowhead { font-size: 0.9rem; padding: 0.4rem 0.6rem 0.4rem 0; white-space: nowrap; align-self: center; }
+.heatmap .cell { border: 0; border-radius: 4px; min-height: 3.1rem; min-width: 6.5rem; font: inherit; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.2; }
+.heatmap .cell .v { font-size: 1.05rem; font-weight: 600; }
+.heatmap .cell .s { font-size: 0.75rem; opacity: 0.85; }
+.heatmap .cell.none { background: transparent; border: 1px dashed var(--line); color: var(--muted); cursor: default; }
+.heatmap .cell:hover:not(.none), .heatmap .cell:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; }
+.heatmap .cell[aria-pressed="true"] { outline: 3px solid var(--fg); outline-offset: 1px; }
+.scale { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted); margin-top: 0.6rem; }
+.scale .bar { width: 10rem; height: 0.6rem; border-radius: 3px; }
+
+/* Tooltip shared by the heatmap */
+.tooltip { position: fixed; z-index: 1000; pointer-events: none; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 0.45rem 0.6rem; font-size: 0.85rem; box-shadow: 0 4px 14px rgba(0,0,0,0.15); max-width: 20rem; }
+.tooltip strong { font-size: 1rem; }
+
+/* Legend of the comparison chart: a swatch beside text, the text in ink */
+ul.legend { list-style: none; padding: 0; margin: 0.5rem 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-size: 0.9rem; }
+ul.legend .key { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 50%; margin-right: 0.4rem; vertical-align: -0.05rem; }
+ul.legend .key.sq { border-radius: 3px; border: 2px solid; }
+.groups { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; font-size: 0.92rem; }
+.groups label { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.chart svg { overflow: visible; }
+.chart { overflow-x: auto; }
+
+/* Map of a map question */
+#map { height: clamp(20rem, 60vh, 34rem); border: 1px solid var(--line); border-radius: 8px; margin: 0.5rem 0; }
+p.result { font-weight: 600; margin: 0.25rem 0; }
+@media (max-width: 40rem) { header .tagline { display: none; } .kpi .value { font-size: 1.3rem; } }
