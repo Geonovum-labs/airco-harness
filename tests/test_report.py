@@ -164,7 +164,7 @@ def test_matrix_refuses_paid_models_without_yes(monkeypatch, capsys):
     assert stop.value.code == 2
     out = capsys.readouterr()
     assert "1 samples x 1 agent-model pairs x 3 epochs = 3 runs" in out.out
-    assert "at most 3 x 0.50 = 1.50 dollars" in out.out
+    assert "at most 3 x 2.00 = 6.00 dollars" in out.out
     assert "rerun with --yes" in out.err
 
 

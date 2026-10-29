@@ -72,7 +72,7 @@ def airco(
     message_limit: int = 60,
     token_limit: int = 600_000,
     time_limit: int = 900,
-    cost_limit: float | None = 0.5,
+    cost_limit: float | None = 2.0,
 ) -> Task:
     """The test set on one variant of the publication form, with one agent.
 

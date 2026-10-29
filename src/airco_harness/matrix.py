@@ -54,7 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="log folder logs/<name> and bundle reports/<name>/logs; default the start time, so that bundles sort by time",
     )
     parser.add_argument("--max-samples", type=int, default=8, help="samples that run at the same time")
-    parser.add_argument("--cost-limit", type=float, default=0.5, help="cost limit per run in dollars")
+    parser.add_argument("--cost-limit", type=float, default=2.0, help="cost limit per run in dollars")
     parser.add_argument("--yes", action="store_true", help="confirm a run against paid models")
     return parser
 
