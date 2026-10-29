@@ -9,6 +9,8 @@ taken over samples, as Inspect does. A run that hit a limit did not answer, so
 it counts with the scores Inspect gave it, 0 where it gave none; a run with an
 error is the harness failing, so it is counted separately and left out of the
 metrics. Tool calls are counted from the tool messages in the conversation.
+For a question answered on a map, the report adds a line per run: what the
+rule found on the map, and the hosts the agent retrieved from.
 Cost per correct answer is the cost of all runs, failed ones included, over the
 number of correct runs; the cost is what Inspect logged from the prices in
 model-costs.yaml during the run.
@@ -19,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import urllib.parse
 from pathlib import Path
 
 import pandas as pd
@@ -49,12 +52,25 @@ def _cost(model_usage: object) -> float:
 RETRIEVED = SampleColumn("retrieved", path="scores.source.metadata.retrieved", full=True)
 # The source scorer counts every tool use, including the tools a provider runs on its own servers, which leave no tool message.
 TOOL_CALLS = SampleColumn("tool_calls_scored", path="scores.source.metadata.tool_calls", full=True)
+RULE = SampleColumn("rule", path="scores.quality.metadata.rule", full=True)
+EXPLANATION = SampleColumn("explanation", path="scores.quality.explanation", full=True)
+
+
+def _classes(value: object) -> dict:
+    return json.loads(value) if isinstance(value, str) else value if isinstance(value, dict) else {}
 
 
 def _retrieved(value: object) -> str:
     """The URLs the agent fetched with success and their class, as the source scorer recorded them: `url (class)` joined with `; `."""
-    classes = json.loads(value) if isinstance(value, str) else value if isinstance(value, dict) else {}
-    return "; ".join(f"{url} ({cls})" for url, cls in classes.items())
+    return "; ".join(f"{url} ({cls})" for url, cls in _classes(value).items())
+
+
+def _hosts(value: object) -> str:
+    """The hosts of the retrieved URLs, each once with its class, in the order of first retrieval: `host (class)` joined with `, `."""
+    hosts = {}
+    for url, cls in _classes(value).items():
+        hosts.setdefault(urllib.parse.urlsplit(url).netloc, cls)
+    return ", ".join(f"{host} ({cls})" for host, cls in hosts.items())
 
 
 def _token_sum(model_usage: object, field: str) -> int:
@@ -76,7 +92,7 @@ def _tool_calls(messages: pd.DataFrame) -> pd.Series:
 
 def runs(log_dir: str) -> pd.DataFrame:
     """One row per run (sample x epoch x variant x agent x model) with the quality and trajectory metrics."""
-    df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS], quiet=True)
+    df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, RULE, EXPLANATION], quiet=True)
     if not len(df):
         raise FileNotFoundError(f"no samples in .eval logs under {log_dir}")
     error = df["error"].fillna("").astype(str) if "error" in df else pd.Series("", index=df.index)
@@ -101,6 +117,9 @@ def runs(log_dir: str) -> pd.DataFrame:
             "working_time_s": df["working_time"],
             "cost": df["model_usage"].map(_cost),
             "retrieved": df["retrieved"].map(_retrieved) if "retrieved" in df else pd.Series("", index=df.index),
+            "hosts": df["retrieved"].map(_hosts) if "retrieved" in df else pd.Series("", index=df.index),
+            "rule": df["rule"].fillna("") if "rule" in df else pd.Series("", index=df.index),
+            "explanation": df["explanation"].fillna("") if "explanation" in df else pd.Series("", index=df.index),
         }
     )
     for column, keys in SCORERS.items():
@@ -184,8 +203,17 @@ def markdown(table: pd.DataFrame, log_dir: str) -> str:
             f"| {r['model']} | {r['agent']} | {r['variant']} | {_fmt(r['tool_calls'], 1)} | {_fmt(r['tokens'], 0)} | "
             f"{_fmt(r['total_time_s'], 1)} | {_fmt(r['working_time_s'], 1)} | {_fmt(r['cost_per_correct'], 4)} |"
         )
-    pivot = table[~table["failed"]].pivot_table(index="sample", columns=["model", "agent", "variant"], values="correct", aggfunc="mean")
-    lines += ["", "## `correct` per sample (mean over epochs)", "", pivot.round(2).to_markdown() if len(pivot) else "no completed runs", ""]
+    lines += ["", "## `correct` / `complete` per sample (mean over epochs)", "", _per_sample(table), ""]
+    maps = table[~table["failed"] & table["rule"].eq("map")]
+    if len(maps):
+        lines += [
+            "## Map questions per run",
+            "",
+            "| Model | Agent | Variant | Sample | Epoch | On the map | Retrieved from |",
+            "| --- | --- | --- | --- | --- | --- | --- |",
+        ]
+        lines += [f"| {r.model} | {r.agent} | {r.variant} | {r.sample} | {r.epoch} | {r.explanation} | {r.hosts or 'nothing'} |" for r in maps.itertuples()]
+        lines.append("")
     failed = table[table["failed"] | table["limit"].ne("")]
     if len(failed):
         lines += [
@@ -197,6 +225,18 @@ def markdown(table: pd.DataFrame, log_dir: str) -> str:
         lines += [f"| {r.model} | {r.agent} | {r.variant} | {r.sample} | {r.epoch} | {r.reason[:120]} | {_fmt(r.tokens, 0)} |" for r in failed.itertuples()]
         lines.append("")
     return "\n".join(lines)
+
+
+def _per_sample(table: pd.DataFrame) -> str:
+    """correct and complete side by side: a question that is rarely fully right, such as a map, still shows how far each agent got."""
+    done = table[~table["failed"]]
+    if not len(done):
+        return "no completed runs"
+    columns = ["model", "agent", "variant"]
+    correct = done.pivot_table(index="sample", columns=columns, values="correct", aggfunc="mean")
+    complete = done.pivot_table(index="sample", columns=columns, values="complete", aggfunc="mean")
+    cells = correct.combine(complete, lambda a, b: a.map(_fmt).str.cat(b.map(_fmt), sep=" / "))
+    return cells.to_markdown()
 
 
 def build_parser() -> argparse.ArgumentParser:

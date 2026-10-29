@@ -102,6 +102,9 @@ The report averages each sample over its epochs first, then takes the mean and s
 | `total_time_s`, `working_time_s` | Time in seconds, the second without waiting for a provider limit |
 | `cost` | Dollars, as Inspect logged them from the prices in `model-costs.yaml`; empty for a model without a price |
 | `retrieved` | The URLs the agent retrieved with success, each with its class for `source`, joined with `; ` |
+| `hosts` | The hosts of those URLs, each once with its class, joined with `, ` |
+| `rule` | The scoring rule of the sample, such as `fields` or `map` |
+| `explanation` | What the rule found, such as the wrong fields or how many required panden the map shows |
 | `correct`, `complete`, `invented`, `parseable`, `source` | The quality metrics |
 
 `airco-logcheck` searches the logs for keys, e-mail addresses and home directories. If it finds something, it exits with code 1: publish nothing and find the cause. Then commit `reports/<name>/`. Keep `logs/` out of git; the bundle holds the same `.eval` files, and `.gitignore` leaves out the viewer files of the bundle.

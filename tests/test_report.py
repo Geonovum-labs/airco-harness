@@ -172,3 +172,20 @@ def test_bundle_index_keeps_no_absolute_log_dir(tmp_path):
     (tmp_path / "index.html").write_text('<script>{"log_dir": "logs", "abs_log_dir": "/Users/someone/airco-harness/logs/x"}</script>', encoding="utf-8")
     matrix.strip_absolute_log_dir(tmp_path, Path("logs/x"))
     assert (tmp_path / "index.html").read_text(encoding="utf-8") == '<script>{"log_dir": "logs", "abs_log_dir": "logs/x"}</script>'
+
+
+def test_a_map_question_gets_correct_and_complete_per_sample_and_a_line_per_run(log_dir):
+    table = report.runs(log_dir)
+    first = table.index[0]
+    table.loc[first, ["rule", "explanation", "complete"]] = ["map", "42 of 61 required panden shown; 0 places match no pand", 0.69]
+    text = report.markdown(table, log_dir)
+    assert "## `correct` / `complete` per sample (mean over epochs)" in text
+    assert "## Map questions per run" in text
+    assert f"| mockllm/model | model | 0 | {SAMPLE} | 1 | 42 of 61 required panden shown; 0 places match no pand | nothing |" in text
+    assert "## Map questions" not in report.markdown(report.runs(log_dir), log_dir)
+
+
+def test_hosts_are_listed_once_with_their_class():
+    retrieved = {"https://api.pdok.nl/a": "authoritative", "https://nominatim.openstreetmap.org/x": "other", "https://api.pdok.nl/b": "authoritative"}
+    assert report._hosts(retrieved) == "api.pdok.nl (authoritative), nominatim.openstreetmap.org (other)"
+    assert report._hosts(None) == ""
