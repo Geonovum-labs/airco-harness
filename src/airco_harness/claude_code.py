@@ -12,16 +12,21 @@ domain is safe, and that call cannot reach Anthropic, so every WebFetch failed
 with "Unable to verify if domain ... is safe to fetch". The project settings
 in the working directory switch that preflight off, which is what a user with
 a proxy does too.
+
+In a test set with a map question, show_on_map runs on the host and reaches
+Claude Code through the bridge as the MCP tool mcp__map__show_on_map.
 """
 
 from __future__ import annotations
 
 import json
 
-from inspect_ai.agent import Agent
+from inspect_ai.agent import Agent, BridgedToolsSpec
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util import sandbox
 from inspect_swe import claude_code
+
+from .tools import show_on_map
 
 # Pinned so that a run names the version it used; raise it on purpose, with a note in the log bundle.
 CLAUDE_CODE_VERSION = "2.1.304"
@@ -41,5 +46,6 @@ def claude_code_setup() -> Solver:
     return solve
 
 
-def claude_code_agent() -> Agent:
-    return claude_code(version=CLAUDE_CODE_VERSION, permission_mode="bypassPermissions", cwd=WORKDIR)
+def claude_code_agent(map_tool: bool = False) -> Agent:
+    bridged = [BridgedToolsSpec(name="map", tools=[show_on_map()])] if map_tool else None
+    return claude_code(version=CLAUDE_CODE_VERSION, permission_mode="bypassPermissions", cwd=WORKDIR, bridged_tools=bridged)

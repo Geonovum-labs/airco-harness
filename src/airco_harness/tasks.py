@@ -5,7 +5,8 @@ as the user has it. Variant 0 is the question alone. Three agents answer it:
 "model" is the model without a system prompt and without tools, the floor;
 "inspect" is Inspect's own react() agent with its prompt, web search and a
 fetch tool, the same for every model; "claude-code" is Claude Code with its
-own prompt and tools, what a user has.
+own prompt and tools, what a user has. In a test set with a map question, the
+agents inspect and claude-code also get show_on_map, the map a user sees.
 """
 
 import os
@@ -22,7 +23,7 @@ from inspect_ai.tool import web_search
 from . import dataset
 from .models import register_costs
 from .scorers import quality, source
-from .tools import fetch
+from .tools import fetch, show_on_map
 
 VARIANTS = ("0",)
 AgentName = Literal["model", "inspect", "claude-code"]
@@ -30,16 +31,16 @@ MAX_TOOL_OUTPUT = 48 * 1024
 SANDBOX_COMPOSE = Path(__file__).parent / "sandbox" / "compose.yaml"
 
 
-def _agent(agent: AgentName) -> Agent:
+def _agent(agent: AgentName, map_tool: bool) -> Agent:
     if agent == "model":
         # No system prompt, no tools, no submit tool: the agent is done when the model stops calling tools, and its last message is the answer.
         return react(prompt=None, tools=[], submit=False)
     if agent == "inspect":
         # Inspect's defaults: its own system prompt and submit tool. web_search() uses the search of the model's own provider.
-        return react(tools=[web_search(), fetch()], submit=AgentSubmit(answer_only=True))
+        return react(tools=[web_search(), fetch(), *([show_on_map()] if map_tool else [])], submit=AgentSubmit(answer_only=True))
     from .claude_code import claude_code_agent
 
-    return claude_code_agent()
+    return claude_code_agent(map_tool)
 
 
 def _setup(agent: AgentName):
@@ -98,7 +99,7 @@ def airco(
     return Task(
         dataset=dataset.load(testset, ids=selected),
         setup=_setup(agent),
-        solver=as_solver(_agent(agent)),
+        solver=as_solver(_agent(agent, dataset.asks_for_map(testset))),
         scorer=[quality(), source()],
         config=GenerateConfig(max_tool_output=MAX_TOOL_OUTPUT),
         # A path relative to the working directory, so that the log names no home directory.

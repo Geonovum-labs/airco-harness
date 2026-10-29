@@ -3,7 +3,8 @@
 Each rule fills four of the five score keys (`source` comes from the tool log, see
 airco_harness.scorers). A rule never raises on a malformed answer: it reports
 parseable 0 and correct 0 instead. Rules are selected by the "rule" key in a
-case's expected.json; for now there is one, `fields`.
+case's expected.json: `fields` for a JSON answer, `map` for what the agent
+showed on the map.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from pathlib import Path
 
 from jsonschema import validators
 
-from . import answers
+from . import answers, geo
 from .refmodel import ReferenceModel, normalize
 
 TESTSETS_DIR = Path(__file__).resolve().parent.parent / "testsets"
@@ -124,7 +125,33 @@ def rule_fields(answer: str, case: Case) -> Assessment:
                       f"wrong: {sorted(wrong)}; invented: {invented}", details)  # fmt: skip
 
 
-RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields}
+def rule_map(answer: str, case: Case) -> Assessment:
+    """Places on the map, matched to the panden of the reference extract: every pand in `must`
+    has to be on it, and a place that matches no pand of the extract is invented.
+
+    `answer` is the GeoJSON the agent passed to show_on_map, or "" when it showed no map.
+    """
+    if not answer.strip():
+        return unparseable("no map shown")
+    try:
+        places = geo.points(json.loads(answer))
+    except ValueError as error:
+        return unparseable(f"not GeoJSON: {error}")
+    reference = geo.Reference.load(case.expected["reference"])
+    tolerance = case.expected["tolerance_m"]
+    matched = [(place, reference.nearest(place, tolerance)) for place in places]
+    shown = {pand for _, pand in matched if pand}
+    must = set(case.expected["must"])
+    missing = sorted(must - shown)
+    unmatched = [[round(place.x, 6), round(place.y, 6)] for place, pand in matched if pand is None]
+    details = {"places": len(places), "missing": missing, "unmatched": unmatched,
+               "swapped": sum(geo.swapped(place) for place, _ in matched)}  # fmt: skip
+    complete = 1 - len(missing) / len(must)
+    return Assessment(not missing and not unmatched, complete, len(unmatched), True,
+                      f"{len(must) - len(missing)} of {len(must)} required panden shown; {len(unmatched)} places match no pand", details)  # fmt: skip
+
+
+RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map}
 
 
 def assess(answer: str, case: Case) -> Assessment:

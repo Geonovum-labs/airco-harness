@@ -2,9 +2,12 @@
 
     uv run airco-sources           # fetch everything and rewrite sources/sources.lock.json
     uv run airco-sources --check   # verify local files against the lock
+    uv run airco-sources --only dsfl/   # fetch one group, keep the rest of the lock
 
 Every source is a URL stored at a fixed path under sources/. A file from
-GitHub is pinned to a commit in its URL. The lock records the sha256 and size
+GitHub is pinned to a commit in its URL. A source whose query is too long for
+a GET is a POST, with a body built from a file fetched before it; the lock
+then records the method and the sha256 of the body. The lock records the sha256 and size
 of each file, and Last-Modified and ETag when the server sends them. The MIM
 XSD and the schemas it imports are stored under schemas/<host>/<path>, where
 LocalSchemas finds them, so XML validation needs no network.
@@ -18,6 +21,7 @@ import json
 import sys
 import urllib.parse
 import urllib.request
+from collections.abc import Callable
 from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
@@ -35,14 +39,49 @@ def schema_path(schema_url: str) -> str:
     return f"schemas/{parts.netloc}{parts.path}"
 
 
-# Path under sources/ to URL.
-SOURCES: dict[str, str] = {
+BAG_WFS = "https://service.pdok.nl/lv/bag/wfs/v2_0"
+DSFL_SPORT_VBO = "dsfl/bag-arnhem-sport-verblijfsobjecten.json"
+DSFL_SPORT_PANDEN = "dsfl/bag-arnhem-sport-panden.geojson"
+
+
+def _bag_sport_arnhem() -> str:
+    """Verblijfsobjecten in woonplaats Arnhem whose gebruiksdoel includes sportfunctie, as GeoJSON in WGS84."""
+    fes = (
+        '<Filter xmlns="http://www.opengis.net/fes/2.0"><And>'
+        '<PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><ValueReference>gebruiksdoel</ValueReference><Literal>*sportfunctie*</Literal></PropertyIsLike>'
+        "<PropertyIsEqualTo><ValueReference>woonplaats</ValueReference><Literal>Arnhem</Literal></PropertyIsEqualTo>"
+        "</And></Filter>"
+    )
+    query = {"service": "WFS", "version": "2.0.0", "request": "GetFeature", "typeNames": "bag:verblijfsobject",
+             "outputFormat": "application/json", "srsName": "EPSG:4326", "count": "1000", "FILTER": fes}  # fmt: skip
+    return f"{BAG_WFS}?{urllib.parse.urlencode(query)}"
+
+
+def _bag_panden_of_sport_arnhem() -> tuple[str, bytes]:
+    """The panden of the verblijfsobjecten in DSFL_SPORT_VBO, as GeoJSON in WGS84. 113 ids are too long for a GET."""
+    vbo = json.loads(path(DSFL_SPORT_VBO).read_text(encoding="utf-8"))
+    ids = sorted({f["properties"]["pandidentificatie"] for f in vbo["features"]})
+    clauses = "".join(
+        f"<fes:PropertyIsEqualTo><fes:ValueReference>identificatie</fes:ValueReference><fes:Literal>{i}</fes:Literal></fes:PropertyIsEqualTo>" for i in ids
+    )
+    body = (
+        '<wfs:GetFeature xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:fes="http://www.opengis.net/fes/2.0" service="WFS" version="2.0.0" '
+        'outputFormat="application/json" count="1000"><wfs:Query typeNames="bag:pand" srsName="EPSG:4326">'
+        f"<fes:Filter><fes:Or>{clauses}</fes:Or></fes:Filter></wfs:Query></wfs:GetFeature>"
+    )
+    return BAG_WFS, body.encode("utf-8")
+
+
+# Path under sources/ to URL, or to a function that gives the URL and the body of a POST. Fetched in this order.
+SOURCES: dict[str, str | Callable[[], tuple[str, bytes]]] = {
     "imgeo-2.2/imgeo2.2-mim-logisch.xml": "https://raw.githubusercontent.com/Geonovum/IMGeo-dev/30d750029fc4b81998d30a95185f78ff2c314ced/mim/imgeo2.2-mim-logisch.xml",
     "imgeo-2.2/catalog-bgt.html": "https://docs.geostandaarden.nl/imgeo/catalogus/bgt/",
     "imgeo-2.2/catalog-imgeo.html": "https://docs.geostandaarden.nl/imgeo/catalogus/imgeo/",
     "imgeo-2.2/concept-register-imgeo.ttl": "https://definities.geostandaarden.nl/rest/v1/imgeo/data?format=text/turtle",
     MIM_XSD: "https://register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_Mim_relatiesoort.xsd",
     **{schema_path(url): url for url in (f"https://register.geostandaarden.nl/xmlschema/mim/1.1.1/{name}" for name in MIM_XSD_IMPORTS)},
+    DSFL_SPORT_VBO: _bag_sport_arnhem(),
+    DSFL_SPORT_PANDEN: _bag_panden_of_sport_arnhem,
 }
 
 
@@ -87,22 +126,29 @@ def mim_schema() -> etree.XMLSchema:
     return etree.XMLSchema(etree.parse(str(path(MIM_XSD)), parser, base_url=url(MIM_XSD)))
 
 
-def _get(source_url: str) -> tuple[bytes, dict[str, str]]:
-    req = urllib.request.Request(source_url, headers={"User-Agent": "airco-harness-sources/0.1"})
+def _get(source_url: str, body: bytes | None = None) -> tuple[bytes, dict[str, str]]:
+    headers = {"User-Agent": "airco-harness-sources/0.1"} | ({"Content-Type": "application/xml"} if body else {})
+    req = urllib.request.Request(source_url, data=body, headers=headers)
     with urllib.request.urlopen(req, timeout=60) as resp:
         headers = {k.lower().replace("-", "_"): resp.headers[k] for k in ("Last-Modified", "ETag") if resp.headers.get(k)}
         return resp.read(), headers
 
 
-def fetch() -> None:
+def fetch(prefix: str = "") -> None:
+    """Fetch the sources whose path starts with `prefix`, and keep the lock records of the others."""
+    kept = [r for r in json.loads(LOCK_FILE.read_text(encoding="utf-8"))["files"] if not r["path"].startswith(prefix)] if prefix else []
     records = []
-    for target, source_url in SOURCES.items():
-        data, headers = _get(source_url)
+    for target, source in SOURCES.items():
+        if not target.startswith(prefix):
+            continue
+        source_url, body = source() if callable(source) else (source, None)
+        data, headers = _get(source_url, body)
         file = SOURCES_DIR / target
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_bytes(data)
-        records.append({"path": target, "url": source_url, **headers, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
-    payload = {"fetched": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "files": sorted(records, key=lambda r: r["path"])}
+        post = {"method": "POST", "body_sha256": hashlib.sha256(body).hexdigest()} if body else {}
+        records.append({"path": target, "url": source_url, **post, **headers, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
+    payload = {"fetched": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "files": sorted(kept + records, key=lambda r: r["path"])}
     LOCK_FILE.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"{len(records)} files recorded in {LOCK_FILE.relative_to(SOURCES_DIR.parent)}")
 
@@ -125,9 +171,10 @@ def check() -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="airco-sources", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--check", action="store_true", help="only verify the files on disk against sources.lock.json; fetch nothing")
+    parser.add_argument("--only", default="", metavar="PREFIX", help="fetch only the sources whose path starts with PREFIX, such as dsfl/")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    sys.exit(check() if args.check else fetch())
+    sys.exit(check() if args.check else fetch(args.only))

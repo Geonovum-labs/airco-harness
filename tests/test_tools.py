@@ -12,6 +12,7 @@ from inspect_ai.tool import ToolError
 
 from airco_harness import tools
 from airco_harness.tasks import airco
+from validators import sources
 
 ANSWER = json.dumps({"objecttype": "OverigBouwwerk", "type": "bassin"})
 
@@ -87,3 +88,33 @@ def test_agent_inspect_fetches_and_submits(tmp_path, server):
     assert (sample.output.completion, sample.scores["quality"].value["correct"]) == (ANSWER, 1)
     assert (log.eval.metadata["agent"], log.eval.metadata["setup"]) == ("inspect", 1)
     assert sample.scores["source"].metadata["retrieved"] == {page: "other"}
+
+
+def test_show_on_map_counts_the_places_and_rejects_what_is_not_geojson():
+    show = tools.show_on_map()
+    square = {"type": "Polygon", "coordinates": [[[5.9, 51.9], [5.91, 51.9], [5.91, 51.91], [5.9, 51.9]]]}
+    collection = {"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": square, "properties": {}}, {"type": "Feature", "geometry": None}]}
+    assert asyncio.run(show(geojson=collection)) == "1 places shown on the map."
+    for bad in ({"type": "FeatureCollection"}, {"type": "Point", "coordinates": "here"}, {"features": []}):
+        with pytest.raises(ToolError):
+            asyncio.run(show(geojson=bad))
+
+
+def test_agent_inspect_gets_show_on_map_only_in_a_test_set_with_a_map_question(tmp_path):
+    """The map of the right panden is the answer for dsfl-02, whatever the agent submits."""
+    from airco_harness import dataset
+
+    must = json.loads((dataset.TESTSETS_DIR / "dsfl/samples/dsfl-02/expected.json").read_text(encoding="utf-8"))["must"]
+    panden = json.loads(sources.path("dsfl/bag-arnhem-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
+    geojson = {"type": "FeatureCollection", "features": [f for f in panden if f["properties"]["identificatie"] in must]}
+    steps = [
+        ModelOutput.for_tool_call("mockllm/model", "show_on_map", {"geojson": geojson}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de kaart."}),
+    ]
+    [log] = eval(
+        airco(testset="dsfl", agent="inspect", ids="dsfl-02"), model=get_model("mockllm/model", custom_outputs=steps), log_dir=str(tmp_path), display="none"
+    )
+    [sample] = log.samples
+    assert sample.messages[3].role == "tool" and sample.messages[3].text == f"{len(must)} places shown on the map."
+    assert sample.scores["quality"].value == {"correct": 1, "complete": 1.0, "invented": 0, "parseable": 1}
+    assert dataset.asks_for_map("dsfl") and not dataset.asks_for_map("imgeo")

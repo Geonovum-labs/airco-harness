@@ -1,5 +1,5 @@
 {
-  "purpose": "Questions for the Dataspace Fysieke Leefomgeving that need facts from more than one registration, such as the BAG and EP-Online, about one address.",
-  "version": "0.1",
+  "purpose": "Questions for the Dataspace Fysieke Leefomgeving as a citizen asks them, whose answers are in one or more registrations, such as the BAG and EP-Online.",
+  "version": "0.2",
   "date": "2026-10-29"
 }

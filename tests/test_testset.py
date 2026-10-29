@@ -6,6 +6,7 @@ from jsonschema import validators
 
 from airco_harness import dataset
 from validators import rules
+from validators.geo import Reference
 
 TESTSETS = rules.TESTSETS_DIR
 SAMPLE_SCHEMA = json.loads((TESTSETS / "sample.schema.json").read_text(encoding="utf-8"))
@@ -39,3 +40,12 @@ def test_expected_outcome_names_a_known_rule_and_valid_answer_schema(folder):
     if "answer_schema" in expected:
         schema = json.loads((folder / expected["answer_schema"]).read_text(encoding="utf-8"))
         validators.validator_for(schema).check_schema(schema)
+
+
+@pytest.mark.parametrize("folder", FOLDERS, ids=IDS)
+def test_a_map_sample_requires_only_panden_of_its_reference(folder):
+    expected = json.loads((folder / "expected.json").read_text(encoding="utf-8"))
+    if expected["rule"] != "map":
+        pytest.skip("not a map sample")
+    reference = Reference.load(expected["reference"])
+    assert expected["must"] and set(expected["must"]) <= set(reference.panden)

@@ -1,0 +1,12 @@
+{
+  "task": "location",
+  "standard": "dsfl",
+  "input": "Vind alle gebouwen met sportfunctie in Arnhem en toon ze op de kaart.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "A citizen does not know the BAG. The agent has to read 'gebouw met sportfunctie' as a pand with a verblijfsobject whose gebruiksdoel includes sportfunctie, query the BAG with a filter, and show the result with show_on_map. Likely failures: no map, only the first results, sport locations from OpenStreetMap or web search instead of the BAG, longitude and latitude swapped",
+    "expected_variant": 1,
+    "location": "BAG verblijfsobjecten with gebruiksdoel sportfunctie in woonplaats Arnhem, and the panden they are in",
+    "absence": false
+  }
+}

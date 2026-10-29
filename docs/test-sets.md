@@ -34,7 +34,7 @@ Choose a test set with `-T testset=<name>` or `airco-matrix --testset <name>`; t
 
 ## Scoring
 
-For each sample, the scorer `quality` applies the scoring rule from `expected.json` and fills `correct`, `complete`, `invented` and `parseable`. The scorer `source` fills `source` from the tool calls. Both are in `validators/` and run without Inspect, so rescoring needs no model.
+For each sample, the scorer `quality` applies the scoring rule from `expected.json` to the answer and fills `correct`, `complete`, `invented` and `parseable`. The scorer `source` fills `source` from the tool calls. Both are in `validators/` and run without Inspect, so rescoring needs no model.
 
 | Key | Meaning |
 | --- | --- |
@@ -62,6 +62,20 @@ Each field of the answer has an expected value.
 `complete` is the share of fields that match. `invented` is the number of differing values in `term_fields` that are not a known term, and `correct` is 1 only if everything matches and nothing is invented.
 
 For example, `imgeo-G04-03` expects `objecttype` OverigBouwwerk (or Overig bouwwerk) and `type` bassin. The answer Waterdeel with zwembad gets `complete` 0 and `invented` 1: Waterdeel is a known term, zwembad is not.
+
+### The rule `map`
+
+The answer is what the agent showed on the map: the `geojson` argument of its last successful `show_on_map` call (Claude Code calls it `mcp__map__show_on_map`), not its last message. A test set with a `map` sample gives the agents `inspect` and `claude-code` that tool; the agent `model` has no tools and gets `parseable` 0.
+
+| `expected.json` | Content |
+| --- | --- |
+| `reference` | A GeoJSON file under `sources/` with the panden the map may show, each with its `identificatie` |
+| `must` | The `identificatie` of every pand the map has to show; all are in `reference` |
+| `tolerance_m` | How far in meters a place may lie from a pand and still match it |
+
+Each feature counts as one point per geometry part: a point as it is, a line or polygon by its representative point. A point matches the pand that contains it, else the nearest pand of `reference` within `tolerance_m`. `complete` is the share of `must` that is shown, `invented` the number of points that match no pand, and `correct` is 1 only if all of `must` is shown and nothing is invented. Two points on one pand are not invented. A map with no call, or GeoJSON that cannot be read, gets `parseable` 0; an empty map is parseable with `complete` 0. The score details list the missing panden, the unmatched points and how many points lie in the Netherlands only with longitude and latitude swapped.
+
+For `dsfl-02`, a map of all 113 panden of the extract gets the full score, and so does a map of the 120 verblijfsobjecten, because each lies in its pand. A sports location from OpenStreetMap on no pand of the extract is invented.
 
 ### The scorer `source`
 

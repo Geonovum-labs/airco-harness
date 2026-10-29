@@ -1,13 +1,19 @@
 {
-  "fetched": "2026-10-18T08:33:53Z",
+  "fetched": "2026-10-29T11:05:40Z",
   "files": [
     {
-      "path": "imgeo-2.2/concept-register-imgeo.ttl",
-      "url": "https://definities.geostandaarden.nl/rest/v1/imgeo/data?format=text/turtle",
-      "last_modified": "Wed, 08 Jul 2026 07:51:38 GMT",
-      "etag": "\"85976-65614c70396fd\"",
-      "sha256": "67c104bf13f56a8ee85418231e1a02c9705b123cc90852bb6da08e770a3ff36e",
-      "bytes": 547190
+      "path": "dsfl/bag-arnhem-sport-panden.geojson",
+      "url": "https://service.pdok.nl/lv/bag/wfs/v2_0",
+      "method": "POST",
+      "body_sha256": "f9e033e7af8243c47a2ef81ed836f1774ba969722655fe22e27ae8e2ff1d2108",
+      "sha256": "7c15f43de8a49be5e969b5c1fcf3b0c6b55280fa1e5f823c7da7a8a9afab4a0b",
+      "bytes": 194528
+    },
+    {
+      "path": "dsfl/bag-arnhem-sport-verblijfsobjecten.json",
+      "url": "https://service.pdok.nl/lv/bag/wfs/v2_0?service=WFS&version=2.0.0&request=GetFeature&typeNames=bag%3Averblijfsobject&outputFormat=application%2Fjson&srsName=EPSG%3A4326&count=1000&FILTER=%3CFilter+xmlns%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3CAnd%3E%3CPropertyIsLike+wildCard%3D%22%2A%22+singleChar%3D%22.%22+escapeChar%3D%22%21%22%3E%3CValueReference%3Egebruiksdoel%3C%2FValueReference%3E%3CLiteral%3E%2Asportfunctie%2A%3C%2FLiteral%3E%3C%2FPropertyIsLike%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EArnhem%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3C%2FAnd%3E%3C%2FFilter%3E",
+      "sha256": "498f5fdae994c272a96e383351231c05edc8fe44ae2564ced8e70c801f91ad2d",
+      "bytes": 90753
     },
     {
       "path": "imgeo-2.2/catalog-bgt.html",
@@ -24,6 +30,14 @@
       "etag": "\"43781-65df24e0516f2\"",
       "sha256": "5e94147dc2c9da065131ebba00de0ee633eb02cae68ce8c91c0150be02333e2d",
       "bytes": 276353
+    },
+    {
+      "path": "imgeo-2.2/concept-register-imgeo.ttl",
+      "url": "https://definities.geostandaarden.nl/rest/v1/imgeo/data?format=text/turtle",
+      "last_modified": "Wed, 08 Jul 2026 07:51:38 GMT",
+      "etag": "\"85976-65614c70396fd\"",
+      "sha256": "67c104bf13f56a8ee85418231e1a02c9705b123cc90852bb6da08e770a3ff36e",
+      "bytes": 547190
     },
     {
       "path": "imgeo-2.2/imgeo2.2-mim-logisch.xml",

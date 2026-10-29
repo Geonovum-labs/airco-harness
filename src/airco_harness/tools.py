@@ -1,9 +1,13 @@
-"""The fetch tool of the agent inspect: a web page as markdown, in pages of 40,000 characters.
+"""The tools the harness gives an agent: fetch, and show_on_map for a test set that asks for a map.
 
-Inspect has web_search() but no plain fetch, and an agent that can search
-but not read would not get far with a catalog. The tool records nothing
-itself: the URL is in the tool call and the page in the tool result, both in
-the log, which is what the source scorer and a rescore read.
+fetch returns a web page as markdown, in pages of 40,000 characters. Inspect
+has web_search() but no plain fetch, and an agent that can search but not read
+would not get far with a catalog. show_on_map stands for the map a citizen
+sees in a chat app; it says nothing about the registrations behind it.
+
+Neither tool records anything itself: the arguments are in the tool call and
+the result in the tool message, both in the log, which is what the scorers and
+a rescore read.
 """
 
 from __future__ import annotations
@@ -14,6 +18,8 @@ import urllib.parse
 import httpx
 from inspect_ai.tool import Tool, ToolError, tool
 from markdownify import markdownify
+
+from validators import geo
 
 PAGE_CHARS = 40_000
 USER_AGENT = "Mozilla/5.0 (compatible; airco-harness/0.1; +https://github.com/Geonovum-labs/airco-harness)"
@@ -76,5 +82,22 @@ def fetch() -> Tool:
         if not 200 <= resp.status_code < 300:
             raise ToolError(f"HTTP {resp.status_code}")
         return page(as_text(resp.content, resp.headers.get("content-type", "")), start)
+
+    return execute
+
+
+@tool(name="show_on_map")
+def show_on_map() -> Tool:
+    async def execute(geojson: dict) -> str:
+        """Show places on the map that the user sees. A new call replaces the map.
+
+        Args:
+          geojson: A GeoJSON FeatureCollection with coordinates in WGS84 (longitude, latitude). Put a name or address in the properties of each feature.
+        """
+        try:
+            places = geo.points(geojson)
+        except ValueError as error:
+            raise ToolError(str(error)) from error
+        return f"{len(places)} places shown on the map."
 
     return execute

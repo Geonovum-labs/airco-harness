@@ -48,6 +48,15 @@ def _arguments(block: ContentToolUse) -> dict:
     return arguments if isinstance(arguments, dict) else {}
 
 
+def map_shown(messages: list[ChatMessage]) -> str:
+    """The GeoJSON of the last show_on_map call that succeeded, as JSON text, or "" when the agent showed no map.
+    The last call counts because a new call replaces the map. Claude Code names the tool mcp__map__show_on_map."""
+    shown = [u["arguments"].get("geojson") for u in tool_uses(messages) if u["tool"].endswith("show_on_map") and not u["failed"]]
+    if not shown:
+        return ""
+    return shown[-1] if isinstance(shown[-1], str) else json.dumps(shown[-1], ensure_ascii=False)
+
+
 def retrievals(messages: list[ChatMessage]) -> list[dict]:
     """Every web retrieval in the conversation: a tool use with a url argument. A search is not a retrieval."""
     out = []
@@ -60,11 +69,12 @@ def retrievals(messages: list[ChatMessage]) -> list[dict]:
 
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})
 def quality():
-    """correct, complete, invented and parseable from the rule named in the sample's expected.json."""
+    """correct, complete, invented and parseable from the rule named in the sample's expected.json.
+    The answer is the last message, or for the rule map, what the agent showed on the map."""
 
     async def score(state: TaskState, target: Target) -> Score:
         case = rules.Case.load(target.text)
-        answer = state.output.completion
+        answer = map_shown(state.messages) if case.rule == "map" else state.output.completion
         result = await asyncio.to_thread(rules.assess, answer, case)
         return Score(value=result.score_value(), answer=answer, explanation=result.explanation, metadata={"rule": case.rule, **result.details})
 

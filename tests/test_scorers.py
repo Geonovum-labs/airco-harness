@@ -113,3 +113,19 @@ def test_retrievals_are_the_url_tool_calls_with_their_outcome():
         {"tool": "WebFetch", "url": "https://example.org/unanswered", "status": 0},
     ]
     assert retrievals([]) == []
+
+
+def test_the_map_is_the_last_show_on_map_call_that_succeeded():
+    from airco_harness.scorers import map_shown
+
+    def call(i: int, name: str, geojson: object, error: str | None = None) -> list:
+        return [
+            ChatMessageAssistant(content="", tool_calls=[ToolCall(id=f"map-{i}", function=name, arguments={"geojson": geojson})]),
+            ChatMessageTool(content="", tool_call_id=f"map-{i}", function=name, error=ToolCallError("unknown", error) if error else None),
+        ]
+
+    first, second = {"type": "FeatureCollection", "features": []}, {"type": "Point", "coordinates": [5.9, 51.98]}
+    assert map_shown(fetch_messages([("https://example.org/", None)])) == ""
+    assert map_shown([*call(0, "show_on_map", first), *call(1, "mcp__map__show_on_map", second)]) == json.dumps(second)
+    assert map_shown([*call(0, "show_on_map", first), *call(1, "show_on_map", "not geojson", "invalid")]) == json.dumps(first)
+    assert map_shown(call(0, "mcp__map__show_on_map", json.dumps(second))) == json.dumps(second)
