@@ -78,14 +78,18 @@ def test_a_measurement_with_a_map_question_gets_a_map_page_on_the_brt_in_rd(tmp_
     [run] = shown["runs"]
     assert (run["agent"], len(run["shown"]), run["missing"], run["unmatched"]) == ("inspect", len(must), [], [[5.905, 51.976]])
     pages.build(tmp_path / "reports", tmp_path / "site")
-    page = (tmp_path / "site" / name / "maps.html").read_text(encoding="utf-8")
+    page = (tmp_path / "site" / name / "report.html").read_text(encoding="utf-8")
     assert "brt/achtergrondkaart/wmts/v2_0/grijs/EPSG:28992" in page and "proj4leaflet" in page
     data = json.loads(page.split('<script type="application/json" id="maps-data">')[1].split("</script>")[0])
     assert data["runs"] == shown["runs"] and len(data["samples"]["dsfl-02"]["panden"]["features"]) == len(panden)
-    assert 'href="maps.html"' in (tmp_path / "site" / name / "report.html").read_text(encoding="utf-8")
+    # The map sits between the heading of the section of map questions and its table, which the script reads.
+    section = page.split('<h2 id="maps-heading">Map questions per run</h2>')[1]
+    assert section.index('id="map"') < section.index('<div id="maps"></div><div class="tablewrap">')
+    assert 'href="#maps-heading"' in page and not (tmp_path / "site" / name / "maps.html").exists()
 
 
-def test_a_measurement_without_map_questions_has_no_map_page(tmp_path):
+def test_a_measurement_without_map_questions_has_no_map(tmp_path):
     test_site_lists_each_measurement_with_report_and_viewer(tmp_path)
-    assert not (tmp_path / "site" / "2026-10-19T21-45-03" / "maps.html").exists()
+    page = (tmp_path / "site" / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")
+    assert "leaflet" not in page and "maps-heading" not in page
     assert report.maps(str(tmp_path / "reports" / "2026-10-19T21-45-03" / "logs" / "logs")) is None

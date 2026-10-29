@@ -5,10 +5,11 @@
 
 For each reports/<name>/logs/logs with .eval files, the site gets the Inspect
 viewer (inspect view bundle) under <name>/viewer/ and report.md as
-<name>/report.html, plus an index of all measurements, newest first. A
-measurement with map questions also gets <name>/maps.html: each run's map on
-the BRT achtergrondkaart of PDOK in RD (EPSG:28992), from the maps.json that
-airco-report wrote and the BAG extract under sources/. The site
+<name>/report.html, plus an index of all measurements, newest first. In the
+report of a measurement with a map question, the section of map questions
+gets a map: the BRT achtergrondkaart of PDOK in RD (EPSG:28992) with the run
+chosen in its table, from the maps.json that airco-report wrote and the BAG
+extract under sources/. The site
 is built from what is in git and is not committed itself;
 .github/workflows/pages.yml builds and deploys it on every push to main.
 """
@@ -30,6 +31,7 @@ import pandas as pd
 
 from validators import sources
 
+from . import report as report_module
 from .matrix import strip_absolute_log_dir
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -59,6 +61,7 @@ table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
 th, td { padding: 0.55rem 0.8rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
 th { background: var(--head); color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
 tbody tr:last-child td { border-bottom: none; }
+td:first-child { white-space: nowrap; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 td.when { white-space: nowrap; font-weight: 600; }
 td.when small { display: block; font-weight: 400; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; }
@@ -158,9 +161,15 @@ MAP_HEAD = """<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/lib
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
 <style>
-#map { height: 70vh; min-height: 22rem; border: 1px solid var(--line); border-radius: 8px; margin: 0.75rem 0; }
-label { font-weight: 600; margin-right: 0.5rem; }
-select { font: inherit; max-width: 100%; padding: 0.2rem 0.4rem; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; }
+#map { height: clamp(22rem, 65vh, 40rem); border: 1px solid var(--line); border-radius: 8px; margin: 0.75rem 0; scroll-margin-top: 1rem; }
+button.show { font: inherit; font-size: 0.85rem; cursor: pointer; color: var(--accent); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.1rem 0.5rem; white-space: nowrap; }
+button.show:hover { border-color: var(--accent); }
+tr.selected td { background: var(--chip); }
+#maps + .tablewrap td:nth-child(-n+6) { white-space: nowrap; }
+#maps + .tablewrap td:nth-child(7) { min-width: 13rem; }
+#maps + .tablewrap td:nth-child(8) { font-size: 0.85rem; color: var(--muted); overflow-wrap: anywhere; }
+#maps + .tablewrap .same { display: none; }
+tr.selected button.show { color: var(--fg); font-weight: 600; }
 ul.legend { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-size: 0.92rem; }
 ul.legend span.key { display: inline-block; width: 0.9rem; height: 0.9rem; border-radius: 3px; margin-right: 0.4rem; vertical-align: -0.1rem; border: 2px solid; }
 ul.legend span.dot { border-radius: 50%; }
@@ -185,8 +194,6 @@ const STYLES = {
   extra: {color: "#0969da", fillColor: "#218bff", fillOpacity: 0.5, weight: 2},
   rest: {color: "#6e7781", fillOpacity: 0, weight: 1},
 };
-const select = document.getElementById("run");
-data.runs.forEach((r, i) => select.add(new Option(`${r.sample} · ${r.model} · ${r.agent} · variant ${r.variant} · epoch ${r.epoch}`, i)));
 let layer = null;
 function show(i) {
   const run = data.runs[i], sample = data.samples[run.sample];
@@ -208,10 +215,40 @@ function show(i) {
   map.fitBounds(panden.getBounds(), {padding: [20, 20]});
   for (const k in counts) document.getElementById(`n-${k}`).textContent = counts[k];
   document.getElementById("n-unmatched").textContent = run.unmatched.length;
-  document.getElementById("result").textContent = run.explanation;
+  document.getElementById("result").textContent = `${run.sample} · ${run.model} · ${run.agent} · variant ${run.variant} · epoch ${run.epoch}: ${run.explanation}`;
 }
-select.addEventListener("change", () => show(select.value));
-show(0);
+// Each row of the table of map questions gets a button for its run, matched on model, agent, variant, sample and epoch.
+const key = r => [r.model, r.agent, r.variant, r.sample, r.epoch].join("|");
+const index = new Map(data.runs.map((r, i) => [key(r), i]));
+const table = document.getElementById("maps").nextElementSibling.querySelector("table");
+// The button goes first, so it stays in view when the table scrolls sideways on a small screen.
+const head = table.querySelector("thead tr");
+head.insertBefore(document.createElement("th"), head.firstChild).textContent = "Map";
+const choose = (tr, i) => {
+  table.querySelectorAll("tr.selected").forEach(r => r.classList.remove("selected"));
+  tr.classList.add("selected");
+  show(i);
+};
+let first = null;
+for (const tr of table.querySelectorAll("tbody tr")) {
+  const [model, agent, variant, sample, epoch] = [...tr.cells].slice(0, 5).map(td => td.textContent.trim());
+  const i = index.get(key({model, agent, variant, sample, epoch}));
+  const cell = tr.insertCell(0);
+  if (i === undefined) continue;
+  const button = cell.appendChild(document.createElement("button"));
+  button.className = "show";
+  button.textContent = "Show";
+  button.addEventListener("click", () => { choose(tr, i); document.getElementById("map").scrollIntoView({behavior: "smooth", block: "start"}); });
+  const run = data.runs[i];
+  if (!first && (run.shown.length || run.unmatched.length)) first = [tr, i];
+}
+// Variant and sample are the same in every row of most measurements; the line above the map names them, so their columns can go.
+for (const column of [3, 4]) {
+  const cells = [...table.rows].map(row => row.cells[column]);
+  if (new Set(cells.slice(1).map(td => td.textContent.trim())).size === 1) cells.forEach(td => td.classList.add("same"));
+}
+// Open on the first run that put anything on the map.
+if (first) choose(...first); else show(0);
 """
 
 
@@ -235,8 +272,12 @@ def _panden(reference: str) -> dict:
     }
 
 
-def maps_page(name: str, shown: dict) -> str:
-    """Each run of a map question on the BRT achtergrondkaart: the panden of the sample's extract, coloured by what the run showed."""
+MAP_HEADING = "<h2>Map questions per run</h2>"
+
+
+def map_section(shown: dict) -> str:
+    """The map of the section of map questions: the panden of the sample's extract on the BRT achtergrondkaart, coloured by
+    what the run chosen in the section's table showed."""
     data = {"samples": {s: {"must": e["must"], "panden": _panden(e["reference"])} for s, e in shown["samples"].items()}, "runs": shown["runs"]}
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     legend = [
@@ -249,20 +290,26 @@ def maps_page(name: str, shown: dict) -> str:
         f'<li><span class="key" style="border-color:{line};background:{fill}"></span>{text}: <b id="n-{key}">0</b></li>' for key, line, fill, text in legend
     )
     items += '<li><span class="key dot" style="border-color:#9a6700;background:#d4a72c"></span>place on no pand: <b id="n-unmatched">0</b></li>'
-    body = (
-        f'<nav class="crumbs"><a href="../">All measurements</a> &rsaquo; {html.escape(when(name))} &middot; <a href="report.html">Report</a> &middot; <a href="viewer/">Viewer</a></nav>\n'
-        "<h1>Maps</h1>\n"
-        '<p class="lead">What each agent showed with <code>show_on_map</code>, on the BRT achtergrondkaart in RD. '
-        "The panden are those of the BAG extract the rule scores against, each with a marker in its colour; a place the agent put on no pand is a yellow dot. "
-        "A dot outside the Netherlands, such as with longitude and latitude swapped, is counted but not in view.</p>\n"
-        '<p><label for="run">Run</label><select id="run"></select></p>\n'
+    return (
+        "<p>What the agent showed with <code>show_on_map</code>, on the BRT achtergrondkaart in RD. "
+        "Each pand of the BAG extract that the rule scores against has a marker in its colour; a place on no pand is a yellow dot, "
+        "and one outside the Netherlands, such as with longitude and latitude swapped, is counted but not in view. "
+        "Choose a run with <b>Show</b> in the table below the map.</p>\n"
         '<p class="result" id="result"></p>\n'
-        '<div id="map" role="img" aria-label="Map of the run"></div>\n'
+        '<div id="map" role="img" aria-label="Map of the chosen run"></div>\n'
         f'<ul class="legend">{items}</ul>\n'
         f'<script type="application/json" id="maps-data">{payload}</script>\n'
-        f"<script>{MAP_SCRIPT}</script>"
     )
-    return page(f"{SITE}: maps {name}", body, home="../", head=MAP_HEAD)
+
+
+def with_map(report: str, shown: dict) -> str:
+    """The report with the map between the heading of the section of map questions and its table, and the script that ties the two."""
+    heading = report.index(MAP_HEADING)
+    table = report.index('<div class="tablewrap">', heading)
+    # The note in report.md points a reader of the markdown to the site; on the site the map is right here.
+    intro = report[heading + len(MAP_HEADING) : table].replace(f"<p>{report_module.MAP_NOTE}</p>", "")
+    before = report[:heading] + MAP_HEADING.replace("<h2>", '<h2 id="maps-heading">') + intro
+    return f'{before}{map_section(shown)}<div id="maps"></div>{report[table:]}\n<script>{MAP_SCRIPT}</script>'
 
 
 def build(reports: Path, out: Path) -> list[dict]:
@@ -276,10 +323,11 @@ def build(reports: Path, out: Path) -> list[dict]:
         report = tables_scrollable(markdown.markdown((m / "report.md").read_text(encoding="utf-8"), extensions=["tables"]))
         has_maps = (m / "maps.json").exists()
         if has_maps:
-            (target / "maps.html").write_text(maps_page(m.name, json.loads((m / "maps.json").read_text(encoding="utf-8"))), encoding="utf-8")
-        to_maps = ' &middot; <a href="maps.html">Maps</a>' if has_maps else ""
+            report = with_map(report, json.loads((m / "maps.json").read_text(encoding="utf-8")))
+        to_maps = ' &middot; <a href="#maps-heading">Map questions</a>' if has_maps else ""
         crumbs = f'<nav class="crumbs"><a href="../">All measurements</a> &rsaquo; {html.escape(when(m.name))} &middot; <a href="viewer/">Open the viewer</a>{to_maps}</nav>'
-        (target / "report.html").write_text(page(f"{SITE}: report {m.name}", f"{crumbs}\n{report}", home="../"), encoding="utf-8")
+        body = f"{crumbs}\n{report}"
+        (target / "report.html").write_text(page(f"{SITE}: report {m.name}", body, home="../", head=MAP_HEAD if has_maps else ""), encoding="utf-8")
         rows.append(summary(m))
     (out / "index.html").write_text(index(rows), encoding="utf-8")
     (out / ".nojekyll").touch()

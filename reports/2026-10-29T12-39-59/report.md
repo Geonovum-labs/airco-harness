@@ -46,11 +46,27 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 ## `correct` / `complete` per sample (mean over epochs)
 
-| sample   | ('anthropic/claude-haiku-5-5', 'claude-code', '0')   | ('anthropic/claude-haiku-5-5', 'inspect', '0')   | ('anthropic/claude-haiku-5-5', 'model', '0')   | ('anthropic/claude-opus-5-5', 'claude-code', '0')   | ('anthropic/claude-opus-5-5', 'inspect', '0')   | ('anthropic/claude-opus-5-5', 'model', '0')   | ('anthropic/claude-sonnet-5-5', 'claude-code', '0')   | ('anthropic/claude-sonnet-5-5', 'inspect', '0')   | ('anthropic/claude-sonnet-5-5', 'model', '0')   | ('mistral/mistral-large-4', 'inspect', '0')   | ('mistral/mistral-large-4', 'model', '0')   | ('mistral/mistral-medium-2604', 'inspect', '0')   | ('mistral/mistral-medium-2604', 'model', '0')   | ('mistral/mistral-small-2603', 'inspect', '0')   | ('mistral/mistral-small-2603', 'model', '0')   |
-|:---------|:-----------------------------------------------------|:-------------------------------------------------|:-----------------------------------------------|:----------------------------------------------------|:------------------------------------------------|:----------------------------------------------|:------------------------------------------------------|:--------------------------------------------------|:------------------------------------------------|:----------------------------------------------|:--------------------------------------------|:--------------------------------------------------|:------------------------------------------------|:-------------------------------------------------|:-----------------------------------------------|
-| dsfl-02  | 0.33 / 0.42                                          | 0.00 / 0.02                                      | 0.00 / 0.00                                    | 1.00 / 1.00                                         | 1.00 / 1.00                                     | 0.00 / 0.00                                   | 0.67 / 1.00                                           | 1.00 / 1.00                                       | 0.00 / 0.00                                     | 0.00 / 0.01                                   | 0.00 / 0.00                                 | 0.00 / 0.01                                       | 0.00 / 0.00                                     | 0.00 / 0.00                                      | 0.00 / 0.00                                    |
+| Model                       | Agent       |   Variant | dsfl-02     |
+|:----------------------------|:------------|----------:|:------------|
+| anthropic/claude-haiku-5-5  | claude-code |         0 | 0.33 / 0.42 |
+| anthropic/claude-haiku-5-5  | inspect     |         0 | 0.00 / 0.02 |
+| anthropic/claude-haiku-5-5  | model       |         0 | 0.00 / 0.00 |
+| anthropic/claude-opus-5-5   | claude-code |         0 | 1.00 / 1.00 |
+| anthropic/claude-opus-5-5   | inspect     |         0 | 1.00 / 1.00 |
+| anthropic/claude-opus-5-5   | model       |         0 | 0.00 / 0.00 |
+| anthropic/claude-sonnet-5-5 | claude-code |         0 | 0.67 / 1.00 |
+| anthropic/claude-sonnet-5-5 | inspect     |         0 | 1.00 / 1.00 |
+| anthropic/claude-sonnet-5-5 | model       |         0 | 0.00 / 0.00 |
+| mistral/mistral-large-4     | inspect     |         0 | 0.00 / 0.01 |
+| mistral/mistral-large-4     | model       |         0 | 0.00 / 0.00 |
+| mistral/mistral-medium-2604 | inspect     |         0 | 0.00 / 0.01 |
+| mistral/mistral-medium-2604 | model       |         0 | 0.00 / 0.00 |
+| mistral/mistral-small-2603  | inspect     |         0 | 0.00 / 0.00 |
+| mistral/mistral-small-2603  | model       |         0 | 0.00 / 0.00 |
 
 ## Map questions per run
+
+On the site, this section has a map of each run on the BRT achtergrondkaart.
 
 | Model | Agent | Variant | Sample | Epoch | On the map | Retrieved from |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -99,8 +115,6 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 | mistral/mistral-small-2603 | inspect | 0 | dsfl-02 | 2 | 0 of 61 required panden shown; 4 places match no pand | nothing |
 | mistral/mistral-small-2603 | model | 0 | dsfl-02 | 3 | not parseable: no map shown | nothing |
 | mistral/mistral-small-2603 | inspect | 0 | dsfl-02 | 3 | 0 of 61 required panden shown; 4 places match no pand | nothing |
-
-On the site, the page Maps of this measurement draws each map on the BRT achtergrondkaart.
 
 ## Runs with an error or at a limit
 

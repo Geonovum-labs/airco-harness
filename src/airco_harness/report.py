@@ -39,6 +39,7 @@ TOKEN_FIELDS = {
     "tokens_cache_write": "input_tokens_cache_write",
     "tokens_reasoning": "reasoning_tokens",
 }
+MAP_NOTE = "On the site, this section has a map of each run on the BRT achtergrondkaart."
 SCORERS = {"score_quality": ["correct", "complete", "invented", "parseable"], "score_source": ["source"]}
 
 
@@ -240,11 +241,13 @@ def markdown(table: pd.DataFrame, log_dir: str) -> str:
         lines += [
             "## Map questions per run",
             "",
+            MAP_NOTE,
+            "",
             "| Model | Agent | Variant | Sample | Epoch | On the map | Retrieved from |",
             "| --- | --- | --- | --- | --- | --- | --- |",
         ]
         lines += [f"| {r.model} | {r.agent} | {r.variant} | {r.sample} | {r.epoch} | {r.explanation} | {r.hosts or 'nothing'} |" for r in map_runs.itertuples()]
-        lines += ["", "On the site, the page Maps of this measurement draws each map on the BRT achtergrondkaart.", ""]
+        lines.append("")
     failed = table[table["failed"] | table["limit"].ne("")]
     if len(failed):
         lines += [
@@ -263,11 +266,11 @@ def _per_sample(table: pd.DataFrame) -> str:
     done = table[~table["failed"]]
     if not len(done):
         return "no completed runs"
-    columns = ["model", "agent", "variant"]
-    correct = done.pivot_table(index="sample", columns=columns, values="correct", aggfunc="mean")
-    complete = done.pivot_table(index="sample", columns=columns, values="complete", aggfunc="mean")
+    rows = ["model", "agent", "variant"]
+    correct = done.pivot_table(index=rows, columns="sample", values="correct", aggfunc="mean")
+    complete = done.pivot_table(index=rows, columns="sample", values="complete", aggfunc="mean")
     cells = correct.combine(complete, lambda a, b: a.map(_fmt).str.cat(b.map(_fmt), sep=" / "))
-    return cells.to_markdown()
+    return cells.reset_index().rename(columns={"model": "Model", "agent": "Agent", "variant": "Variant"}).to_markdown(index=False)
 
 
 def build_parser() -> argparse.ArgumentParser:
