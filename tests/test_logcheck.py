@@ -1,9 +1,11 @@
 import json
 import sys
+from pathlib import Path
 
 import pytest
 from inspect_ai import Task, eval
 from inspect_ai.dataset import Sample
+from inspect_ai.log import read_eval_log
 from inspect_ai.model import ModelOutput, get_model
 from inspect_ai.solver import generate
 
@@ -78,3 +80,24 @@ def test_google_key_in_a_map_url_from_a_web_search_is_not_a_finding(tmp_path):
 def test_image_name_with_a_pixel_density_is_not_an_email(tmp_path):
     (tmp_path / "page.md").write_text("![](/img/stamkaart_1@2x.webp) mail huren@example.nl", encoding="utf-8")
     assert hits(tmp_path) == ["email huren@example.nl"]
+
+
+def test_mask_emails_replaces_addresses_in_a_log_and_keeps_the_rest(tmp_path):
+    page = "Contact: info@sportbedrijfarnhem.nl, or imgeo@geonovum.nl for the standard. Tel 026 123."
+    model = get_model("mockllm/model", custom_outputs=[ModelOutput.from_content("mockllm/model", f"I read: {page}")])
+    [log] = eval(Task(dataset=[Sample(input=page)], solver=generate()), model=model, log_dir=str(tmp_path), display="none")
+    path = Path(log.location)
+    assert hits(path) == ["email info@sportbedrijfarnhem.nl"]
+
+    assert logcheck.mask_emails(path) > 2  # in the input, the answer, the events, the journal and the summaries
+    assert hits(path) == []
+    [sample] = read_eval_log(str(path)).samples
+    assert sample.output.completion == "I read: Contact: [email removed], or imgeo@geonovum.nl for the standard. Tel 026 123."
+    assert logcheck.mask_emails(path) == 0
+
+
+def test_mask_emails_in_a_json_file(tmp_path):
+    listing = tmp_path / "listing.json"
+    listing.write_text(json.dumps({"a": ["x@example.nl", "huren@geldersepoort.nl"]}), encoding="utf-8")
+    assert logcheck.mask_emails(listing) == 1
+    assert json.loads(listing.read_text(encoding="utf-8")) == {"a": ["[email removed]", "huren@geldersepoort.nl"]}
