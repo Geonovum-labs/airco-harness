@@ -18,7 +18,7 @@ import pandas as pd
 from inspect_ai.analysis import SampleSummary, samples_df
 from inspect_ai.log import read_eval_log
 
-from validators import source_check, sources
+from validators import geo, source_check, sources
 
 from . import report, scorers
 
@@ -73,9 +73,15 @@ def questions(log_dir: Path) -> dict[str, str]:
 ERROR_LINE = re.compile(r"^(?:[\w.]+(?:Error|Exception)\b.*|curl: \(\d+\).*|.*returned error: .*)$")
 
 
-def error_line(output: str) -> str:
-    """The line that says why a retrieval failed: the final exception of a traceback, or curl's error, else the first line.
-    A shell command's output starts with "Exit code n", which says only that it failed."""
+def error_line(output: str, url: str = "", shared: bool = False) -> str:
+    """The line that says why a retrieval failed: a "label:code" line of this URL, the final exception of a traceback,
+    or curl's error, else the first line. A shell command's output starts with "Exit code n", which says only that it
+    failed. For a command with several URLs, only a line labelled for this URL; the rest is about the command."""
+    own = scorers.labelled_line(output, url) if url else None
+    if own:
+        return own
+    if shared:
+        return ""
     lines = [line.strip() for line in output.splitlines() if line.strip()]
     telling = [line for line in lines if ERROR_LINE.match(line)]
     if telling:
@@ -84,11 +90,52 @@ def error_line(output: str) -> str:
     return (rest[0] if rest else lines[0] if lines else "")[:200]
 
 
-def retrievals(log_dir: Path) -> dict[tuple[str, str, int], dict[str, list[dict]]]:
-    """Per run (log file, sample, epoch), what it retrieved, read from the conversation with the harness's current rules:
-    "retrieved", the URLs that worked with their class for source, and "errors", the ones that failed with their HTTP
-    status when known and the line that says why. A log scored under older rules therefore shows what they would find
-    now; its source score is the one in the log."""
+DETAILS = 12  # properties per place
+DETAIL_CHARS = 300
+
+
+def details(properties: object) -> dict[str, str]:
+    """What the agent said about a place: the properties of its GeoJSON feature as text, the first DETAILS of them."""
+    if not isinstance(properties, dict):
+        return {}
+    text = {}
+    for key, value in list(properties.items())[:DETAILS]:
+        if value is None or value == "":
+            continue
+        shown = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
+        text[str(key)[:60]] = shown[:DETAIL_CHARS]
+    return text
+
+
+def places(messages: list, expected: dict) -> list[dict]:
+    """Every place the agent showed with show_on_map: where it put it, the pand of the reference extract it matched
+    (by the same rule as the scorer, else null), and its details."""
+    shown = scorers.map_shown(messages)
+    try:
+        collection = json.loads(shown) if shown else None
+    except ValueError:
+        return []
+    features = collection.get("features") if isinstance(collection, dict) and collection.get("type") == "FeatureCollection" else [collection]
+    reference = geo.Reference.load(expected["reference"])
+    out = []
+    for feature in features or []:
+        if not isinstance(feature, dict):
+            continue
+        try:
+            points = geo.points(feature)
+        except ValueError:
+            continue
+        info = details(feature.get("properties"))
+        for point in points:
+            out.append({"lon": round(point.x, 6), "lat": round(point.y, 6), "pand": reference.nearest(point, expected["tolerance_m"]), "details": info})
+    return out
+
+
+def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str, str, int], dict[str, list[dict]]]:
+    """Per run (log file, sample, epoch), what the conversation shows, read with the harness's current rules:
+    "retrieved", the URLs that worked with their class for source; "errors", the ones that failed with their HTTP
+    status when known and the line that says why; and for a map question "places", what the agent put on the map.
+    A log scored under older rules therefore shows what they would find now; its scores are the ones in the log."""
     out: dict[tuple[str, str, int], dict[str, list[dict]]] = {}
     for path in sorted(log_dir.glob("*.eval")):
         for sample in read_eval_log(str(path)).samples or []:
@@ -100,12 +147,15 @@ def retrievals(log_dir: Path) -> dict[tuple[str, str, int], dict[str, list[dict]
                     ok.setdefault(r["url"], {"url": r["url"], "class": source_check.classify(r["url"], standard) if standard else "other"})
                     continue
                 output = (r.get("error") or "").strip()
-                error = error_line(output)
+                error = error_line(output, r["url"], r.get("shared", False))
                 entry = {"url": r["url"], "status": r["status"] or None, "error": error, "tool": r["tool"], "times": 0}
                 if output and output != error:
                     entry["output"] = output[:1500]
                 failed.setdefault((r["url"], r["status"], error), entry)["times"] += 1
-            out[(path.name, str(sample.id), sample.epoch)] = {"retrieved": list(ok.values()), "errors": list(failed.values())}
+            run = {"retrieved": list(ok.values()), "errors": list(failed.values())}
+            if str(sample.id) in map_samples:
+                run["places"] = places(sample.messages, map_samples[str(sample.id)])
+            out[(path.name, str(sample.id), sample.epoch)] = run
     return out
 
 
@@ -139,13 +189,14 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     table = report.runs(str(log_dir))
     shown = report.maps(str(log_dir)) or {"samples": {}, "runs": []}
     on_map = {(r["model"], r["agent"], r["variant"], r["sample"], r["epoch"]): r for r in shown["runs"]}
-    fetched = retrievals(log_dir)
+    fetched = conversations(log_dir, shown["samples"])
     runs = []
     for row in table.to_dict("records"):
-        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, **fetched.get((row["log"], row["sample"], row["epoch"]), {"retrieved": [], "errors": []})}
+        seen = fetched.get((row["log"], row["sample"], row["epoch"]), {})
+        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, "retrieved": seen.get("retrieved", []), "errors": seen.get("errors", [])}
         found = on_map.get((row["model"], row["agent"], row["variant"], row["sample"], row["epoch"]))
         if found:
-            run["map"] = {k: found[k] for k in ("shown", "missing", "unmatched")}
+            run["map"] = {k: found[k] for k in ("shown", "missing", "unmatched")} | {"places": seen.get("places", [])}
         runs.append(run)
     facts = {
         "name": name,

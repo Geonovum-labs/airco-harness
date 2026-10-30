@@ -158,6 +158,16 @@ ul.legend .key.sq { border-radius: 3px; border: 2px solid; }
 /* Map of a map question */
 #map { height: clamp(20rem, 60vh, 34rem); border: 1px solid var(--line); border-radius: 8px; margin: 0.5rem 0; }
 p.result { font-weight: 600; margin: 0.25rem 0; }
+/* What the agent said about a place, in the map's popup */
+.leaflet-popup-content .placeinfo { font: 0.85rem/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1f2328; }
+.placeinfo .placehead { margin-bottom: 0.35rem; }
+.placeinfo .placehead .muted, .placeinfo .muted { color: #59636e; }
+.placeinfo .placesub { margin-top: 0.4rem; font-size: 0.75rem; font-weight: 600; color: #59636e; text-transform: uppercase; letter-spacing: 0.03em; }
+.placeinfo dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.1rem 0.6rem; margin: 0.2rem 0; }
+.placeinfo dt { color: #59636e; }
+.placeinfo dd { margin: 0; overflow-wrap: anywhere; }
+.placeinfo .coords { font-size: 0.75rem; color: #59636e; }
+.placeinfo p { margin: 0.2rem 0; }
 .scoring { font-size: 0.9rem; margin: 0.4rem 0 0.6rem; }
 .scoring p { margin: 0; }
 .scoring details { margin: 0.3rem 0 0; }

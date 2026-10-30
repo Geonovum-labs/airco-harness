@@ -13,6 +13,54 @@ export const KINDS = {
 };
 const PLACE = {radius: 6, color: "#9a6700", fillColor: "#d4a72c", fillOpacity: 0.9, weight: 2};
 
+// The agent's own name for a place, from the properties it gave its GeoJSON feature.
+const NAME_KEYS = ["name", "naam", "title", "titel", "label", "adres", "address"];
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function nameOf(place) {
+  const key = NAME_KEYS.find(k => place.details[k]);
+  return key ? place.details[key] : null;
+}
+
+/** A popup with what the agent said about the places on one pand (or on no pand): its details, as text; an http(s)
+ * value becomes a link. The details come from the logs, so they go in as text nodes. */
+function placeInfo(title, kind, list) {
+  const box = el("div", "placeinfo");
+  const head = el("div", "placehead");
+  head.append(el("b", null, title), " ", el("span", "muted", kind));
+  box.append(head);
+  if (!list.length) {
+    box.append(el("p", "muted", "The agent did not put this pand on the map."));
+    return box;
+  }
+  for (const place of list) {
+    const entries = Object.entries(place.details);
+    if (list.length > 1) box.append(el("div", "placesub", `Place ${list.indexOf(place) + 1} of ${list.length}`));
+    if (!entries.length) box.append(el("p", "muted", "The agent gave no details for this place."));
+    else {
+      const dl = el("dl");
+      for (const [key, value] of entries) {
+        const dd = el("dd");
+        if (/^https?:\/\//.test(value)) {
+          const a = el("a", null, value);
+          a.href = value; a.target = "_blank"; a.rel = "noopener noreferrer";
+          dd.append(a);
+        } else dd.textContent = value;
+        dl.append(el("dt", null, key), dd);
+      }
+      box.append(dl);
+    }
+    box.append(el("div", "coords", `put at ${place.lat.toFixed(5)}, ${place.lon.toFixed(5)}`));
+  }
+  return box;
+}
+
 const geometry = new Map();
 /** The panden of a reference extract, fetched once per page. */
 export function panden(root, file) {
@@ -30,6 +78,10 @@ export function createMap(element) {
   let layer = null;
   return function show(run, must, collection) {
     const required = new Set(must), shown = new Set(run.map ? run.map.shown : []);
+    // What the agent said per pand; a run from before the places were kept has none, and the map still colours the panden.
+    const places = run.map && run.map.places ? run.map.places : null;
+    const byPand = new Map();
+    for (const place of places || []) if (place.pand) (byPand.get(place.pand) || byPand.set(place.pand, []).get(place.pand)).push(place);
     const kind = id => required.has(id) ? (shown.has(id) ? "hit" : "missing") : (shown.has(id) ? "extra" : "rest");
     const counts = {hit: 0, missing: 0, extra: 0, rest: 0, unmatched: run.map ? run.map.unmatched.length : 0};
     // A pand is a few meters wide, so at city scale a dot in its colour marks it too.
@@ -37,18 +89,28 @@ export function createMap(element) {
     const polygons = L.geoJSON(collection, {
       style: f => KINDS[kind(f.properties.identificatie)].style,
       onEachFeature: (f, l) => {
-        const k = kind(f.properties.identificatie);
+        const id = f.properties.identificatie, k = kind(id);
         counts[k]++;
-        const tip = `pand ${f.properties.identificatie}: ${KINDS[k].label}`;
-        l.bindTooltip(tip);
-        dots.push(L.circleMarker(l.getBounds().getCenter(),
-          {...KINDS[k].style, radius: k === "rest" ? 3 : 5, fillOpacity: k === "rest" ? 0 : 0.9}).bindTooltip(tip));
+        const own = byPand.get(id) || [];
+        const name = own.map(nameOf).find(Boolean);
+        const tip = `${name ? `${name} · ` : ""}pand ${id}: ${KINDS[k].label}`;
+        const dot = L.circleMarker(l.getBounds().getCenter(), {...KINDS[k].style, radius: k === "rest" ? 3 : 5, fillOpacity: k === "rest" ? 0 : 0.9});
+        for (const layer of [l, dot]) {
+          layer.bindTooltip(tip);
+          if (places) layer.bindPopup(() => placeInfo(`pand ${id}`, KINDS[k].label, own), {maxWidth: 360});
+        }
+        dots.push(dot);
       },
     });
-    const places = (run.map ? run.map.unmatched : []).map(([lon, lat]) =>
-      L.circleMarker([lat, lon], PLACE).bindTooltip(`on no pand: ${lat.toFixed(5)}, ${lon.toFixed(5)}`));
+    const loose = places ? places.filter(p => !p.pand) : (run.map ? run.map.unmatched : []).map(([lon, lat]) => ({lon, lat, details: {}}));
+    const markers = loose.map(place => {
+      const name = nameOf(place);
+      const marker = L.circleMarker([place.lat, place.lon], PLACE).bindTooltip(`${name ? `${name} · ` : ""}on no pand: ${place.lat.toFixed(5)}, ${place.lon.toFixed(5)}`);
+      if (places) marker.bindPopup(() => placeInfo(name || "Place on no pand", "invented, on no pand", [place]), {maxWidth: 360});
+      return marker;
+    });
     if (layer) layer.remove();
-    layer = L.layerGroup([polygons, ...dots, ...places]).addTo(map);
+    layer = L.layerGroup([polygons, ...dots, ...markers]).addTo(map);
     map.invalidateSize();
     map.fitBounds(polygons.getBounds(), {padding: [20, 20]});
     return counts;

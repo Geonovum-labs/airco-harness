@@ -361,7 +361,7 @@ function failureBadge(x) {
 
 function failure(x) {
   if (x.status) return String(x.status);
-  if (/connect/i.test(x.error)) return "no connection";
+  if (/connect/i.test(x.error) || /:000$/.test(x.error)) return "no connection";
   if (/timeout/i.test(x.error)) return "timeout";
   if (/^exit code/i.test(x.error)) return "command failed";
   return "failed";
@@ -432,7 +432,7 @@ function pairDetail(name, [model, agent], runs) {
         entry.note ? h("details", {}, h("summary", {text: `Why these panden${onMap.some(r => r.sample !== s) ? ` (${s})` : ""}`}), h("p", {text: entry.note})) : null);
     });
     section.append(h("p", {class: "muted", style: "margin:0.25rem 0"}, "What the agent showed with ", h("code", {text: "show_on_map"}),
-      ", on the BRT achtergrondkaart in RD; each pand has a marker in its colour."),
+      ", on the BRT achtergrondkaart in RD; each pand has a marker in its colour. Click a pand or a dot for what the agent said about that place."),
       ...scoring, result, element, counts);
     const draw = createMap(element);
     showOnMap = async run => {

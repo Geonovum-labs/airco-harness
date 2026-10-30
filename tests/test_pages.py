@@ -85,7 +85,7 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     name = "2026-10-29T12-10-00"
     must = json.loads((report.rules.TESTSETS_DIR / "dsfl/samples/dsfl-02/expected.json").read_text(encoding="utf-8"))["must"]
     panden = json.loads(sources.path("dsfl/bag-arnhem-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
-    river = {"type": "Feature", "geometry": {"type": "Point", "coordinates": [5.905, 51.976]}, "properties": {}}
+    river = {"type": "Feature", "geometry": {"type": "Point", "coordinates": [5.905, 51.976]}, "properties": {"name": "Roeivereniging", "sport": {"type": "roeien"}}}
     geojson = {"type": "FeatureCollection", "features": [f for f in panden if f["properties"]["identificatie"] in must] + [river]}
     steps = [
         ModelOutput.for_tool_call("mockllm/model", "show_on_map", {"geojson": geojson}),
@@ -104,6 +104,10 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     data = strict(site / "data.json")
     [run] = [r for r in data["runs"] if r["m"] == name]
     assert (run["agent"], len(run["map"]["shown"]), run["map"]["missing"], run["map"]["unmatched"]) == ("inspect", len(must), [], [[5.905, 51.976]])
+    # What the agent said per place: matched to its pand by the scorer's rule, the river on none, the details as text.
+    places = run["map"]["places"]
+    assert {p["pand"] for p in places if p["pand"]} == set(must)
+    assert [p["details"] for p in places if not p["pand"]] == [{"name": "Roeivereniging", "sport": '{"type": "roeien"}'}]
     entry = data["maps"]["dsfl-02"]
     assert entry["must"] == must and entry["optional"] == len(panden) - len(must) and entry["note"].startswith("The question is ambiguous on purpose")
     assert len(strict(site / entry["panden"])["features"]) == len(panden)
@@ -171,6 +175,9 @@ def test_the_error_line_is_the_one_that_says_why():
         == "urllib.error.HTTPError: HTTP Error 400: Bad Request"
     )
     assert error_line("Exit code 7\ncurl: (7) Failed to connect to overpass-api.de port 443") == "curl: (7) Failed to connect to overpass-api.de port 443"
-    assert error_line("Exit code 7\npdok:404\noverpass:000") == "pdok:404"
+    output = "Exit code 7\npdok:404\noverpass:000"
+    assert error_line(output, "https://overpass-api.de/api/status", shared=True) == "overpass:000"
+    assert error_line(output, "https://api.pdok.nl/lv/bag/ogc/v2/collections", shared=True) == "pdok:404"
+    assert error_line("Exit code 1\nTraceback ...\nValueError: x", "https://a.example/", shared=True) == ""
     assert error_line("HTTP 404") == "HTTP 404"
     assert error_line("") == ""
