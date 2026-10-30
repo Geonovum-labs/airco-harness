@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import urllib.parse
 from pathlib import Path
 
@@ -95,6 +96,23 @@ def _tool_calls(messages: pd.DataFrame) -> pd.Series:
     return messages[messages["role"] == "tool"].groupby("sample_id").size()
 
 
+# Within a provider, models from small to capable, as the site orders them (site/app.js, TIERS); a name without a known
+# tier goes after the known ones, alphabetically. tests/test_site_stats.py holds the two orders to each other.
+TIERS = [("nano", 0), ("mini", 1), ("small", 1), ("haiku", 1), ("flash", 1), ("medium", 2), ("sonnet", 2), ("large", 3), ("opus", 3), ("pro", 3), ("fable", 4)]
+
+
+def model_order(model: str) -> tuple[str, int, str]:
+    """Sort key of a model: provider, tier, name."""
+    name = model.split("/")[-1].lower()
+    tier = next((rank for word, rank in TIERS if re.search(rf"(^|[-_.]){word}([-_.]|$)", name)), 9)
+    return (model.split("/")[0] if "/" in model else "", tier, model)
+
+
+def _by_model(column: pd.Series) -> pd.Series:
+    """For sort_values: models in model_order, other columns as they are."""
+    return column.map(model_order) if column.name == "model" else column
+
+
 def _testset_version(metadata: object) -> str:
     """The test set version the task wrote into the eval metadata; empty for a log from before it did."""
     meta = json.loads(metadata) if isinstance(metadata, str) else metadata if isinstance(metadata, dict) else {}
@@ -149,7 +167,7 @@ def runs(log_dir: str) -> pd.DataFrame:
             out[key] = values.map(lambda d, k=key: d.get(k)).astype(float)
     at_limit = out["limit"].ne("")
     out.loc[at_limit, QUALITY] = out.loc[at_limit, QUALITY].fillna(0)
-    return out.sort_values(["model", "variant", "sample", "epoch"]).reset_index(drop=True)
+    return out.sort_values(["model", "variant", "sample", "epoch"], key=_by_model, kind="stable").reset_index(drop=True)
 
 
 def maps(log_dir: str) -> dict | None:
@@ -188,7 +206,8 @@ def _mean_se(per_sample: pd.Series) -> tuple[float, float]:
 
 def summary(table: pd.DataFrame) -> pd.DataFrame:
     rows = []
-    for (model, agent, variant), group in table.groupby(["model", "agent", "variant"]):
+    groups = sorted(table.groupby(["model", "agent", "variant"]), key=lambda item: (model_order(item[0][0]), item[0][1:]))
+    for (model, agent, variant), group in groups:
         done = group[~group["failed"]]
         per_sample = done.groupby("sample")[QUALITY + TRAJECTORY].mean()
         row = {
@@ -286,6 +305,7 @@ def _per_sample(table: pd.DataFrame) -> str:
     correct = done.pivot_table(index=rows, columns="sample", values="correct", aggfunc="mean")
     complete = done.pivot_table(index=rows, columns="sample", values="complete", aggfunc="mean")
     cells = correct.combine(complete, lambda a, b: a.map(_fmt).str.cat(b.map(_fmt), sep=" / "))
+    cells = cells.loc[sorted(cells.index, key=lambda key: (model_order(key[0]), key[1:]))]
     return cells.reset_index().rename(columns={"model": "Model", "agent": "Agent", "variant": "Variant"}).to_markdown(index=False)
 
 

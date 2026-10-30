@@ -70,3 +70,29 @@ def test_site_statistics_equal_the_report(tmp_path):
         assert (row["cost_per_correct"] is None) == math.isnan(r["cost_per_correct"])
         if row["cost_per_correct"] is not None:
             assert row["cost_per_correct"] == pytest.approx(r["cost_per_correct"])
+
+
+MODELS = ["mistral/mistral-small-2603", "anthropic/claude-opus-5-5", "openai-api/kadaster/qwen3.5-27b", "anthropic/claude-sonnet-5-5",
+          "mistral/mistral-large-4", "anthropic/claude-haiku-5-5", "mistral/mistral-medium-2604", "anthropic/claude-fable-5-1", "mockllm/model"]  # fmt: skip
+ORDER = """
+import {readFileSync} from "node:fs";
+const src = readFileSync(APP, "utf-8");
+const code = src.slice(src.indexOf("const TIERS"), src.indexOf("function sortedModels"));
+const {byModel} = new Function(`${code}; return {byModel};`)();
+console.log(JSON.stringify(JSON.parse(readFileSync(0, "utf-8")).sort(byModel)));
+"""
+
+
+def test_models_are_ordered_by_tier_in_the_report():
+    assert sorted(MODELS, key=report.model_order) == [
+        "anthropic/claude-haiku-5-5", "anthropic/claude-sonnet-5-5", "anthropic/claude-opus-5-5", "anthropic/claude-fable-5-1",
+        "mistral/mistral-small-2603", "mistral/mistral-medium-2604", "mistral/mistral-large-4", "mockllm/model", "openai-api/kadaster/qwen3.5-27b",
+    ]  # fmt: skip
+
+
+@pytest.mark.skipif(NODE is None, reason="node is not installed")
+def test_the_site_orders_models_as_the_report_does(tmp_path):
+    script = tmp_path / "order.mjs"
+    script.write_text(ORDER.replace("APP", json.dumps(str(STATS.with_name("app.js")))), encoding="utf-8")
+    result = subprocess.run([NODE, str(script)], input=json.dumps(MODELS), capture_output=True, text=True, check=True)
+    assert json.loads(result.stdout) == sorted(MODELS, key=report.model_order)

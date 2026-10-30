@@ -140,8 +140,21 @@ function cellValue(group, metric) {
 function runsOf(filter) {
   return data.runs.filter(filter);
 }
+// Within a provider, models from small to capable, so a row or a colour reads as a step up. A name without a known tier
+// goes after the known ones, alphabetically.
+const TIERS = [["nano", 0], ["mini", 1], ["small", 1], ["haiku", 1], ["flash", 1], ["medium", 2], ["sonnet", 2], ["large", 3], ["opus", 3], ["pro", 3], ["fable", 4]];
+function tier(model) {
+  const name = model.split("/").pop().toLowerCase();
+  const found = TIERS.find(([word]) => new RegExp(`(^|[-_.])${word}([-_.]|$)`).test(name));
+  return found ? found[1] : 9;
+}
+/** Compare two model names: by provider, then by tier, then by name. */
+function byModel(a, b) {
+  const provider = m => (m.includes("/") ? m.split("/")[0] : "");
+  return provider(a).localeCompare(provider(b)) || tier(a) - tier(b) || a.localeCompare(b);
+}
 function sortedModels(runs) {
-  return [...new Set(runs.map(r => r.model))].sort();
+  return [...new Set(runs.map(r => r.model))].sort(byModel);
 }
 function sortedAgents(runs) {
   const order = ["model", "inspect", "claude-code"];
@@ -315,7 +328,37 @@ function urlText(url) {
   }
 }
 
+/** Open the URL popover next to its button: below it, else above it, else in the larger of the two spaces with
+its height cut to fit, so the header with the host and the close button always stays in view. */
+function placePopover(button) {
+  urlPopover.style.maxHeight = "";
+  urlPopover.showPopover();
+  const r = button.getBoundingClientRect(), margin = 8, gap = 6;
+  const below = innerHeight - r.bottom - gap - margin, above = r.top - gap - margin;
+  const natural = urlPopover.offsetHeight;
+  let top;
+  if (natural <= below) top = r.bottom + gap;
+  else if (natural <= above) top = r.top - gap - natural;
+  else if (below >= above) { urlPopover.style.maxHeight = `${below}px`; top = r.bottom + gap; }
+  else { urlPopover.style.maxHeight = `${above}px`; top = margin; }
+  urlPopover.style.top = `${top}px`;
+  urlPopover.style.left = `${Math.max(margin, Math.min(r.left, innerWidth - urlPopover.offsetWidth - margin))}px`;
+}
+
 /** A short name for why a retrieval failed: its HTTP status, or the kind of error. */
+const WHY = {
+  "no connection": "No HTTP status: the connection failed before a server answered.",
+  timeout: "No HTTP status: no answer came within the time limit.",
+  "command failed": "No HTTP status: the shell command failed and its output names no status for this URL.",
+  failed: "No HTTP status: the retrieval failed without an answer.",
+};
+
+/** The badge of a failed retrieval: red with the HTTP status the server sent, or grey and dashed when no server answered. */
+function failureBadge(x) {
+  const kind = failure(x);
+  return h("span", {class: `badge failed${x.status ? "" : " nostatus"}`, text: kind, title: x.status ? `HTTP ${x.status}: the server answered with this status.` : WHY[kind]});
+}
+
 function failure(x) {
   if (x.status) return String(x.status);
   if (/connect/i.test(x.error)) return "no connection";
@@ -340,7 +383,9 @@ function retrievedFrom(run) {
   return [...hosts].map(([host, {ok: good, failed: bad}]) => {
     const cls = good.length ? good[0].class : null;
     const kinds = [...new Set(bad.map(failure))];
-    const failPill = bad.length ? h("span", {class: "badge failed", text: kinds.length === 1 ? (bad.length > 1 ? `${kinds[0]} ×${bad.length}` : kinds[0]) : `${bad.length} failed`}) : null;
+    const answered = bad.some(x => x.status);
+    const failPill = bad.length ? h("span", {class: `badge failed${answered ? "" : " nostatus"}`, title: answered ? "Failed; a server answered with an error status" : WHY[kinds[0]] || WHY.failed,
+      text: kinds.length === 1 ? (bad.length > 1 ? `${kinds[0]} ×${bad.length}` : kinds[0]) : `${bad.length} failed`}) : null;
     // The usual class, other, goes without a badge in the table; the popover always names it.
     const button = h("button", {class: "hostbtn", type: "button", "aria-haspopup": "dialog",
       title: [good.length ? `${good.length} URL${good.length === 1 ? "" : "s"} retrieved` : null, bad.length ? `${bad.length} failed` : null].filter(Boolean).join(", ") + ` from ${host}`},
@@ -352,16 +397,13 @@ function retrievedFrom(run) {
         h("ol", {class: "urls"}, good.map(x => h("li", {}, urlItem(x)))));
       if (bad.length) parts.push(h("p", {class: "popnote failed", text: `${bad.length} URL${bad.length === 1 ? "" : "s"} failed · does not count for source`}),
         h("ol", {class: "urls"}, bad.map(x => h("li", {class: "fail"},
-          h("span", {class: "badge failed", text: failure(x)}),
+          failureBadge(x),
           h("div", {class: "failurl"}, urlItem(x), x.error && ![`HTTP ${x.status}`, String(x.status)].includes(x.error) ? h("div", {class: "errmsg", text: x.error}) : null,
             x.times > 1 ? h("div", {class: "errmsg", text: `${x.times} times`}) : null,
             ["Bash", "code_execution"].includes(x.tool) ? h("div", {class: "errmsg", text: x.status ? "status from the output of a shell command" : "a shell command that failed; its output names no status for this URL"}) : null,
             x.output ? h("details", {class: "output"}, h("summary", {text: "Output"}), h("pre", {text: x.output})) : null)))));
       urlPopover.replaceChildren(...parts);
-      urlPopover.showPopover();
-      const r = button.getBoundingClientRect(), w = urlPopover.offsetWidth, ht = urlPopover.offsetHeight;
-      urlPopover.style.left = `${Math.max(8, Math.min(r.left, innerWidth - w - 8))}px`;
-      urlPopover.style.top = `${r.bottom + 6 + ht > innerHeight ? Math.max(8, r.top - ht - 6) : r.bottom + 6}px`;
+      placePopover(button);
       close.focus();
     });
     return h("div", {class: "hostline"}, button);
@@ -446,7 +488,7 @@ function comparePage() {
 
   // Groups in a fixed order, so a value keeps its colour when others are switched off.
   let values = [...new Set(runs.map(r => value(r, by)))];
-  values = by === "measurement" ? values.sort() : by === "agent" ? sortedAgents(runs).filter(a => values.includes(a)) : values.sort();
+  values = by === "measurement" ? values.sort() : by === "agent" ? sortedAgents(runs).filter(a => values.includes(a)) : by === "model" ? values.sort(byModel) : values.sort();
   const capped = values.slice(-8);
   const chosen = p.get("groups") ? p.get("groups").split(",").filter(v => capped.includes(v)) : by === "measurement" ? capped.slice(-3) : capped;
   const label = v => (by === "measurement" ? when(v, true) : v);
@@ -485,7 +527,7 @@ function comparePage() {
   const rowDims = ["model", "agent"].filter(d => d !== by);
   const rowKey = r => rowDims.map(d => r[d]).join(" · ");
   const points = [], tableRows = [];
-  const rowOrder = [...new Set(runs.filter(r => chosen.includes(value(r, by))).sort((a, b) => a.model.localeCompare(b.model) || sortedAgents([a, b]).indexOf(a.agent) - sortedAgents([a, b]).indexOf(b.agent)).map(rowKey))];
+  const rowOrder = [...new Set(runs.filter(r => chosen.includes(value(r, by))).sort((a, b) => byModel(a.model, b.model) || sortedAgents([a, b]).indexOf(a.agent) - sortedAgents([a, b]).indexOf(b.agent)).map(rowKey))];
   let disjoint = 0;
   for (const row of rowOrder) {
     const present = chosen.map(g => [g, runs.filter(r => rowKey(r) === row && value(r, by) === g)]).filter(([, rs]) => rs.some(r => !r.failed));
