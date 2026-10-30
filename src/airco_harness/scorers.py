@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+import urllib.parse
 
 from inspect_ai.model import ChatMessage, ContentToolUse
 from inspect_ai.scorer import Score, Target, mean, scorer, stderr
@@ -92,16 +93,31 @@ OUTPUT_STATUS = re.compile(
 )
 
 
-def _status(use: dict) -> int:
+# A line such as "pdok:404" that a command printed with curl -w "pdok:%{http_code}": a label of the agent's own and a code.
+LABELLED_STATUS = re.compile(r"^\s*([A-Za-z][\w.-]*):(\d{3})\s*$", re.MULTILINE)
+
+
+def labelled_line(output: str, url: str) -> str | None:
+    """The "label:code" line of a command's output whose label is part of the URL's host, as "pdok" of api.pdok.nl."""
+    host = urllib.parse.urlsplit(url).netloc.lower()
+    return next((m[0].strip() for m in LABELLED_STATUS.finditer(output) if m[1].lower() in host), None)
+
+
+def _status(use: dict, url: str) -> int:
     """200 for a retrieval that worked; for one that failed, the HTTP status its error names, else 0.
 
-    The fetch tool fails with "HTTP 404". A shell command or code prints its own errors: a status found in that output
-    counts only when the command holds one URL, as with several it is not known which URL got it. A curl that got
-    a 404 without -f still exits 0, so it counts as worked."""
+    The fetch tool fails with "HTTP 404". A shell command or code prints its own errors. A "label:code" line whose
+    label is part of the URL's host gives that URL's status; any other status in the output counts only when the
+    command holds one URL, as with several it is not known which URL got it. A curl that got a 404 without -f still
+    exits 0, so it counts as worked."""
     if not use["failed"]:
         return 200
     error = use["error"] or ""
     if use["tool"] in ("Bash", "code_execution"):
+        line = labelled_line(error, url)
+        if line:
+            code = int(line.rsplit(":", 1)[1])
+            return code if 400 <= code < 600 else 0
         if len(set(_urls(use))) != 1:
             return 0
         found = OUTPUT_STATUS.search(error)
@@ -113,12 +129,16 @@ def _status(use: dict) -> int:
 def retrievals(messages: list[ChatMessage]) -> list[dict]:
     """Every web retrieval in the conversation: a tool use with a url argument, or a URL in a shell
     command or code that ran, as when an agent uses curl. A search is not a retrieval.
-    A failed retrieval also carries its error, and its HTTP status when the tool gave one."""
-    return [
-        {"tool": use["tool"], "url": url, "status": _status(use), **({"error": use["error"]} if use["failed"] else {})}
-        for use in tool_uses(messages)
-        for url in _urls(use)
-    ]
+    A failed retrieval also carries its error, its HTTP status when known, and for a command with several URLs
+    "shared", as its output is about all of them."""
+    out = []
+    for use in tool_uses(messages):
+        urls = _urls(use)
+        shared = len(set(urls)) > 1
+        for url in urls:
+            failed = {"error": use["error"], **({"shared": True} if shared else {})} if use["failed"] else {}
+            out.append({"tool": use["tool"], "url": url, "status": _status(use, url), **failed})
+    return out
 
 
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})

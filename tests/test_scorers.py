@@ -186,3 +186,13 @@ def test_a_namespace_in_a_command_is_not_a_retrieval():
     messages = [ChatMessageAssistant(content="", tool_calls=[ToolCall(id="b1", function="Bash", arguments={"command": command})]),
                 ChatMessageTool(content="ok", tool_call_id="b1", function="Bash")]  # fmt: skip
     assert [r["url"] for r in retrievals(messages)] == ["https://service.pdok.nl/lv/bag/wfs/v2_0", "https://bag.basisregistraties.overheid.nl/sparql"]
+
+
+def test_a_labelled_status_line_belongs_to_the_url_whose_host_has_the_label():
+    """curl -w "pdok:%{http_code}" for two URLs: each URL gets its own line; 000 is no connection, so no status."""
+    command = (
+        'curl -w "pdok:%{http_code}" "https://api.pdok.nl/lv/bag/ogc/v2/collections" ; curl -w "overpass:%{http_code}" "https://overpass-api.de/api/status"'
+    )
+    messages = [ChatMessageAssistant(content="", tool_calls=[ToolCall(id="b1", function="Bash", arguments={"command": command})]),
+                ChatMessageTool(content="", tool_call_id="b1", function="Bash", error=ToolCallError("unknown", "Exit code 7\npdok:404\noverpass:000"))]  # fmt: skip
+    assert [(r["url"].split("/")[2], r["status"], r.get("shared")) for r in retrievals(messages)] == [("api.pdok.nl", 404, True), ("overpass-api.de", 0, True)]
