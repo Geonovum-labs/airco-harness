@@ -114,7 +114,7 @@ The report averages each sample over its epochs first, then takes the mean and s
 | Page | What it shows |
 | --- | --- |
 | Measurements | Every measurement, and per test set the newest run of each sample as a heatmap of models by agents |
-| Measurement | One measurement: a heatmap of the chosen metric, and for the chosen model and agent its runs with a link into the Inspect viewer; for a map question, each run's map on the BRT achtergrondkaart of PDOK in RD (EPSG:28992), where a click on a place shows what the agent said about it |
+| Measurement | One measurement: a heatmap of the chosen metric, and for the chosen model and agent its runs with a link into the Inspect viewer; for a map question, each run's map on the BRT achtergrondkaart of PDOK in RD (EPSG:28992), with a table of what the agent said about each place; a click on a place or a row shows it on the map |
 | Compare | Measurements over time, variants, models or agents side by side, with the rest held fixed |
 
 The pages compute their numbers the way `airco-report` does: per sample over its epochs, then the mean and standard error over the samples; `tests/test_site_stats.py` holds the two to the same result. The comparison scores every group in a row on the samples all groups in that row have, so a difference is never a difference in questions, and it warns when the groups differ in test set version, commit or limits. Measurements of different samples have nothing to compare: comparing over time needs the same sample in more than one measurement. The map draws with Leaflet and Proj4Leaflet; NL Maps (nlmaps.nl) offers the BRT only in Web Mercator. To look at it before you push:

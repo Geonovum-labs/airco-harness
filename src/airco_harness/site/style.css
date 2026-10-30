@@ -158,16 +158,37 @@ ul.legend .key.sq { border-radius: 3px; border: 2px solid; }
 /* Map of a map question */
 #map { height: clamp(20rem, 60vh, 34rem); border: 1px solid var(--line); border-radius: 8px; margin: 0.5rem 0; }
 p.result { font-weight: 600; margin: 0.25rem 0; }
-/* What the agent said about a place, in the map's popup */
-.leaflet-popup-content .placeinfo { font: 0.85rem/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1f2328; }
-.placeinfo .placehead { margin-bottom: 0.35rem; }
-.placeinfo .placehead .muted, .placeinfo .muted { color: #59636e; }
-.placeinfo .placesub { margin-top: 0.4rem; font-size: 0.75rem; font-weight: 600; color: #59636e; text-transform: uppercase; letter-spacing: 0.03em; }
-.placeinfo dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.1rem 0.6rem; margin: 0.2rem 0; }
-.placeinfo dt { color: #59636e; }
-.placeinfo dd { margin: 0; overflow-wrap: anywhere; }
-.placeinfo .coords { font-size: 0.75rem; color: #59636e; }
-.placeinfo p { margin: 0.2rem 0; }
+/* What the agent said about a place, in the map's popup: themed like the site's other popovers */
+#map .leaflet-popup-content-wrapper { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.18); padding: 0; }
+#map .leaflet-popup-tip { background: var(--bg); border: 1px solid var(--line); box-shadow: none; }
+#map .leaflet-popup-content { margin: 0; min-width: 14rem; }
+#map a.leaflet-popup-close-button { color: var(--muted); top: 0.35rem; right: 0.35rem; }
+#map a.leaflet-popup-close-button:hover { color: var(--fg); }
+.placeinfo { font: 0.85rem/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); max-height: 18rem; overflow-y: auto; }
+.placeinfo .placehead { padding: 0.55rem 2rem 0.5rem 0.75rem; background: var(--head); border-bottom: 1px solid var(--line); border-radius: 8px 8px 0 0; }
+.placeinfo .placehead b { display: block; font-size: 0.95rem; }
+.placeinfo .placehead .muted { font-size: 0.78rem; }
+.placeinfo .muted { color: var(--muted); }
+.placeinfo .placesub { margin: 0.55rem 0.75rem 0; font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.placeinfo table { width: auto; margin: 0.35rem 0.75rem 0; font-size: 0.85rem; }
+.placeinfo th, .placeinfo td { padding: 0.2rem 0; border-bottom: 1px solid var(--line); background: none; }
+.placeinfo th { padding-right: 0.9rem; color: var(--muted); font-size: 0.8rem; font-weight: 500; text-transform: none; letter-spacing: 0; }
+.placeinfo td { overflow-wrap: anywhere; }
+.placeinfo tr:last-child th, .placeinfo tr:last-child td { border-bottom: 0; }
+.placeinfo a { color: var(--accent); }
+.placeinfo .coords { margin: 0.3rem 0.75rem 0.6rem; font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.placeinfo p { margin: 0.5rem 0.75rem 0.6rem; }
+/* The places of the shown run, below the map; long lists scroll under a fixed header */
+.places { margin-bottom: 1.5rem; }
+.places h3 { margin: 1.25rem 0 0.2rem; }
+.places p { margin: 0; }
+.places .tablewrap { max-height: 24rem; overflow: auto; }
+.places thead th { position: sticky; top: 0; z-index: 1; }
+.places td { font-size: 0.88rem; padding: 0.35rem 0.75rem; }
+.places td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; color: var(--muted); }
+.places .key { display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.4rem; vertical-align: -0.05rem; }
+.places .key.sq { border-radius: 3px; border: 2px solid; }
+.places button.linklike { font: inherit; background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
 .scoring { font-size: 0.9rem; margin: 0.4rem 0 0.6rem; }
 .scoring p { margin: 0; }
 .scoring details { margin: 0.3rem 0 0; }

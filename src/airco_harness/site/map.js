@@ -28,8 +28,16 @@ function nameOf(place) {
   return key ? place.details[key] : null;
 }
 
-/** A popup with what the agent said about the places on one pand (or on no pand): its details, as text; an http(s)
- * value becomes a link. The details come from the logs, so they go in as text nodes. */
+/** A value the agent gave, as text; an http(s) value becomes a link. The details come from the logs, so they go in
+ * as text nodes. */
+export function detailValue(value) {
+  if (!/^https?:\/\//.test(value)) return document.createTextNode(value);
+  const a = el("a", null, value);
+  a.href = value; a.target = "_blank"; a.rel = "noopener noreferrer";
+  return a;
+}
+
+/** A popup with what the agent said about the places on one pand (or on no pand): per place a table of its details. */
 function placeInfo(title, kind, list) {
   const box = el("div", "placeinfo");
   const head = el("div", "placehead");
@@ -44,17 +52,15 @@ function placeInfo(title, kind, list) {
     if (list.length > 1) box.append(el("div", "placesub", `Place ${list.indexOf(place) + 1} of ${list.length}`));
     if (!entries.length) box.append(el("p", "muted", "The agent gave no details for this place."));
     else {
-      const dl = el("dl");
+      const table = el("table");
       for (const [key, value] of entries) {
-        const dd = el("dd");
-        if (/^https?:\/\//.test(value)) {
-          const a = el("a", null, value);
-          a.href = value; a.target = "_blank"; a.rel = "noopener noreferrer";
-          dd.append(a);
-        } else dd.textContent = value;
-        dl.append(el("dt", null, key), dd);
+        const row = el("tr");
+        const td = el("td");
+        td.append(detailValue(value));
+        row.append(el("th", null, key), td);
+        table.append(row);
       }
-      box.append(dl);
+      box.append(table);
     }
     box.append(el("div", "coords", `put at ${place.lat.toFixed(5)}, ${place.lon.toFixed(5)}`));
   }
@@ -68,7 +74,8 @@ export function panden(root, file) {
   return geometry.get(file);
 }
 
-/** A map in `element` that draws one run at a time; returns show(run, sample, panden) giving the counts per kind. */
+/** A map in `element` that draws one run at a time; returns show(run, must, panden), which gives the counts per kind
+ * and the places the agent showed, each with the kind of its pand ("invented" on none) and open() to zoom to it. */
 export function createMap(element) {
   const crs = new L.Proj.CRS("EPSG:28992", RD, {resolutions: RESOLUTIONS, origin: [-285401.92, 903401.92],
     bounds: L.bounds([-285401.92, 22598.08], [595401.92, 903401.92])});
@@ -85,12 +92,13 @@ export function createMap(element) {
     const kind = id => required.has(id) ? (shown.has(id) ? "hit" : "missing") : (shown.has(id) ? "extra" : "rest");
     const counts = {hit: 0, missing: 0, extra: 0, rest: 0, unmatched: run.map ? run.map.unmatched.length : 0};
     // A pand is a few meters wide, so at city scale a dot in its colour marks it too.
-    const dots = [];
+    const dots = [], layers = new Map();
     const polygons = L.geoJSON(collection, {
       style: f => KINDS[kind(f.properties.identificatie)].style,
       onEachFeature: (f, l) => {
         const id = f.properties.identificatie, k = kind(id);
         counts[k]++;
+        layers.set(id, l);
         const own = byPand.get(id) || [];
         const name = own.map(nameOf).find(Boolean);
         const tip = `${name ? `${name} · ` : ""}pand ${id}: ${KINDS[k].label}`;
@@ -113,7 +121,16 @@ export function createMap(element) {
     layer = L.layerGroup([polygons, ...dots, ...markers]).addTo(map);
     map.invalidateSize();
     map.fitBounds(polygons.getBounds(), {padding: [20, 20]});
-    return counts;
+    const looseMarker = new Map(loose.map((place, i) => [place, markers[i]]));
+    const listed = (places || []).map(place => ({
+      place,
+      kind: place.pand ? kind(place.pand) : "invented",
+      open() {
+        map.setView([place.lat, place.lon], Math.max(map.getZoom(), 11));
+        (place.pand ? layers.get(place.pand) : looseMarker.get(place)).openPopup([place.lat, place.lon]);
+      },
+    }));
+    return {counts, places: listed};
   };
 }
 

@@ -3,7 +3,7 @@
 // Names and values from the logs are data: they go into the page as text nodes, never as HTML.
 
 import {aggregate, commonSamples, costPerCorrect, groupBy} from "./stats.js";
-import {createMap, KINDS, panden, PLACE_STYLE} from "./map.js";
+import {createMap, detailValue, KINDS, panden, PLACE_STYLE} from "./map.js";
 
 const root = document.body.dataset.root;
 const app = document.getElementById("app");
@@ -410,6 +410,32 @@ function retrievedFrom(run) {
   });
 }
 
+const INVENTED = "invented, on no pand";
+
+/** The colour key of a kind of pand, or of a place on no pand, as the map draws it. */
+function swatch(kind) {
+  if (kind === "invented") return h("span", {class: "key", style: `background:${PLACE_STYLE.fillColor};border:2px solid ${PLACE_STYLE.color}`});
+  const {style} = KINDS[kind];
+  return h("span", {class: "key sq", style: `border-color:${style.color};background:${style.fillOpacity ? style.fillColor : "transparent"}`});
+}
+
+/** What the agent said about each place it showed, one row per place in its order, one column per property it used;
+ * a row zooms the map to its place. A run from before the places were kept has none. */
+function placesTable(places) {
+  if (!places.length) return [];
+  const keys = [...new Set(places.flatMap(p => Object.keys(p.place.details)))];
+  const rows = places.map(({place, kind, open}, i) => h("tr", {},
+    h("td", {class: "num"}, h("button", {class: "linklike", text: String(i + 1), title: "Show on the map", onclick: () => {
+      open(); document.getElementById("map").scrollIntoView({behavior: "smooth", block: "center"});
+    }})),
+    ...keys.map(k => h("td", {}, k in place.details ? detailValue(place.details[k]) : "")),
+    h("td", {class: "nowrap"}, swatch(kind), kind === "invented" ? INVENTED : KINDS[kind].label),
+    h("td", {class: "nowrap mono", text: place.pand || ""})));
+  return [h("h3", {text: `What the agent said about the ${places.length} place${places.length === 1 ? "" : "s"}`}),
+    h("p", {class: "muted", text: "The properties of each feature the agent gave show_on_map. Click a number to see the place on the map."}),
+    table(["#", ...keys, "On the map", "Pand"], rows, [0])];
+}
+
 function pairDetail(name, [model, agent], runs) {
   const ordered = [...runs].sort((a, b) => a.sample.localeCompare(b.sample) || a.epoch - b.epoch);
   const viewer = r => `viewer/#/logs/${encodeURIComponent(r.log)}/samples/sample/${encodeURIComponent(r.sample)}/${r.epoch}/`;
@@ -421,6 +447,7 @@ function pairDetail(name, [model, agent], runs) {
   if (onMap.length) {
     const result = h("p", {class: "result"});
     const counts = h("ul", {class: "legend"});
+    const placeList = h("div", {class: "places"});
     const element = h("div", {id: "map", role: "img", "aria-label": "Map of the chosen run"});
     // How the rule reads the map, per sample: which panden count, and why, from the note in its expected.json.
     const scoring = [...new Set(onMap.map(r => r.sample))].map(s => {
@@ -433,14 +460,15 @@ function pairDetail(name, [model, agent], runs) {
     });
     section.append(h("p", {class: "muted", style: "margin:0.25rem 0"}, "What the agent showed with ", h("code", {text: "show_on_map"}),
       ", on the BRT achtergrondkaart in RD; each pand has a marker in its colour. Click a pand or a dot for what the agent said about that place."),
-      ...scoring, result, element, counts);
+      ...scoring, result, element, counts, placeList);
     const draw = createMap(element);
     showOnMap = async run => {
       const sample = data.maps[run.sample];
-      const c = draw(run, sample.must, await panden(root, sample.panden));
+      const {counts: c, places} = draw(run, sample.must, await panden(root, sample.panden));
       result.textContent = `${run.sample} · epoch ${run.epoch}: ${run.explanation}`;
-      counts.replaceChildren(...Object.entries(KINDS).map(([k, kind]) => h("li", {}, h("span", {class: "key sq", style: `border-color:${kind.style.color};background:${kind.style.fillOpacity ? kind.style.fillColor : "transparent"}`}), `${kind.label}: `, h("b", {text: String(c[k])}))),
-        h("li", {}, h("span", {class: "key", style: `background:${PLACE_STYLE.fillColor};border:2px solid ${PLACE_STYLE.color}`}), "invented, on no pand: ", h("b", {text: String(c.unmatched)})));
+      counts.replaceChildren(...Object.keys(KINDS).map(k => h("li", {}, swatch(k), `${KINDS[k].label}: `, h("b", {text: String(c[k])}))),
+        h("li", {}, swatch("invented"), `${INVENTED}: `, h("b", {text: String(c.unmatched)})));
+      placeList.replaceChildren(...placesTable(places));
       section.querySelectorAll("tr.selected").forEach(tr => tr.classList.remove("selected"));
       document.getElementById(`run-${run.sample}-${run.epoch}`)?.classList.add("selected");
     };
