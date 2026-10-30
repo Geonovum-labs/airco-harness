@@ -30,7 +30,7 @@ function nameOf(place) {
 
 /** A value the agent gave, as text; an http(s) value becomes a link. The details come from the logs, so they go in
  * as text nodes. */
-export function detailValue(value) {
+function detailValue(value) {
   if (!/^https?:\/\//.test(value)) return document.createTextNode(value);
   const a = el("a", null, value);
   a.href = value; a.target = "_blank"; a.rel = "noopener noreferrer";
@@ -74,8 +74,7 @@ export function panden(root, file) {
   return geometry.get(file);
 }
 
-/** A map in `element` that draws one run at a time; returns show(run, must, panden), which gives the counts per kind
- * and the places the agent showed, each with the kind of its pand ("invented" on none) and open() to zoom to it. */
+/** A map in `element` that draws one run at a time; returns show(run, must, panden) giving the counts per kind. */
 export function createMap(element) {
   const crs = new L.Proj.CRS("EPSG:28992", RD, {resolutions: RESOLUTIONS, origin: [-285401.92, 903401.92],
     bounds: L.bounds([-285401.92, 22598.08], [595401.92, 903401.92])});
@@ -92,13 +91,12 @@ export function createMap(element) {
     const kind = id => required.has(id) ? (shown.has(id) ? "hit" : "missing") : (shown.has(id) ? "extra" : "rest");
     const counts = {hit: 0, missing: 0, extra: 0, rest: 0, unmatched: run.map ? run.map.unmatched.length : 0};
     // A pand is a few meters wide, so at city scale a dot in its colour marks it too.
-    const dots = [], layers = new Map();
+    const dots = [];
     const polygons = L.geoJSON(collection, {
       style: f => KINDS[kind(f.properties.identificatie)].style,
       onEachFeature: (f, l) => {
         const id = f.properties.identificatie, k = kind(id);
         counts[k]++;
-        layers.set(id, l);
         const own = byPand.get(id) || [];
         const name = own.map(nameOf).find(Boolean);
         const tip = `${name ? `${name} · ` : ""}pand ${id}: ${KINDS[k].label}`;
@@ -121,16 +119,7 @@ export function createMap(element) {
     layer = L.layerGroup([polygons, ...dots, ...markers]).addTo(map);
     map.invalidateSize();
     map.fitBounds(polygons.getBounds(), {padding: [20, 20]});
-    const looseMarker = new Map(loose.map((place, i) => [place, markers[i]]));
-    const listed = (places || []).map(place => ({
-      place,
-      kind: place.pand ? kind(place.pand) : "invented",
-      open() {
-        map.setView([place.lat, place.lon], Math.max(map.getZoom(), 11));
-        (place.pand ? layers.get(place.pand) : looseMarker.get(place)).openPopup([place.lat, place.lon]);
-      },
-    }));
-    return {counts, places: listed};
+    return counts;
   };
 }
 

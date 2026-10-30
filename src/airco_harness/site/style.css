@@ -178,17 +178,6 @@ p.result { font-weight: 600; margin: 0.25rem 0; }
 .placeinfo a { color: var(--accent); }
 .placeinfo .coords { margin: 0.3rem 0.75rem 0.6rem; font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .placeinfo p { margin: 0.5rem 0.75rem 0.6rem; }
-/* The places of the shown run, below the map; long lists scroll under a fixed header */
-.places { margin-bottom: 1.5rem; }
-.places h3 { margin: 1.25rem 0 0.2rem; }
-.places p { margin: 0; }
-.places .tablewrap { max-height: 24rem; overflow: auto; }
-.places thead th { position: sticky; top: 0; z-index: 1; }
-.places td { font-size: 0.88rem; padding: 0.35rem 0.75rem; }
-.places td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; color: var(--muted); }
-.places .key { display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 50%; margin-right: 0.4rem; vertical-align: -0.05rem; }
-.places .key.sq { border-radius: 3px; border: 2px solid; }
-.places button.linklike { font: inherit; background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
 .scoring { font-size: 0.9rem; margin: 0.4rem 0 0.6rem; }
 .scoring p { margin: 0; }
 .scoring details { margin: 0.3rem 0 0; }
