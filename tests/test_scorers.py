@@ -160,3 +160,29 @@ def test_a_failed_retrieval_keeps_the_http_status_its_tool_names():
         messages.append(ChatMessageAssistant(content="", tool_calls=[ToolCall(id=call_id, function=tool, arguments=arguments)]))
         messages.append(ChatMessageTool(content="", tool_call_id=call_id, function=tool, error=ToolCallError("unknown", error)))
     assert [(r["url"].rsplit("/", 1)[-1], r["status"]) for r in retrievals(messages)] == [("gone", 404), ("secret", 401), ("far", 0), ("x", 0)]
+
+
+def test_a_status_in_the_output_of_a_failed_command_counts_only_for_a_command_with_one_url():
+    traceback = "Exit code 1\nTraceback (most recent call last):\n  ...\nurllib.error.HTTPError: HTTP Error 400: Bad Request"
+    calls = [("p1", {"command": "python3 - <<EOF\nurlopen('https://service.pdok.nl/lv/bag/wfs/v2_0?'+q)\nEOF"}, traceback),
+             ("c1", {"command": 'curl -s -w "%{http_code}" "https://service.pdok.nl/lv/bag/wfs/v2_0?x=1"'}, "Exit code 1\n400\n<?xml ...>"),
+             ("c2", {"command": "curl -f https://example.org/a"}, "Exit code 22\ncurl: (22) The requested URL returned error: 404"),
+             ("c3", {"command": "curl https://example.org/b ; curl https://example.org/c"}, "Exit code 7\npdok:404\noverpass:000"),
+             ("c4", {"command": "curl https://example.org/d"}, "Exit code 7\ncurl: (7) Failed to connect"),
+             ("c5", {"command": 'curl -w "%{http_code}" https://example.org/e | jq .x'}, "Exit code 5\n200\njq: error")]  # fmt: skip
+    messages = []
+    for call_id, arguments, error in calls:
+        messages.append(ChatMessageAssistant(content="", tool_calls=[ToolCall(id=call_id, function="Bash", arguments=arguments)]))
+        messages.append(ChatMessageTool(content="", tool_call_id=call_id, function="Bash", error=ToolCallError("unknown", error)))
+    assert [r["status"] for r in retrievals(messages)] == [400, 400, 404, 0, 0, 0, 0]
+
+
+def test_a_namespace_in_a_command_is_not_a_retrieval():
+    command = (
+        'curl -G "https://service.pdok.nl/lv/bag/wfs/v2_0" --data-urlencode '
+        '\'FILTER=<Filter xmlns="http://www.opengis.net/fes/2.0" xmlns:gml="http://www.opengis.net/gml/3.2"/>\' ; '
+        "curl --data-urlencode 'query=PREFIX bag: <https://bag.basisregistraties.overheid.nl/def/bag#> SELECT ?s' https://bag.basisregistraties.overheid.nl/sparql"
+    )
+    messages = [ChatMessageAssistant(content="", tool_calls=[ToolCall(id="b1", function="Bash", arguments={"command": command})]),
+                ChatMessageTool(content="ok", tool_call_id="b1", function="Bash")]  # fmt: skip
+    assert [r["url"] for r in retrievals(messages)] == ["https://service.pdok.nl/lv/bag/wfs/v2_0", "https://bag.basisregistraties.overheid.nl/sparql"]

@@ -111,17 +111,6 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     assert "leaflet" not in (site / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")
 
 
-def test_retrieved_urls_are_parsed_with_their_class_for_the_popover():
-    from airco_harness.sitedata import retrieved
-
-    text = "https://api.pdok.nl/kadaster/bag/ogc/v2/collections?f=json (authoritative); https://nominatim.openstreetmap.org/search?q=a;b (other)"
-    assert retrieved(text) == [
-        {"url": "https://api.pdok.nl/kadaster/bag/ogc/v2/collections?f=json", "class": "authoritative"},
-        {"url": "https://nominatim.openstreetmap.org/search?q=a;b", "class": "other"},
-    ]
-    assert retrieved("") == retrieved(None) == []
-
-
 def test_a_question_loses_only_the_role_of_a_single_user_message():
     from airco_harness.sitedata import question
 
@@ -172,3 +161,16 @@ def test_a_failed_retrieval_reaches_the_site_with_its_http_status(tmp_path):
         ("secret", 401, "HTTP 401", 1),
     ]
     assert run["retrieved"] == []
+
+
+def test_the_error_line_is_the_one_that_says_why():
+    from airco_harness.sitedata import error_line
+
+    assert (
+        error_line("Exit code 1\nTraceback (most recent call last):\n  File x\nurllib.error.HTTPError: HTTP Error 400: Bad Request")
+        == "urllib.error.HTTPError: HTTP Error 400: Bad Request"
+    )
+    assert error_line("Exit code 7\ncurl: (7) Failed to connect to overpass-api.de port 443") == "curl: (7) Failed to connect to overpass-api.de port 443"
+    assert error_line("Exit code 7\npdok:404\noverpass:000") == "pdok:404"
+    assert error_line("HTTP 404") == "HTTP 404"
+    assert error_line("") == ""

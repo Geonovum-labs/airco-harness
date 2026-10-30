@@ -71,24 +71,42 @@ URL_IN_CODE = re.compile(r"https?://[^\s'\"<>`|\\]+")
 CODE_ARGUMENTS = ("command", "code")  # Claude Code's Bash, a provider's code execution
 
 
+# A URL right after xmlns= in XML, or after PREFIX in SPARQL or Turtle, names a namespace; nothing is fetched from it.
+NAMESPACE_BEFORE = re.compile(r"(?:xmlns(?::[\w-]+)?\s*=\s*\\?[\"']?|@?prefix\s+[\w-]*:\s*<)$", re.IGNORECASE)
+
+
 def _urls(use: dict) -> list[str]:
-    """The url argument of a fetch, or every URL in the shell command or code of a tool use."""
+    """The url argument of a fetch, or every URL in the shell command or code of a tool use except a namespace."""
     url = use["arguments"].get("url")
     if isinstance(url, str):
         return [url]
     code = " ".join(v for k, v in use["arguments"].items() if k in CODE_ARGUMENTS and isinstance(v, str))
-    return [u.rstrip(".,;:)]}") for u in URL_IN_CODE.findall(code)]
+    return [m[0].rstrip(".,;:)]}") for m in URL_IN_CODE.finditer(code) if not NAMESPACE_BEFORE.search(code[max(0, m.start() - 40) : m.start()])]
 
 
 HTTP_STATUS = re.compile(r"\b(?:HTTP|status code)[: ]+([1-5]\d\d)\b")
+# What a failed command prints when a request got an HTTP error: Python's urllib, requests, curl -f, and curl -w "%{http_code}".
+# Only 4xx and 5xx: a failed command never turns into a retrieval that worked.
+OUTPUT_STATUS = re.compile(
+    r"HTTP Error ([45]\d\d)\b|\b([45]\d\d) (?:Client|Server) Error\b|returned error: ([45]\d\d)\b|^\s*(?:\w+:)?([45]\d\d)\s*$", re.MULTILINE
+)
 
 
 def _status(use: dict) -> int:
-    """200 for a retrieval that worked; for one that failed, the HTTP status its error names (fetch writes "HTTP 404"), else 0.
-    A shell command names no status per URL, and a curl that got a 404 still exits 0, so it counts as worked."""
+    """200 for a retrieval that worked; for one that failed, the HTTP status its error names, else 0.
+
+    The fetch tool fails with "HTTP 404". A shell command or code prints its own errors: a status found in that output
+    counts only when the command holds one URL, as with several it is not known which URL got it. A curl that got
+    a 404 without -f still exits 0, so it counts as worked."""
     if not use["failed"]:
         return 200
-    found = HTTP_STATUS.search(use["error"] or "") if use["tool"] not in ("Bash", "code_execution") else None
+    error = use["error"] or ""
+    if use["tool"] in ("Bash", "code_execution"):
+        if len(set(_urls(use))) != 1:
+            return 0
+        found = OUTPUT_STATUS.search(error)
+        return int(next(g for g in found.groups() if g)) if found else 0
+    found = HTTP_STATUS.search(error)
     return int(found[1]) if found else 0
 
 

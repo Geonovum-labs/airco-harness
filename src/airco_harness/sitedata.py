@@ -18,7 +18,7 @@ import pandas as pd
 from inspect_ai.analysis import SampleSummary, samples_df
 from inspect_ai.log import read_eval_log
 
-from validators import sources
+from validators import source_check, sources
 
 from . import report, scorers
 
@@ -37,7 +37,6 @@ RUN_FIELDS = [
     "tool_calls",
     "total_time_s",
     "explanation",
-    "hosts",
     "log",
 ]
 
@@ -71,30 +70,42 @@ def questions(log_dir: Path) -> dict[str, str]:
     return {sample: question(text) for sample, text in df.drop_duplicates("id")[["id", "input"]].itertuples(index=False)}
 
 
-RETRIEVAL = re.compile(r"(\S+) \((authoritative|non_authoritative|other)\)(?:; |$)")
+ERROR_LINE = re.compile(r"^(?:[\w.]+(?:Error|Exception)\b.*|curl: \(\d+\).*|.*returned error: .*)$")
 
 
-def retrieved(text: object) -> list[dict]:
-    """The URLs a run retrieved with success and their class for source, from report's `url (class); url (class)`.
-    A URL holds no whitespace, so the separator cannot occur inside one."""
-    return [{"url": url, "class": cls} for url, cls in RETRIEVAL.findall(str(text or ""))]
+def error_line(output: str) -> str:
+    """The line that says why a retrieval failed: the final exception of a traceback, or curl's error, else the first line.
+    A shell command's output starts with "Exit code n", which says only that it failed."""
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    telling = [line for line in lines if ERROR_LINE.match(line)]
+    if telling:
+        return telling[-1][:200]
+    rest = [line for line in lines if not re.fullmatch(r"Exit code \d+", line)]
+    return (rest[0] if rest else lines[0] if lines else "")[:200]
 
 
-def failures(log_dir: Path) -> dict[tuple[str, str, int], list[dict]]:
-    """Per run (log file, sample, epoch), the retrievals that failed: URL, HTTP status when the tool named one, and the
-    first line of the error. Read from the conversation, so a log scored before the status was kept shows it too."""
-    out: dict[tuple[str, str, int], list[dict]] = {}
+def retrievals(log_dir: Path) -> dict[tuple[str, str, int], dict[str, list[dict]]]:
+    """Per run (log file, sample, epoch), what it retrieved, read from the conversation with the harness's current rules:
+    "retrieved", the URLs that worked with their class for source, and "errors", the ones that failed with their HTTP
+    status when known and the line that says why. A log scored under older rules therefore shows what they would find
+    now; its source score is the one in the log."""
+    out: dict[tuple[str, str, int], dict[str, list[dict]]] = {}
     for path in sorted(log_dir.glob("*.eval")):
         for sample in read_eval_log(str(path)).samples or []:
-            seen: dict[tuple, dict] = {}
+            standard = (sample.metadata or {}).get("standard", "")
+            ok: dict[str, dict] = {}
+            failed: dict[tuple, dict] = {}
             for r in scorers.retrievals(sample.messages):
                 if 200 <= r["status"] < 300:
+                    ok.setdefault(r["url"], {"url": r["url"], "class": source_check.classify(r["url"], standard) if standard else "other"})
                     continue
-                error = (r.get("error") or "").strip().splitlines()[0][:200] if r.get("error") else ""
-                key = (r["url"], r["status"], error)
-                seen.setdefault(key, {"url": r["url"], "status": r["status"] or None, "error": error, "tool": r["tool"], "times": 0})["times"] += 1
-            if seen:
-                out[(path.name, str(sample.id), sample.epoch)] = list(seen.values())
+                output = (r.get("error") or "").strip()
+                error = error_line(output)
+                entry = {"url": r["url"], "status": r["status"] or None, "error": error, "tool": r["tool"], "times": 0}
+                if output and output != error:
+                    entry["output"] = output[:1500]
+                failed.setdefault((r["url"], r["status"], error), entry)["times"] += 1
+            out[(path.name, str(sample.id), sample.epoch)] = {"retrieved": list(ok.values()), "errors": list(failed.values())}
     return out
 
 
@@ -128,11 +139,10 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     table = report.runs(str(log_dir))
     shown = report.maps(str(log_dir)) or {"samples": {}, "runs": []}
     on_map = {(r["model"], r["agent"], r["variant"], r["sample"], r["epoch"]): r for r in shown["runs"]}
-    failed = failures(log_dir)
+    fetched = retrievals(log_dir)
     runs = []
     for row in table.to_dict("records"):
-        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, "retrieved": retrieved(row["retrieved"]),
-               "errors": failed.get((row["log"], row["sample"], row["epoch"]), [])}  # fmt: skip
+        run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, **fetched.get((row["log"], row["sample"], row["epoch"]), {"retrieved": [], "errors": []})}
         found = on_map.get((row["model"], row["agent"], row["variant"], row["sample"], row["epoch"]))
         if found:
             run["map"] = {k: found[k] for k in ("shown", "missing", "unmatched")}

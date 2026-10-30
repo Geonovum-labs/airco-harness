@@ -333,7 +333,7 @@ function urlItem(x) {
 /** The hosts a run retrieved from or failed to, each a button that lists the exact URLs; links only for http(s), as the URLs come from the logs. */
 function retrievedFrom(run) {
   const ok = run.retrieved || [], failed = run.errors || [];
-  if (!ok.length && !failed.length) return h("span", {class: "muted", text: run.hosts || "nothing retrieved"});
+  if (!ok.length && !failed.length) return h("span", {class: "muted", text: "nothing retrieved"});
   const hosts = new Map();
   for (const x of ok) { const k = hostOf(x.url); if (!hosts.has(k)) hosts.set(k, {ok: [], failed: []}); hosts.get(k).ok.push(x); }
   for (const x of failed) { const k = hostOf(x.url); if (!hosts.has(k)) hosts.set(k, {ok: [], failed: []}); hosts.get(k).failed.push(x); }
@@ -353,8 +353,10 @@ function retrievedFrom(run) {
       if (bad.length) parts.push(h("p", {class: "popnote failed", text: `${bad.length} URL${bad.length === 1 ? "" : "s"} failed · does not count for source`}),
         h("ol", {class: "urls"}, bad.map(x => h("li", {class: "fail"},
           h("span", {class: "badge failed", text: failure(x)}),
-          h("div", {class: "failurl"}, urlItem(x), x.error && x.error !== `HTTP ${x.status}` ? h("div", {class: "errmsg", text: x.error}) : null,
-            x.times > 1 ? h("div", {class: "errmsg", text: `${x.times} times`}) : null)))));
+          h("div", {class: "failurl"}, urlItem(x), x.error && ![`HTTP ${x.status}`, String(x.status)].includes(x.error) ? h("div", {class: "errmsg", text: x.error}) : null,
+            x.times > 1 ? h("div", {class: "errmsg", text: `${x.times} times`}) : null,
+            ["Bash", "code_execution"].includes(x.tool) ? h("div", {class: "errmsg", text: x.status ? "status from the output of a shell command" : "a shell command that failed; its output names no status for this URL"}) : null,
+            x.output ? h("details", {class: "output"}, h("summary", {text: "Output"}), h("pre", {text: x.output})) : null)))));
       urlPopover.replaceChildren(...parts);
       urlPopover.showPopover();
       const r = button.getBoundingClientRect(), w = urlPopover.offsetWidth, ht = urlPopover.offsetHeight;
