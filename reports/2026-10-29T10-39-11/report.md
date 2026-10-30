@@ -1,6 +1,6 @@
 # airco-harness report
 
-Logs: `logs/2026-10-29T10-39-11`. Runs: 45, of which with an error: 0, and at a limit: 0.
+Logs: `reports/2026-10-29T10-39-11/logs/logs`. Runs: 45, of which with an error: 0, and at a limit: 0.
 
 Per model and variant: first the mean over the epochs of each sample, then the mean over the samples; the standard error over the samples in parentheses. A run at a limit counts with the scores it got, a run with an error is left out.
 
@@ -8,10 +8,10 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 | Model | Agent | Variant | Samples | Runs | Error | Limit | correct | complete | invented | parseable | source |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | claude-code | 0 | 1 | 3 | 0 | 0 | 0.67 () | 0.67 () | 0.00 () | 0.67 () | 0.00 () |
+| anthropic/claude-haiku-5-5 | claude-code | 0 | 1 | 3 | 0 | 0 | 0.67 () | 0.67 () | 0.00 () | 0.67 () | 0.33 () |
 | anthropic/claude-haiku-5-5 | inspect | 0 | 1 | 3 | 0 | 0 | 1.00 () | 1.00 () | 0.00 () | 1.00 () | 0.00 () |
 | anthropic/claude-haiku-5-5 | model | 0 | 1 | 3 | 0 | 0 | 0.00 () | 0.00 () | 0.00 () | 0.00 () | 0.00 () |
-| anthropic/claude-opus-5-5 | claude-code | 0 | 1 | 3 | 0 | 0 | 1.00 () | 1.00 () | 0.00 () | 1.00 () | 0.00 () |
+| anthropic/claude-opus-5-5 | claude-code | 0 | 1 | 3 | 0 | 0 | 1.00 () | 1.00 () | 0.00 () | 1.00 () | 1.00 () |
 | anthropic/claude-opus-5-5 | inspect | 0 | 1 | 3 | 0 | 0 | 1.00 () | 1.00 () | 0.00 () | 1.00 () | 0.00 () |
 | anthropic/claude-opus-5-5 | model | 0 | 1 | 3 | 0 | 0 | 0.00 () | 0.00 () | 0.00 () | 0.00 () | 0.00 () |
 | anthropic/claude-sonnet-5-5 | claude-code | 0 | 1 | 3 | 0 | 0 | 1.00 () | 1.00 () | 0.00 () | 1.00 () | 0.00 () |
@@ -44,8 +44,22 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 | mistral/mistral-small-2603 | inspect | 0 | 3.3 | 33975 | 7.0 | 7.0 | 0.0086 |
 | mistral/mistral-small-2603 | model | 0 | 0.0 | 110 | 0.8 | 0.7 |  |
 
-## `correct` per sample (mean over epochs)
+## `correct` / `complete` per sample (mean over epochs)
 
-| sample   |   ('anthropic/claude-haiku-5-5', 'claude-code', '0') |   ('anthropic/claude-haiku-5-5', 'inspect', '0') |   ('anthropic/claude-haiku-5-5', 'model', '0') |   ('anthropic/claude-opus-5-5', 'claude-code', '0') |   ('anthropic/claude-opus-5-5', 'inspect', '0') |   ('anthropic/claude-opus-5-5', 'model', '0') |   ('anthropic/claude-sonnet-5-5', 'claude-code', '0') |   ('anthropic/claude-sonnet-5-5', 'inspect', '0') |   ('anthropic/claude-sonnet-5-5', 'model', '0') |   ('mistral/mistral-large-4', 'inspect', '0') |   ('mistral/mistral-large-4', 'model', '0') |   ('mistral/mistral-medium-2604', 'inspect', '0') |   ('mistral/mistral-medium-2604', 'model', '0') |   ('mistral/mistral-small-2603', 'inspect', '0') |   ('mistral/mistral-small-2603', 'model', '0') |
-|:---------|-----------------------------------------------------:|-------------------------------------------------:|-----------------------------------------------:|----------------------------------------------------:|------------------------------------------------:|----------------------------------------------:|------------------------------------------------------:|--------------------------------------------------:|------------------------------------------------:|----------------------------------------------:|--------------------------------------------:|--------------------------------------------------:|------------------------------------------------:|-------------------------------------------------:|-----------------------------------------------:|
-| dsfl-01  |                                                 0.67 |                                                1 |                                              0 |                                                   1 |                                               1 |                                             0 |                                                     1 |                                                 1 |                                               0 |                                             1 |                                           0 |                                                 1 |                                               0 |                                             0.33 |                                              0 |
+| Model                       | Agent       |   Variant | dsfl-01     |
+|:----------------------------|:------------|----------:|:------------|
+| anthropic/claude-haiku-5-5  | claude-code |         0 | 0.67 / 0.67 |
+| anthropic/claude-haiku-5-5  | inspect     |         0 | 1.00 / 1.00 |
+| anthropic/claude-haiku-5-5  | model       |         0 | 0.00 / 0.00 |
+| anthropic/claude-opus-5-5   | claude-code |         0 | 1.00 / 1.00 |
+| anthropic/claude-opus-5-5   | inspect     |         0 | 1.00 / 1.00 |
+| anthropic/claude-opus-5-5   | model       |         0 | 0.00 / 0.00 |
+| anthropic/claude-sonnet-5-5 | claude-code |         0 | 1.00 / 1.00 |
+| anthropic/claude-sonnet-5-5 | inspect     |         0 | 1.00 / 1.00 |
+| anthropic/claude-sonnet-5-5 | model       |         0 | 0.00 / 0.00 |
+| mistral/mistral-large-4     | inspect     |         0 | 1.00 / 1.00 |
+| mistral/mistral-large-4     | model       |         0 | 0.00 / 0.00 |
+| mistral/mistral-medium-2604 | inspect     |         0 | 1.00 / 1.00 |
+| mistral/mistral-medium-2604 | model       |         0 | 0.00 / 0.00 |
+| mistral/mistral-small-2603  | inspect     |         0 | 0.33 / 0.33 |
+| mistral/mistral-small-2603  | model       |         0 | 0.00 / 0.00 |
