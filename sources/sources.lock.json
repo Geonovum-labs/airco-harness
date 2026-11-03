@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-10-29T11:05:40Z",
+  "fetched": "2026-11-03T10:28:05Z",
   "files": [
     {
       "path": "dsfl/bag-arnhem-sport-panden.geojson",
@@ -84,6 +84,90 @@
       "etag": "\"5ed-616bf39d3aab2\"",
       "sha256": "ebdce7749c5f759870fe2772bddd78eb7c6f9121b87dfe192f9034f2a359223f",
       "bytes": 1517
+    },
+    {
+      "path": "technisch-register-2019/LICENSE",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/LICENSE",
+      "etag": "\"d4121d564c6b974b49a4722a21c8b626c0ef88a478000d1c774ab0471625e17d\"",
+      "sha256": "212f27d41a976a0ec52a55367ec2f16417518025b57e1587f689b6755d9158c2",
+      "bytes": 1065
+    },
+    {
+      "path": "technisch-register-2019/README.md",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/README.md",
+      "etag": "\"d9936a543c1b60051ac93c343659946742f10cb8c3c11d064cdbfabe34d98b67\"",
+      "sha256": "ce5bcc513dadb189b7985ad9c4e2f0ca8628f839dbac57be053e8df2a6e18a59",
+      "bytes": 4306
+    },
+    {
+      "path": "technisch-register-2019/src/index.php",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/index.php",
+      "etag": "\"93e7b870dc9a23f8e553107039ddd4143a08f98462fe6d4fda375f171be48595\"",
+      "sha256": "d25adc22143f4d468335f2a6b75d559fb5e8c7dd6b0b2e79b47f0a6e7465af7b",
+      "bytes": 6021
+    },
+    {
+      "path": "technisch-register-2019/src/listDescriptions.php",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/listDescriptions.php",
+      "etag": "\"f37f1832dc26db8c80edcb0f80e5dca520b6fe074601d2429226042791da94f2\"",
+      "sha256": "ce7e03ccb799b0d92b273b827202bb7ef888568eeeb5ba7c4b9520a508a8d612",
+      "bytes": 4615
+    },
+    {
+      "path": "technisch-register-2019/src/resources/css/jquery-ui-1.10.1.min.css",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/css/jquery-ui-1.10.1.min.css",
+      "etag": "\"009db4da897af01d581e4ace14b53fdf3fecd19296acea15d3aae1c24c70ec9c\"",
+      "sha256": "75f43b287478b79e7847db86300c04a77201cc8d627abd463f15e70ddad36a89",
+      "bytes": 27107
+    },
+    {
+      "path": "technisch-register-2019/src/resources/html/footer.html",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/html/footer.html",
+      "etag": "\"276cdd273b6c6a9e5b306e8b5957f26d8b7cb9a423a26678487957c5452016e2\"",
+      "sha256": "3d752e0c23197f8ec650bf4f75d592ed4ae4b022488c5ac40301086205106cea",
+      "bytes": 30
+    },
+    {
+      "path": "technisch-register-2019/src/resources/html/header.html",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/html/header.html",
+      "etag": "\"079bbfecc3396d4b7342bb6d20e120a314402564d0888a4a1c93bdcaa5d844fa\"",
+      "sha256": "3a74f2f05dcd17fbd3680a5b758a3a08c5ae8a8956f9897ad26c7d0001021637",
+      "bytes": 324
+    },
+    {
+      "path": "technisch-register-2019/src/resources/html/help.php",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/html/help.php",
+      "etag": "\"eae07a782a2cac2b311ee52af089a4c6ef0433ad48d50f921fb29434515c2e02\"",
+      "sha256": "8dace6e7e8bedbeee75ed2eb03cd6dba81f5b5f5a39c6a69c7eb3b9547183b6d",
+      "bytes": 1056
+    },
+    {
+      "path": "technisch-register-2019/src/resources/html/over.php",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/html/over.php",
+      "etag": "\"01adbc4c8eb8a555232182d5877658d78f51708b380ad1374095d62a68fb8e0d\"",
+      "sha256": "8b9f30fe68aaba55a2a08b6b3b0c89c227521d038bbac7669835ca8b00450be0",
+      "bytes": 1320
+    },
+    {
+      "path": "technisch-register-2019/src/resources/js/jquery-1.9.1.js",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/js/jquery-1.9.1.js",
+      "etag": "\"f8e9d5c149e138cefb61085869498c66a3158ecd2aa11f0fedb7fb8966ef3b70\"",
+      "sha256": "7bd80d06c01c0340c1b9159b9b4a197db882ca18cbac8e9b9aa025e68f998d40",
+      "bytes": 268381
+    },
+    {
+      "path": "technisch-register-2019/src/resources/js/jquery-ui-1.10.1.min.js",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/js/jquery-ui-1.10.1.min.js",
+      "etag": "\"559e264a7c16dc75b1089fdf622b31b51b041baab9c1f28b6ce8f5d6ea52b6dc\"",
+      "sha256": "ea0f93660d89caf4dd16b3aac3b49d9bd171551f8244f0b1e2493b71434d44db",
+      "bytes": 228147
+    },
+    {
+      "path": "technisch-register-2019/src/resources/js/modernizr.js",
+      "url": "https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/resources/js/modernizr.js",
+      "etag": "\"900e3538cc43da6cdca1aec9d77ee74e6440820518794ea0048a48d748206c66\"",
+      "sha256": "ce68fe41c2c6c11e6a038ef02ac49992152177c41652f0386e46132153877146",
+      "bytes": 26939
     }
   ]
 }
