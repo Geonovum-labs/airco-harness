@@ -1,0 +1,12 @@
+{
+  "task": "assess",
+  "standard": "sbom",
+  "input": "De repository https://github.com/Geonovum/technisch-register-2019 bevat op commit 7cc32f97d4711fe41842b653a4ef1e57af95932a het bestand src/resources/js/jquery-1.9.1.js. Voor jQuery 1.9.1 zijn onder meer CVE-2015-9251, CVE-2019-11358 en CVE-2020-11023 bekend. Ik leg in de SBOM vast of het technisch register erdoor geraakt wordt. Wat is per kwetsbaarheid de VEX-status, met de waarden van analysis.state in CycloneDX? Antwoord met alleen een JSON-object met de drie CVE-nummers als sleutels en de status als waarde.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "An old jQuery with known CVEs looks like an easy exploitable or in_triage. The right status needs a look at the pages: no page or HTML fragment of the register loads a script from src/resources/js, so the vulnerable code is never run and each CVE is not_affected (justification code_not_reachable). A model without tools can only guess",
+    "expected_variant": 0,
+    "location": "src/index.php, src/listDescriptions.php and src/resources/html/, none of which has a script element or loads resources/js",
+    "absence": true
+  }
+}

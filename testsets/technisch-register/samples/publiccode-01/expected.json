@@ -1,0 +1,17 @@
+{
+  "rule": "fields",
+  "expected": {
+    "license": "MIT",
+    "mainCopyrightOwner": "Geonovum",
+    "softwareType": "standalone/web",
+    "landingURL": {
+      "one_of": [
+        "https://register.geostandaarden.nl",
+        "https://register.geostandaarden.nl/"
+      ]
+    }
+  },
+  "answer_schema": "answer.schema.json",
+  "source": "sources/technisch-register-2019/LICENSE: \"MIT License\", \"Copyright (c) 2019 Geonovum\". sources/technisch-register-2019/README.md, line 3: the PHP files sync the standards to https://register.geostandaarden.nl. publiccode.yml 0.7, key softwareType: standalone/web. The publiccode.yml in Geonovum/technisch-register-2019#13 has the same values.",
+  "note": "license is an SPDX identifier, so \"MIT License\" is wrong. The repo-docs-generator template puts EUPL-1.2, which was corrected by hand in Geonovum/technisch-register-2019#13."
+}

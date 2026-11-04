@@ -43,3 +43,25 @@ def test_assess_needs_an_authoritative_hit_and_no_other_version():
     assert source_check.assess([ok, old], "imgeo-2.2")[0] == 0
     assert source_check.assess([failed, forum], "imgeo-2.2") == (0, {"retrieved": {"https://forum.example.org/bgt": "other"}, "failed": [failed["url"]]})
     assert source_check.assess([], "imgeo-2.2")[0] == 0
+
+
+@pytest.mark.parametrize(
+    ("url", "standard", "expected"),
+    [
+        ("https://raw.githubusercontent.com/Geonovum/technisch-register-2019/7cc32f97d4711fe41842b653a4ef1e57af95932a/src/index.php", "sbom", "authoritative"),
+        ("https://github.com/Geonovum/technisch-register-2019", "sbom", "authoritative"),
+        ("https://api.github.com/repos/Geonovum/technisch-register-2019/git/trees/master?recursive=1", "sbom", "authoritative"),
+        ("https://api.osv.dev/v1/query", "sbom", "authoritative"),
+        ("https://nvd.nist.gov/vuln/detail/CVE-2020-11023", "sbom", "authoritative"),
+        # The answers, once the repository has them, and the fork they were made in.
+        ("https://raw.githubusercontent.com/Geonovum/technisch-register-2019/master/sbom.cdx.json", "sbom", "non_authoritative"),
+        ("https://github.com/fterpstra/technisch-register-2019/tree/claude/publiccode", "sbom", "non_authoritative"),
+        ("https://snyk.io/test/npm/jquery/1.9.1", "sbom", "other"),
+        ("https://github.com/Geonovum/technisch-register-2019/blob/master/LICENSE", "publiccode-0.7", "authoritative"),
+        ("https://yml.publiccode.tools/schema.core.html#key-softwaretype", "publiccode-0.7", "authoritative"),
+        ("https://github.com/Geonovum/technisch-register-2019/blob/master/publiccode.yml", "publiccode-0.7", "non_authoritative"),
+        ("https://developer.overheid.nl/kennisbank/open-source/standaarden/publiccode-yml", "publiccode-0.7", "other"),
+    ],
+)
+def test_classify_technisch_register(url, standard, expected):
+    assert source_check.classify(url, standard) == expected

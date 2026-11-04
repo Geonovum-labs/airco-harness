@@ -77,6 +77,19 @@ Each feature counts as one point per geometry part: a point as it is, a line or 
 
 For `dsfl-02`, a map of all 113 panden of the extract gets the full score, and so does a map of the 120 verblijfsobjecten, because each lies in its pand. A sports location from OpenStreetMap on no pand of the extract is invented.
 
+### The rule `components`
+
+The answer is a JSON array of software components, each an object with `name` and `version`, as an SBOM lists them.
+
+| `expected.json` | Content |
+| --- | --- |
+| `must` | The components the answer has to list. Each has `name`, a list of accepted names, and `version` |
+| `may` | Optional. Components the answer may list, in the same form; `version` null accepts any version |
+
+A name matches after normalization without spaces and punctuation, so `jQuery UI` matches `jquery-ui`, and a version matches with or without a leading `v`. `complete` is the share of `must` that is listed with the right version. `invented` is the number of listed components that are in neither list, plus the number listed with a version other than the expected one. `correct` is 1 only if all of `must` is listed and nothing is invented. Listing a component twice is not invented. The score details list the missing components, the unknown ones and the wrong versions.
+
+For `sbom-01`, a list of jQuery, jQuery UI, Modernizr and Font Awesome with their versions gets the full score, with or without the yepnope that Modernizr embeds and the PHP and Apache that the server provides. Modernizr without a version, or Bootstrap, which the repository does not have, is invented.
+
 ### The scorer `source`
 
 `source` is 1 if at least one successful retrieval (status 200 to 299) is authoritative and none is non-authoritative. A retrieval is a tool use in the conversation with a `url` argument: the `fetch` tool of the agent `inspect`, Claude Code's WebFetch, or a web fetch that the model's provider runs on its own servers, which Inspect keeps as a content block of the assistant message. Every URL in a shell command or in code that an agent runs, such as curl in Claude Code's Bash, is a retrieval too. A URL in a command is not proof that it was fetched, but an agent that queries an API mostly does it that way, and without these URLs it would get 0 for a source it used. It counts as successful when the tool answered without an error. A URL right after `xmlns=` in XML, or after `PREFIX` in SPARQL or Turtle, names a namespace and is not a retrieval. A failed retrieval keeps its error and, when known, its HTTP status: the `fetch` tool fails with `HTTP 404`; for a shell command or code, a 4xx or 5xx status in its output counts when the command holds one URL, such as Python's `HTTP Error 400` or the code curl prints with `-w`. With several URLs it is not known which one got the status, and a curl that got a 404 without `-f` still exits 0, so it counts as successful. The site lists the failed retrievals of each run with their status, read from the conversation with the current rules. A search, such as WebSearch or a provider's web search, is not a retrieval: an agent that answers from search results alone gets 0, and so does the agent `model`, which has no tools. Whether a search result should count as a source is for the working group to settle. A URL is `non_authoritative` if it matches a pattern in that list of the allowlist, otherwise `authoritative` if it matches that list, otherwise `other`, which does not count.

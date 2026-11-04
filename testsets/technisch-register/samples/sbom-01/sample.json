@@ -1,0 +1,12 @@
+{
+  "task": "lookup",
+  "standard": "sbom",
+  "input": "Ik maak een SBOM voor de repository https://github.com/Geonovum/technisch-register-2019 op commit 7cc32f97d4711fe41842b653a4ef1e57af95932a. Welke software van derden zit in de repository of wordt door de pagina's geladen, en in welke versie? Antwoord met alleen een JSON-array met voor elk component een object met de sleutels \"name\" en \"version\".",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The repository has no package manager and no lockfile, so a tool that reads manifests finds nothing. The agent has to read the files: the versions of jQuery and jQuery UI are in their file names, but modernizr.js has none, so Modernizr 2.6.2 is only in the header of the file. Font Awesome 4.2.0 is not in the repository at all: index.php loads it from a CDN. Likely failures: Font Awesome left out, Modernizr without a version or with a guessed one, and libraries a PHP site often has, such as Bootstrap, listed although they are not there",
+    "expected_variant": 0,
+    "location": "src/resources/js and src/resources/css for the bundled files, the link to maxcdn.bootstrapcdn.com in src/index.php for Font Awesome, and the README for PHP and Apache",
+    "absence": false
+  }
+}

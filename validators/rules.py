@@ -4,12 +4,13 @@ Each rule fills four of the five score keys (`source` comes from the tool log, s
 airco_harness.scorers). A rule never raises on a malformed answer: it reports
 parseable 0 and correct 0 instead. Rules are selected by the "rule" key in a
 case's expected.json: `fields` for a JSON answer, `map` for what the agent
-showed on the map.
+showed on the map, `components` for a JSON list of software components.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cache
@@ -151,7 +152,45 @@ def rule_map(answer: str, case: Case) -> Assessment:
                       f"{len(must) - len(missing)} of {len(must)} required panden shown; {len(unmatched)} places match no pand", details)  # fmt: skip
 
 
-RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map}
+def _name_key(name: object) -> str:
+    """A component name without case, spaces or punctuation, so that jQuery UI is jquery-ui."""
+    return re.sub(r"[^a-z0-9]", "", normalize(str(name)))
+
+
+def _version_key(version: object) -> str:
+    v = "" if version is None else normalize(str(version))
+    return v[1:] if re.match(r"v\d", v) else v
+
+
+def rule_components(answer: str, case: Case) -> Assessment:
+    """Software components with their versions: every component in `must` has to be listed with its version,
+    and a component that is in neither `must` nor `may`, or has another version, is invented.
+
+    A component in `expected.json` has `name`, a list of accepted names, and `version`, or null when any version is right.
+    """
+    data, failure, details = _json_answer(answer, case)
+    if failure:
+        return failure
+    must, may = case.expected["must"], case.expected.get("may", [])
+    by_name = {_name_key(n): c for c in must + may for n in c["name"]}
+    listed, unknown, wrong_version = set(), [], []
+    for item in data:
+        component = by_name.get(_name_key(item["name"]))
+        if component is None:
+            unknown.append(item["name"])
+        elif component["version"] is not None and _version_key(item.get("version")) != _version_key(component["version"]):
+            wrong_version.append({"name": item["name"], "expected": component["version"], "given": item.get("version")})
+        else:
+            listed.add(component["name"][0])
+    missing = [c["name"][0] for c in must if c["name"][0] not in listed]
+    invented = len(unknown) + len(wrong_version)
+    details |= {"listed": sorted(listed), "missing": missing, "unknown": unknown, "wrong_version": wrong_version}
+    complete = 1 - len(missing) / len(must)
+    return Assessment(not missing and not invented, complete, invented, True,
+                      f"{len(must) - len(missing)} of {len(must)} required components listed; unknown: {unknown}; wrong version: {[w['name'] for w in wrong_version]}", details)  # fmt: skip
+
+
+RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map, "components": rule_components}
 
 
 def assess(answer: str, case: Case) -> Assessment:

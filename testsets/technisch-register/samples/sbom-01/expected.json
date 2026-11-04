@@ -1,0 +1,19 @@
+{
+  "rule": "components",
+  "must": [
+    {"name": ["jquery"], "version": "1.9.1"},
+    {"name": ["jquery-ui", "jqueryui"], "version": "1.10.1"},
+    {"name": ["modernizr"], "version": "2.6.2"},
+    {"name": ["font-awesome", "fontawesome"], "version": "4.2.0"}
+  ],
+  "may": [
+    {"name": ["yepnope", "yepnope.js"], "version": "1.5.4"},
+    {"name": ["php"], "version": null},
+    {"name": ["php-zip", "zip", "ext-zip", "php zip extension"], "version": null},
+    {"name": ["php-openssl", "openssl", "ext-openssl", "php openssl extension"], "version": null},
+    {"name": ["apache", "apache2", "httpd", "apache httpd", "apache http server", "mod_rewrite"], "version": null}
+  ],
+  "answer_schema": "answer.schema.json",
+  "source": "sources/technisch-register-2019/, the files at commit 7cc32f9: the header of src/resources/js/jquery-1.9.1.js (jQuery JavaScript Library v1.9.1), of src/resources/js/jquery-ui-1.10.1.min.js and src/resources/css/jquery-ui-1.10.1.min.css (jQuery UI - v1.10.1), and of src/resources/js/modernizr.js (Modernizr 2.6.2, with yepnope1.5.4 inside it); src/index.php line 61 loads //maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css; the README names PHP 7.2 and Apache with mod_rewrite. The same components are in the SBOM made with the skill geonovum-sbom (github.com/developer-overheid-nl/skill-sbom), in Geonovum/technisch-register-2019#13.",
+  "note": "must: what is bundled in the repository or loaded by its pages. may: yepnope, which Modernizr embeds, and the environment the README and the code name (PHP with the zip and openssl extensions that releasecreated.php uses, and Apache); they are right in an SBOM but not required. Their versions are not fixed by the repository, so any version counts, except for yepnope. Any other component is invented, also the Geonovum logos and style.css, which are the repository's own."
+}

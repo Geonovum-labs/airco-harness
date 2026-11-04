@@ -48,7 +48,7 @@ The terms come from the tooling note. The code and the documentation use them in
 | Run | One sample on one variant with one model, once |
 | Epoch | One repetition of all runs |
 | Scorer | The scoring function in Inspect: `quality` and `source` |
-| Scoring rule | The rule a scorer applies to a sample; for now only `fields` |
+| Scoring rule | The rule a scorer applies to a sample: `fields`, `map` or `components` |
 | Metric | A measured value per run: five quality metrics, defined in [Test sets and scoring](docs/test-sets.md), and three trajectory metrics, listed in [Running the harness](docs/running.md) |
 | Defect | A publication defect from the test set note, G1 to G13 |
 | Vendored | Copied into the repo byte for byte, with origin and checksum, such as the source files in `sources/` |

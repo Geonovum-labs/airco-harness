@@ -1,0 +1,5 @@
+{
+  "purpose": "Questions an agent answers to make the metadata of one Geonovum repository, Geonovum/technisch-register-2019 at a fixed commit: the components and vulnerability assessments of its SBOM, and the fields of its publiccode.yml.",
+  "version": "0.1",
+  "date": "2026-11-03"
+}

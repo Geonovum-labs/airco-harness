@@ -1,0 +1,12 @@
+{
+  "task": "lookup",
+  "standard": "publiccode-0.7",
+  "input": "Ik maak een publiccode.yml (versie 0.7 van de standaard) voor de repository https://github.com/Geonovum/technisch-register-2019 op commit 7cc32f97d4711fe41842b653a4ef1e57af95932a. Welke waarden horen bij legal.license, legal.mainCopyrightOwner, softwareType en landingURL? Antwoord met alleen een JSON-object met de sleutels \"license\", \"mainCopyrightOwner\", \"softwareType\" en \"landingURL\".",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "Software of the Dutch government is mostly EUPL-1.2, and so is the template of the repo-docs-generator of developer.overheid.nl that makes publiccode.yml. The LICENSE of this repository is MIT. softwareType must be one of the values of the standard, standalone/web for a website, and the landing URL is the site the README names, not the GitHub URL",
+    "expected_variant": 0,
+    "location": "LICENSE (MIT License, Copyright (c) 2019 Geonovum), the first line of README.md, and the key softwareType in the publiccode.yml standard",
+    "absence": false
+  }
+}
