@@ -63,7 +63,7 @@ The terms come from the tooling note. The code and the documentation use them in
 | `validators/` | Everything that sets a score, without Inspect: scoring rules, reference model, sources |
 | `src/airco_harness/` | The Inspect-specific code: task, tools, scorers, matrix, report, rescoring |
 | `reports/` | One folder per measurement with the report and the log bundle, published at [geonovum-labs.github.io/airco-harness](https://geonovum-labs.github.io/airco-harness/) |
-| `.github/` | The workflow that publishes the measurements to GitHub Pages |
+| `.github/` | The workflows that run a measurement on dispatch (`measure.yml`) and publish the measurements to GitHub Pages (`pages.yml`) |
 | `tests/` | Tests, without API keys |
 | `docs/` | Documentation |
 

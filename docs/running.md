@@ -59,7 +59,7 @@ The matrix runs a test set across variants, models and epochs with one agent, as
 	uv run airco-matrix --models anthropic/claude-haiku-5-5,mistral/mistral-small-2603 --epochs 3
 	```
 
-	With paid models, the command stops after these lines:
+	With paid models, the command stops after these lines; add `--plan` to stop after the first two lines whatever the models, with exit code 0:
 
 	```text
 	1 samples x 2 agent-model pairs x 3 epochs = 6 runs (1 variants, 1 agents, 2 models)
@@ -124,6 +124,27 @@ uv run airco-pages && python3 -m http.server -d site
 ```
 
 The site is built from git and is not committed; `.gitignore` lists `site/`. The repository needs GitHub Pages switched on once, with "GitHub Actions" as the source, under Settings, Pages.
+
+## Run a measurement from GitHub Actions
+
+`.github/workflows/measure.yml` runs the matrix on a runner instead of your machine. It has four steps:
+
+1. **Plan.** The job `plan` runs `airco-matrix --plan` with the inputs, names the measurement after the start time and writes the inputs, the number of runs and the maximum cost to the run summary. It has no secrets, and an argument the matrix rejects fails it here.
+2. **Approval.** The job `measure` uses the environment `measurement`. It waits until a required reviewer approves, and only then does GitHub release the secrets. Read the plan in the summary before you approve.
+3. **Measure.** The job runs the matrix, then `airco-logcheck --mask-emails`, and uploads `logs/<name>` and `reports/<name>` as the artifact `measurement-<name>` for seven days. Artifacts and job logs of a public repository are visible to any GitHub user, so nothing is uploaded before the check passes. If part of the matrix failed, its logs are still uploaded and the job stays red.
+4. **Publish.** With the input `publish`, the job `publish` makes the report, checks it again and opens a pull request that adds `reports/<name>/`. When you merge it, `pages.yml` publishes the site.
+
+Dispatch it from the Actions tab (Run a measurement, Run workflow) or from the command line:
+
+```bash
+gh workflow run measure.yml -f models=anthropic/claude-haiku-5-5 -f epochs=1
+```
+
+The inputs map to the options of `airco-matrix`: `testset` (default `dsfl`), `models`, `agents`, `variants`, `ids` (empty runs all samples), `epochs` and `cost_limit`. `runner` chooses `github` or `kadaster`, and `publish` is off by default.
+
+**One-time settings.** Under Settings, Environments, create `measurement`. Add required reviewers, limit deployment branches to `main`, and add the secrets `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` and `KADASTER_API_KEY` and the variable `KADASTER_BASE_URL`. Leave out the ones you do not use. For `publish`, switch on "Allow GitHub Actions to create and approve pull requests" under Settings, Actions, General.
+
+**Self-hosted runner.** With `runner=kadaster`, the job runs on a runner with the label `kadaster-airco`. The machine runs Linux with Docker, which the agent `claude-code` needs, and needs outbound HTTPS only. Register the runner as ephemeral, so that every job starts with a clean workspace. The workflow accepts `workflow_dispatch` only: the repository is public, and a pull request or a fork must never be able to start code on a machine inside Kadaster. A job on a runner also waits for the approval above.
 
 ## Rescore and repeat runs
 
