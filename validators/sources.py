@@ -72,6 +72,25 @@ def _bag_panden_of_sport_arnhem() -> tuple[str, bytes]:
     return BAG_WFS, body.encode("utf-8")
 
 
+# The commit before the repository got a publiccode.yml and SBOMs, so that the answers are not in it.
+TECHNISCH_REGISTER_COMMIT = "7cc32f97d4711fe41842b653a4ef1e57af95932a"
+# The license, the README, every page, and every file of a third party in the repository.
+TECHNISCH_REGISTER_FILES = [
+    "LICENSE",
+    "README.md",
+    "src/index.php",
+    "src/listDescriptions.php",
+    "src/resources/html/footer.html",
+    "src/resources/html/header.html",
+    "src/resources/html/help.php",
+    "src/resources/html/over.php",
+    "src/resources/css/jquery-ui-1.10.1.min.css",
+    "src/resources/js/jquery-1.9.1.js",
+    "src/resources/js/jquery-ui-1.10.1.min.js",
+    "src/resources/js/modernizr.js",
+]
+
+
 # Path under sources/ to URL, or to a function that gives the URL and the body of a POST. Fetched in this order.
 SOURCES: dict[str, str | Callable[[], tuple[str, bytes]]] = {
     "imgeo-2.2/imgeo2.2-mim-logisch.xml": "https://raw.githubusercontent.com/Geonovum/IMGeo-dev/30d750029fc4b81998d30a95185f78ff2c314ced/mim/imgeo2.2-mim-logisch.xml",
@@ -82,6 +101,10 @@ SOURCES: dict[str, str | Callable[[], tuple[str, bytes]]] = {
     **{schema_path(url): url for url in (f"https://register.geostandaarden.nl/xmlschema/mim/1.1.1/{name}" for name in MIM_XSD_IMPORTS)},
     DSFL_SPORT_VBO: _bag_sport_arnhem(),
     DSFL_SPORT_PANDEN: _bag_panden_of_sport_arnhem,
+    **{
+        f"technisch-register-2019/{name}": f"https://raw.githubusercontent.com/Geonovum/technisch-register-2019/{TECHNISCH_REGISTER_COMMIT}/{name}"
+        for name in TECHNISCH_REGISTER_FILES
+    },
 }
 
 

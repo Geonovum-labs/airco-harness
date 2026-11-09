@@ -46,6 +46,17 @@ def point(lon: float, lat: float) -> dict:
     return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, lat]}, "properties": {"name": "sporthal"}}
 
 
+def components(*listed: tuple[str, str | None], fenced: bool = True) -> str:
+    body = json.dumps([{"name": name, "version": version} for name, version in listed])
+    return f"```json\n{body}\n```" if fenced else body
+
+
+BUNDLED = [("jquery", "1.9.1"), ("jquery-ui", "1.10.1"), ("modernizr", "2.6.2")]
+SBOM_MUST = [*BUNDLED, ("font-awesome", "4.2.0")]
+NOT_AFFECTED = {"CVE-2015-9251": "not_affected", "CVE-2019-11358": "not_affected", "CVE-2020-11023": "not_affected"}
+PUBLICCODE = {"license": "MIT", "mainCopyrightOwner": "Geonovum", "softwareType": "standalone/web", "landingURL": "https://register.geostandaarden.nl"}
+
+
 CASES = [
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk", "type": "bassin"}), full()),
     ("imgeo-G04-03", as_json({"objecttype": "Overig bouwwerk", "type": "Bassin"}, fenced=False), full()),
@@ -73,6 +84,32 @@ CASES = [
     ("dsfl-02", "", full(0, 0.0, 0, 0)),
     ("dsfl-02", "the sports halls of Arnhem", full(0, 0.0, 0, 0)),
     ("dsfl-02", json.dumps({"type": "Polygon", "coordinates": "here"}), full(0, 0.0, 0, 0)),
+    ("sbom-01", components(*SBOM_MUST), full()),
+    # The SBOM of the skill geonovum-sbom: the embedded yepnope and the environment may be listed, with any version.
+    (
+        "sbom-01",
+        components(*SBOM_MUST, ("yepnope", "1.5.4"), ("PHP", "7.2"), ("PHP zip extension", None), ("php-openssl", None), ("Apache HTTP Server", None)),
+        full(),
+    ),
+    (
+        "sbom-01",
+        components(("jQuery", "v1.9.1"), ("jQuery UI", "1.10.1"), ("jQuery UI", "1.10.1"), ("Modernizr", "2.6.2"), ("Font Awesome", "4.2.0"), fenced=False),
+        full(),
+    ),
+    # Only the file names read: Font Awesome on the CDN missed, and no version for modernizr.js.
+    ("sbom-01", components(("jquery", "1.9.1"), ("jquery-ui", "1.10.1"), ("modernizr", None)), full(0, 0.5, 1)),
+    ("sbom-01", components(*SBOM_MUST, ("bootstrap", "3.3.7")), full(0, 1.0, 1)),
+    ("sbom-01", components(*BUNDLED, ("font-awesome", "4.7.0"), ("yepnope", "1.5.0")), full(0, 0.75, 2)),
+    ("sbom-01", as_json({"jquery": "1.9.1", "jquery-ui": "1.10.1"}), full(0, 0.0, 0, 0)),
+    ("sbom-02", as_json(NOT_AFFECTED), full()),
+    ("sbom-02", as_json({"CVE-2015-9251": "exploitable", "CVE-2019-11358": "exploitable", "CVE-2020-11023": "exploitable"}), full(0, 0.0, 0)),
+    ("sbom-02", as_json(NOT_AFFECTED | {"CVE-2020-11023": "in_triage"}), full(0, 0.6667, 0)),
+    ("sbom-02", as_json({"CVE-2015-9251": "not_affected"}), full(0, 0.0, 0, 0)),
+    ("publiccode-01", as_json(PUBLICCODE), full()),
+    ("publiccode-01", as_json(PUBLICCODE | {"landingURL": "https://register.geostandaarden.nl/"}, fenced=False), full()),
+    # The license of the repo-docs-generator template, not of the repository.
+    ("publiccode-01", as_json(PUBLICCODE | {"license": "EUPL-1.2"}), full(0, 0.75, 0)),
+    ("publiccode-01", as_json(PUBLICCODE | {"license": "MIT License", "landingURL": "https://github.com/Geonovum/technisch-register-2019"}), full(0, 0.5, 0)),
 ]
 
 

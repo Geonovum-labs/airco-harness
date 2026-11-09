@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "license": {
+      "type": "string"
+    },
+    "mainCopyrightOwner": {
+      "type": "string"
+    },
+    "softwareType": {
+      "type": "string"
+    },
+    "landingURL": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "license",
+    "mainCopyrightOwner",
+    "softwareType",
+    "landingURL"
+  ],
+  "additionalProperties": true
+}

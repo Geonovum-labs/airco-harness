@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "CVE-2015-9251": {
+      "type": "string"
+    },
+    "CVE-2019-11358": {
+      "type": "string"
+    },
+    "CVE-2020-11023": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "CVE-2015-9251",
+    "CVE-2019-11358",
+    "CVE-2020-11023"
+  ],
+  "additionalProperties": true
+}

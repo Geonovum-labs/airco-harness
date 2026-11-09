@@ -1,0 +1,11 @@
+{
+  "rule": "fields",
+  "expected": {
+    "CVE-2015-9251": "not_affected",
+    "CVE-2019-11358": "not_affected",
+    "CVE-2020-11023": "not_affected"
+  },
+  "answer_schema": "answer.schema.json",
+  "source": "sources/technisch-register-2019/: the pages src/index.php and src/listDescriptions.php and the fragments in src/resources/html/ have no script element and do not refer to resources/js. The SBOM made with the skill geonovum-sbom, in Geonovum/technisch-register-2019#13, records the three CVEs as not_affected with justification code_not_reachable.",
+  "note": "The values are those of analysis.state in CycloneDX 1.7: resolved, resolved_with_pedigree, exploitable, in_triage, false_positive, not_affected. false_positive is wrong: the CVEs do apply to jQuery 1.9.1, the register just does not run it."
+}

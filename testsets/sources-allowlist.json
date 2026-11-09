@@ -26,5 +26,35 @@
       "^https?://(www\\.|public\\.)?ep-online\\.nl/"
     ],
     "non_authoritative": []
+  },
+  "sbom": {
+    "note": "The repository the SBOM describes, at any ref, and the vulnerability databases. The SBOMs and the inventory that the repository got later, and the fork they were made in, hold the answers and are non-authoritative.",
+    "authoritative": [
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com|codeload\\.github\\.com)/Geonovum/technisch-register-2019(/|$)",
+      "^https?://api\\.github\\.com/repos/Geonovum/technisch-register-2019(/|$)",
+      "^https?://(api\\.)?osv\\.dev/",
+      "^https?://nvd\\.nist\\.gov/vuln/detail/",
+      "^https?://github\\.com/advisories/"
+    ],
+    "non_authoritative": [
+      "/Geonovum/technisch-register-2019/.*(sbom[^/]*\\.json|publiccode\\.ya?ml)",
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com|codeload\\.github\\.com)/fterpstra/technisch-register-2019(/|$)",
+      "^https?://api\\.github\\.com/repos/fterpstra/technisch-register-2019(/|$)"
+    ]
+  },
+  "publiccode-0.7": {
+    "note": "The repository the publiccode.yml describes, at any ref, and the 0.7 documentation of the standard. The publiccode.yml that the repository got later, and the fork it was made in, hold the answers and are non-authoritative.",
+    "authoritative": [
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com|codeload\\.github\\.com)/Geonovum/technisch-register-2019(/|$)",
+      "^https?://api\\.github\\.com/repos/Geonovum/technisch-register-2019(/|$)",
+      "^https?://yml\\.publiccode\\.tools/",
+      "^https?://publiccodeyml\\.github\\.io/v0/",
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com)/publiccodeyml/publiccode\\.yml/"
+    ],
+    "non_authoritative": [
+      "/Geonovum/technisch-register-2019/.*(sbom[^/]*\\.json|publiccode\\.ya?ml)",
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com|codeload\\.github\\.com)/fterpstra/technisch-register-2019(/|$)",
+      "^https?://api\\.github\\.com/repos/fterpstra/technisch-register-2019(/|$)"
+    ]
   }
 }
