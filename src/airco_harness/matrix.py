@@ -4,8 +4,10 @@
     uv run airco-matrix --models anthropic/claude-haiku-5-5 --agents model,inspect,claude-code --epochs 3
     uv run airco-matrix --models mockllm/model --name dry-run   # dry run without keys
 
-Paid models need --yes after the planned number of runs is shown. The logs and
-the bundle are named after the start time unless --name says otherwise.
+Paid models need --yes after the planned number of runs is shown. --plan shows
+the runs and the maximum cost, then stops with exit code 0 without running
+anything, paid models or not. The logs and the bundle are named after the start
+time unless --name says otherwise.
 """
 
 from __future__ import annotations
@@ -55,6 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--max-samples", type=int, default=8, help="samples that run at the same time")
     parser.add_argument("--cost-limit", type=float, default=2.0, help="cost limit per run in dollars")
+    parser.add_argument("--plan", action="store_true", help="show the number of runs and the maximum cost, then stop")
     parser.add_argument("--yes", action="store_true", help="confirm a run against paid models")
     return parser
 
@@ -84,6 +87,8 @@ def main() -> None:
     if skipped:
         print(f"claude-code runs on Anthropic models only; skipped for {', '.join(skipped)}")
     print(f"at most {runs} x {args.cost_limit:.2f} = {runs * args.cost_limit:.2f} dollars for paid models")
+    if args.plan:
+        return
     if paid and not args.yes:
         print(f"paid models {', '.join(paid)}: rerun with --yes to start", file=sys.stderr)
         sys.exit(2)

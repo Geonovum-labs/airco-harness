@@ -168,6 +168,19 @@ def test_matrix_refuses_paid_models_without_yes(monkeypatch, capsys):
     assert "rerun with --yes" in out.err
 
 
+def test_matrix_plan_shows_runs_and_cost_for_paid_models_without_running(monkeypatch, capsys):
+    def refuse(*args, **kwargs):
+        raise AssertionError("--plan must not run anything")
+
+    monkeypatch.setattr(matrix, "eval_set", refuse)
+    monkeypatch.setattr(sys, "argv", ["airco-matrix", "--models", "anthropic/claude-haiku-5-5", "--ids", SAMPLE, "--epochs", "3", "--plan"])
+    matrix.main()
+    out = capsys.readouterr()
+    assert "1 samples x 1 agent-model pairs x 3 epochs = 3 runs" in out.out
+    assert "at most 3 x 2.00 = 6.00 dollars" in out.out
+    assert "rerun with --yes" not in out.err
+
+
 def test_bundle_index_keeps_no_absolute_log_dir(tmp_path):
     (tmp_path / "index.html").write_text('<script>{"log_dir": "logs", "abs_log_dir": "/Users/someone/airco-harness/logs/x"}</script>', encoding="utf-8")
     matrix.strip_absolute_log_dir(tmp_path, Path("logs/x"))
