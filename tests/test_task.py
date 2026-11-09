@@ -53,7 +53,7 @@ def test_a_model_that_calls_a_tool_it_does_not_have_hits_the_message_limit(tmp_p
 
 
 def test_unknown_variant_agent_sample_or_test_set():
-    with pytest.raises(ValueError, match="unknown variant '0a'; choose from 0"):
+    with pytest.raises(ValueError, match="unknown variant '0a'; choose from 0, skill"):
         airco(variant="0a")
     with pytest.raises(ValueError, match="unknown agent 'react'"):
         airco(agent="react")
@@ -61,8 +61,42 @@ def test_unknown_variant_agent_sample_or_test_set():
     with pytest.raises(ValueError, match="unknown sample ids: imgeo-G99-01"):
         airco(ids="imgeo-G04-03,imgeo-G99-01")
     assert [s.id for s in airco(testset="dsfl").dataset] == ["dsfl-01", "dsfl-02"]
-    with pytest.raises(ValueError, match="unknown test set 'nl-sbb'; choose from dsfl, imgeo"):
-        airco(testset="nl-sbb")
+    with pytest.raises(ValueError, match="unknown test set 'nl-sbb-2'; choose from dsfl, imgeo, nl-sbb"):
+        airco(testset="nl-sbb-2")
+
+
+def test_variant_skill_needs_claude_code():
+    with pytest.raises(ValueError, match="variant 'skill' needs the agent claude-code"):
+        airco(testset="nl-sbb", variant="skill", agent="inspect")
+
+
+def test_a_test_set_raises_the_default_limits_and_an_explicit_limit_wins():
+    t = airco(testset="nl-sbb")
+    assert (t.message_limit, t.token_limit, t.time_limit, t.cost_limit) == (600, 8_000_000, 5400, 25.0)
+    t = airco(testset="nl-sbb", message_limit=10, cost_limit=None)
+    assert (t.message_limit, t.cost_limit) == (10, None)
+    t = airco()
+    assert (t.message_limit, t.token_limit, t.time_limit, t.cost_limit) == (60, 600_000, 900, 2.0)
+
+
+def test_sample_files_go_to_the_working_directory_of_an_agent_with_a_sandbox():
+    from airco_harness import dataset
+    from validators import sources
+
+    [with_sandbox] = dataset.load("nl-sbb", workdir="/workspace")
+    assert with_sandbox.files == {"/workspace/IMGeo.xmi": str(sources.path(sources.IMGEO_XMI))}
+    [without] = dataset.load("nl-sbb")
+    assert not without.files
+
+
+def test_variant_skill_puts_the_vendored_skill_in_the_project_folder():
+    from airco_harness.claude_code import skill_files
+    from validators import sources
+
+    files = skill_files()
+    root = f"/workspace/.claude/skills/{sources.SKILL_NAME}"
+    assert set(files) == {f"{root}/{name}" for name in sources.SKILL_FILES}
+    assert files[f"{root}/SKILL.md"].startswith(b"---\nname: " + sources.SKILL_NAME.encode())
 
 
 def test_price_file_registers_a_model_inspect_does_not_know(tmp_path):

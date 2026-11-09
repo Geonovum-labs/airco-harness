@@ -1,0 +1,13 @@
+{
+  "task": "mapping",
+  "standard": "nl-sbb-1.0",
+  "input": "In de werkmap staat IMGeo.xmi, het UML-model van IMGeo 2.2 uit het register van Geonovum. Zet het om naar een begrippenkader volgens NL-SBB 1.0: objecttypen, datatypen, attributen en de waarden van waardelijsten worden begrippen, elke waardelijst wordt een collectie. Valideer het kader met het SHACL-profiel van NL-SBB 1.0.0, met de externe kaders waarnaar het kader verwijst als context. Ik kan tussendoor geen vragen beantwoorden: kies zelf. Antwoord als laatste met alleen een JSON-object met de sleutels \"begrippen\", \"objecttypen\", \"datatypen\", \"attributen\", \"waarden\" en \"collecties\" (aantallen in het kader) en \"violations\" (het aantal sh:Violation bij die validatie).",
+  "files": {"IMGeo.xmi": "imgeo-2.2/IMGeo.xmi"},
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "Without the skill an agent has to read a 3 MB XMI file, write the SKOS itself and set up a SHACL validation; it is expected to miss concepts, count wrong or skip the validation. With the skill geonovum-uml2-nl-sbb (variant skill) the scripts do the conversion and the counting, so the counts follow from the choices the skill proposes.",
+    "expected_variant": 1,
+    "location": "IMGeo 2.2 UML model (IMGeo.xmi in the register); NL-SBB 1.0 and its SHACL profile skos-ap-nl 1.0.0",
+    "absence": false
+  }
+}

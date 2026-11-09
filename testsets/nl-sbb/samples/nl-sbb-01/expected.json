@@ -1,0 +1,15 @@
+{
+  "rule": "fields",
+  "expected": {
+    "begrippen": {"one_of": [393, 396]},
+    "objecttypen": 38,
+    "datatypen": 4,
+    "attributen": 67,
+    "waarden": {"one_of": [284, 287]},
+    "collecties": 57,
+    "violations": 0
+  },
+  "answer_schema": "answer.schema.json",
+  "source": "The scripts of the skill geonovum-uml2-nl-sbb at commit 746d8b2 on sources/imgeo-2.2/IMGeo.xmi, without a model. With the example voorbeelden/imgeo.yaml that the skill offers: 393 concepts, of which 284 values, 57 collections, SHACL with the external schemes as context 0 / 26 / 2. With all script proposals and no example: 396 concepts, of which 287 values, 0 / 168 / 2.",
+  "note": "Both counts are right. The values onverhard and zand have different definitions in different code lists: the example splits them into 4 concepts, the script proposals split them per code list into 7. The number of object types, data types, attributes and collections does not depend on that choice. Violations are those of the run with the external schemes as context; without them, the 33 matches of the example give 41 violations on targets that are not in the graph."
+}

@@ -1,0 +1,37 @@
+kader:
+  uri: http://definities.geostandaarden.nl/imev
+  titel: IMEV-begrippenkader
+  omschrijving: >-
+    Begrippen uit IMEV 3.0.2, omgezet uit het UML-model in het Geonovum-register volgens NL-SBB.
+
+# Bron: register.geostandaarden.nl/informatiemodel/imev/3.0.2/IMEV3.0.2_10072025.zip (EAP),
+#       --package IMEV-conceptueel --zonder IMEV-conceptueel/deprecated
+termen:
+  alias_als_voorkeursterm: ["*"]      # MIM: alias = naam in natuurlijke taal
+  alias_naam_als_altlabel: null       # UML-naam blijft skos:notation
+
+waarden:
+  zelfde_begrip: ["gegeven in transitie"]
+  splitsingen:
+    overig|CategorieGiftigeStof: overige giftige stof
+
+relaties:
+  gebruik:
+    CategorieGiftigeStof: [Stof, null]
+    CategorieStikstofgehalte: [Stof, null]
+    BeschermingsniveauhoofdgroepTabelB3: null
+    HoeveelheidsKlasseAmmoniak: null
+    VoidReasonValue: null
+
+bronnen:
+  mapping:
+    - {patroon: "IMEV", sleutel: IMEV, titel: "Informatiemodel Externe Veiligheid (IMEV) 3.0.2"}
+    - {patroon: "IMKL", sleutel: IMKL, titel: "Informatiemodel Kabels en Leidingen (IMKL)"}
+    - {patroon: "NEN3610:2011", sleutel: NEN3610-2011, titel: "NEN 3610:2011 Basismodel geo-informatie"}
+    - {patroon: "NEN3610", sleutel: NEN3610, titel: "NEN 3610 Basismodel geo-informatie"}
+    - {patroon: "VUURWERKBESLUIT.*", sleutel: Vuurwerkbesluit, titel: "Vuurwerkbesluit"}
+    - {patroon: ".*BKL.*", sleutel: Bkl, titel: "Besluit kwaliteit leefomgeving (Bkl)"}
+    - {patroon: "BAL.*", sleutel: Bal, titel: "Besluit activiteiten leefomgeving (Bal)"}
+    - {patroon: ".*(WVGS|WETVERVOERGEVAARLIJKESTOFFEN).*", sleutel: Wvgs, titel: "Wet vervoer gevaarlijke stoffen"}
+    - {patroon: ".*RBN.*", sleutel: Rbn, titel: "Regeling basisnet"}
+    - {patroon: "INVOERINGSREGELING.*", sleutel: Invoeringsregeling, titel: "Invoeringsregeling Omgevingswet"}

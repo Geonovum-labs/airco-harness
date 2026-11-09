@@ -22,7 +22,7 @@ from dotenv import find_dotenv, load_dotenv
 from inspect_ai import eval_set
 
 from . import dataset
-from .tasks import VARIANTS, AgentName, airco
+from .tasks import DEFAULT_LIMITS, VARIANTS, AgentName, airco
 
 FREE_PREFIXES = ("mockllm/", "openai-api/local/", "ollama/")
 # Claude Code is built for Claude: behind the bridge another model does not use its tools, so such a run measures nothing.
@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="airco-matrix", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--testset", default=dataset.DEFAULT_TESTSET, help="test set under testsets/")
     parser.add_argument("--models", default=None, help="comma-separated models; default AIRCO_MATRIX_MODELS")
-    parser.add_argument("--variants", default=",".join(VARIANTS), help="comma-separated variants")
+    parser.add_argument("--variants", default="0", help=f"comma-separated variants: {', '.join(VARIANTS)}; skill runs with the agent claude-code only")
     parser.add_argument("--ids", default=None, help="comma-separated sample ids; default all samples")
     parser.add_argument("--epochs", type=int, default=3, help="runs per sample, variant and model")
     parser.add_argument(
@@ -54,7 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="log folder logs/<name> and bundle reports/<name>/logs; default the start time, so that bundles sort by time",
     )
     parser.add_argument("--max-samples", type=int, default=8, help="samples that run at the same time")
-    parser.add_argument("--cost-limit", type=float, default=2.0, help="cost limit per run in dollars")
+    parser.add_argument("--cost-limit", type=float, default=None, help="cost limit per run in dollars; default the test set's limit in testset.json, else 2.0")
     parser.add_argument("--yes", action="store_true", help="confirm a run against paid models")
     return parser
 
@@ -74,7 +74,18 @@ def main() -> None:
     ids = args.ids.split(",") if args.ids else None
 
     n_samples = len(dataset.load(args.testset, ids=ids))
-    combos = [(v, a, m) for v in variants for a in agents for m in models if a != "claude-code" or m.startswith(CLAUDE_CODE_PROVIDERS)]
+    unknown = [v for v in variants if v not in VARIANTS]
+    if unknown:
+        build_parser().error(f"unknown variants {', '.join(unknown)}; choose from {', '.join(VARIANTS)}")
+    cost_limit = args.cost_limit if args.cost_limit is not None else dataset.limits(args.testset).get("cost_limit", DEFAULT_LIMITS["cost_limit"])
+    # The variant skill needs a sandbox for the skill's scripts, so only claude-code runs it.
+    combos = [
+        (v, a, m)
+        for v in variants
+        for a in agents
+        for m in models
+        if (a != "claude-code" or m.startswith(CLAUDE_CODE_PROVIDERS)) and (v != "skill" or a == "claude-code")
+    ]
     skipped = sorted({m for a in agents for m in models if a == "claude-code" and not m.startswith(CLAUDE_CODE_PROVIDERS)})
     runs = n_samples * len(combos) * args.epochs
     paid = [m for m in models if not m.startswith(FREE_PREFIXES)]
@@ -83,12 +94,14 @@ def main() -> None:
     )
     if skipped:
         print(f"claude-code runs on Anthropic models only; skipped for {', '.join(skipped)}")
-    print(f"at most {runs} x {args.cost_limit:.2f} = {runs * args.cost_limit:.2f} dollars for paid models")
+    if "skill" in variants and any(a != "claude-code" for a in agents):
+        print("variant skill runs with the agent claude-code only; skipped for the other agents")
+    print(f"at most {runs} x {cost_limit:.2f} = {runs * cost_limit:.2f} dollars for paid models")
     if paid and not args.yes:
         print(f"paid models {', '.join(paid)}: rerun with --yes to start", file=sys.stderr)
         sys.exit(2)
 
-    tasks = [airco(testset=args.testset, variant=v, agent=a, model=m, ids=ids, cost_limit=args.cost_limit) for v, a, m in combos]
+    tasks = [airco(testset=args.testset, variant=v, agent=a, model=m, ids=ids, cost_limit=cost_limit) for v, a, m in combos]
     log_dir = Path("logs") / args.name
     bundle_dir = Path("reports") / args.name / "logs"
     success, _ = eval_set(

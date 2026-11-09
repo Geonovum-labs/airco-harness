@@ -1,0 +1,18 @@
+kader:
+  uri: http://definities.geostandaarden.nl/nen3610-2022
+  titel: NEN 3610:2022-begrippenkader
+  omschrijving: >-
+    Begrippen uit NEN 3610:2022 (template 20221116), omgezet uit het UML-model in het Geonovum-register volgens NL-SBB.
+
+# Bron: register.geostandaarden.nl/informatiemodel/nen3610/2022/NEN3610-2022-template-20221116.xmi, --package NEN3610
+termen:
+  alias_als_voorkeursterm: ["*"]
+  alias_naam_als_altlabel: null
+
+relaties:
+  gebruik:
+    VoidReasonValue: null
+
+bronnen:
+  mapping:
+    - {patroon: "NEN3610", sleutel: NEN3610-2022, titel: "NEN 3610:2022 Basismodel geo-informatie"}

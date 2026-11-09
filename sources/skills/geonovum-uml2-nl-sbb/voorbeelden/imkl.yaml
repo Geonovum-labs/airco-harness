@@ -1,0 +1,25 @@
+# Bron: register.geostandaarden.nl/informatiemodel/imkl/3.0.0/imkl_v3.0.0-vastgesteld-20250618.eap.zip, --package IMKL
+# Waardelijsten hebben in het model geen waarden (extern beheerd, zie imkl3wl).
+kader:
+  uri: http://definities.geostandaarden.nl/imkl
+  titel: IMKL-begrippenkader
+  omschrijving: >-
+    Begrippen uit IMKL 3.0.0, omgezet uit het UML-model in het Geonovum-register volgens NL-SBB.
+
+termen:
+  term_tag: "Term(NL)"
+  alias_als_voorkeursterm: ["*"]      # alias = Term(NL)
+  alias_naam_als_altlabel: null
+  vast:
+    # Appurtenance (INSPIRE) en Leidingelement hebben beide Term(NL) 'leidingelement' (LLM-voorstel)
+    Appurtenance: INSPIRE-leidingelement
+
+bronnen:
+  mapping:
+    - {patroon: "INSPIRE.*", sleutel: INSPIRE, titel: "INSPIRE Data Specification on Utility and Government Services"}
+    - {patroon: "IMKL(-BE)?", sleutel: IMKL, titel: "Informatiemodel Kabels en Leidingen (IMKL) 3.0.0"}
+    - {patroon: "NEN3610:2011", sleutel: NEN3610-2011, titel: "NEN 3610:2011 Basismodel geo-informatie"}
+    - {patroon: "BAG.*", sleutel: BAG, titel: "Basisregistratie Adressen en Gebouwen (BAG)"}
+    - {patroon: "BRON:BELANGENREGISTRATIE\\.?", sleutel: Belangenregistratie, titel: "Belangenregistratie (KLIC)"}
+    - {patroon: "RRGS", sleutel: RRGS, titel: "Register Risicosituaties Gevaarlijke Stoffen (RRGS)"}
+    - {patroon: ".*WIBON", sleutel: WIBON, titel: "Wet informatie-uitwisseling bovengrondse en ondergrondse netten en netwerken (WIBON)"}

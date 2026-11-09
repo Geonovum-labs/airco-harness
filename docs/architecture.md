@@ -21,7 +21,9 @@ The split comes from the tooling note. Inspect depends on one maintainer and cha
 
 ## The variants and the agents
 
-A variant is a form in which the standard is published. Which forms there will be, and how many, is for the assessment framework to define. For now there is one variant, 0: the standard as it is published today, and the agent finds it or not.
+A variant is a form in which the standard is published. Which forms there will be, and how many, is for the assessment framework to define. Variant 0 is the standard as it is published today, and the agent finds it or not.
+
+Variant `skill` is a draft for the working group to assess: an agent skill as a publication form, that is, instructions with scripts that an agent loads when the subject comes up. The setup puts the skill in Claude Code's project folder `.claude/skills/`, where Claude Code finds it as a user's project skill. The skill files are vendored in `sources/skills/`, pinned to a commit of the skill's repository, so a run names the version of the skill through the git commit of the checkout. Only the agent `claude-code` runs this variant, because only it has a sandbox in which the scripts can run; `airco()` refuses the variant for another agent and `airco-matrix` skips those pairs. The first test set for it is `nl-sbb`, with the skill geonovum-uml2-nl-sbb.
 
 What differs is the agent, because the baseline is what a user gets from the agent the user has:
 
@@ -69,6 +71,6 @@ Besides that, `eval.metadata` holds the versions of `airco-harness` and `inspect
 
 The harness covers one standard. A second standard needs its sources in `SOURCES` in `validators/sources.py`, a section in `testsets/sources-allowlist.json`, a reference model, and changes where the code assumes IMGeo: `validators/refmodel.py` reads the IMGeo MIM model and the BGT and IMGeo catalogs, and `rules.refmodel()` loads the IMGeo reference model. A standard without a MIM model, such as NL-SBB, needs another source of known terms.
 
-Other variants come once the assessment framework defines them. A new variant is a name in `VARIANTS` in `tasks.py`, a publication form the agent can reach, and tests. Inspect's `skill()` writes to a sandbox and crashes without one; an MCP server can be passed to an agent as a tool.
+Other variants come once the assessment framework defines them. A new variant is a name in `VARIANTS` in `tasks.py`, a publication form the agent can reach, and tests. The variant `skill` writes the skill files into the sandbox itself, in the setup of the agent `claude-code`; an MCP server can be passed to an agent as a tool.
 
 No model grader is enabled yet. Setup 3 (IDE and chat assistants) is not in the harness; other CLI agents than Claude Code are not either, although Inspect SWE offers Codex CLI and Gemini CLI the same way.

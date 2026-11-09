@@ -1,0 +1,25 @@
+kader:
+  uri: http://definities.geostandaarden.nl/imro
+  titel: IMRO-begrippenkader
+  omschrijving: >-
+    Begrippen uit IMRO2012 (UML 1.1.0), omgezet uit het UML-model in het Geonovum-register volgens NL-SBB.
+
+# Bron: register.geostandaarden.nl/informatiemodel/imro/2012/imro2012_1.1.0.EAP, --package IMRO2012
+# (de XMI IMRO2012_1.1.0.xml in het register is afgebroken en niet leesbaar)
+relaties:
+  gebruik:
+    RuimtelijkPlanobject_BP: [Planobject, null]
+    RuimtelijkPlanobject_GB: [Planobject, null]
+    RuimtelijkPlanobject_SV: [Planobject, null]
+    Functieaanduidingen: [Functieaanduiding, null]
+    Bestemmingshoofdgroep_D: null
+    Bestemmingshoofdgroep_E: null
+    Overheden: null
+    Teksttype_GB: null
+    RollenEnumeration: null
+    SymboolCodeMatrix: null
+    Themalijst: null
+
+bronnen:
+  mapping:
+    - {patroon: "NEN3610:2011", sleutel: NEN3610-2011, titel: "NEN 3610:2011 Basismodel geo-informatie"}

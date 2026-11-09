@@ -35,6 +35,8 @@ MUST = set(Case.load(TARGETS["dsfl-02"]).expected["must"])
 # The point every map gets for a pand: inside it, as an agent that takes the pand's centre or its address would place it.
 MUST_POINTS = [shapely.geometry.shape(f["geometry"]).representative_point() for f in PANDEN if f["properties"]["identificatie"] in MUST]
 RIVER = (5.905, 51.976)  # in the Rijn, on no pand: a place from another source
+# The counts of the skill's scripts on IMGeo 2.2 with the example voorbeelden/imgeo.yaml.
+NL_SBB_EXAMPLE = {"begrippen": 393, "objecttypen": 38, "datatypen": 4, "attributen": 67, "waarden": 284, "collecties": 57, "violations": 0}
 
 
 def shown(features: list[dict]) -> str:
@@ -73,6 +75,15 @@ CASES = [
     ("dsfl-02", "", full(0, 0.0, 0, 0)),
     ("dsfl-02", "the sports halls of Arnhem", full(0, 0.0, 0, 0)),
     ("dsfl-02", json.dumps({"type": "Polygon", "coordinates": "here"}), full(0, 0.0, 0, 0)),
+    # With the example the skill offers, and with all script proposals: both are right.
+    ("nl-sbb-01", as_json(NL_SBB_EXAMPLE), full()),
+    ("nl-sbb-01", as_json(NL_SBB_EXAMPLE | {"begrippen": 396, "waarden": 287}), full()),
+    # The violations of the run without the external schemes as context: the 41 match targets are not in the graph.
+    ("nl-sbb-01", as_json(NL_SBB_EXAMPLE | {"violations": 41}), full(0, round(6 / 7, 4), 0)),
+    # Values counted once per code list, without merging the same value in several lists.
+    ("nl-sbb-01", as_json(NL_SBB_EXAMPLE | {"begrippen": 452, "waarden": 343}), full(0, round(5 / 7, 4), 0)),
+    ("nl-sbb-01", as_json({k: str(v) for k, v in NL_SBB_EXAMPLE.items()}), full(0, 0.0, 0, 0)),
+    ("nl-sbb-01", "The scheme has 393 concepts and validates without violations.", full(0, 0.0, 0, 0)),
 ]
 
 
