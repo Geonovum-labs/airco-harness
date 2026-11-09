@@ -1,0 +1,198 @@
+name: Run a measurement
+
+# Dispatch only. The repository is public and the kadaster runner is inside Kadaster's network,
+# so no pull_request or fork event may ever reach a job that can run on it.
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Where the measurement runs
+        type: choice
+        options: [github, kadaster]
+        default: github
+      testset:
+        description: Test set under testsets/
+        default: dsfl
+      models:
+        description: Comma-separated models
+        required: true
+      agents:
+        description: Comma-separated agents (model, inspect, claude-code)
+        default: model
+      variants:
+        description: Comma-separated variants
+        default: "0"
+      ids:
+        description: Comma-separated sample ids; empty runs all samples
+        default: ""
+      epochs:
+        description: Runs per sample, variant and model
+        default: "3"
+      cost_limit:
+        description: Cost limit per run in dollars
+        default: "2"
+      publish:
+        description: Open a pull request with the report
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.name.outputs.name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
+      - run: uv sync --locked --all-extras
+      - id: name
+        run: echo "name=$(TZ=Europe/Amsterdam date +%Y-%m-%dT%H-%M-%S)" >> "$GITHUB_OUTPUT"
+      # No secrets here. An argument the matrix rejects fails the run before anything is approved.
+      - name: Plan the matrix
+        env:
+          NAME: ${{ steps.name.outputs.name }}
+          RUNNER: ${{ inputs.runner }}
+          TESTSET: ${{ inputs.testset }}
+          MODELS: ${{ inputs.models }}
+          AGENTS: ${{ inputs.agents }}
+          VARIANTS: ${{ inputs.variants }}
+          IDS: ${{ inputs.ids }}
+          EPOCHS: ${{ inputs.epochs }}
+          COST_LIMIT: ${{ inputs.cost_limit }}
+          PUBLISH: ${{ inputs.publish }}
+        run: |
+          args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --variants "$VARIANTS" --epochs "$EPOCHS" --cost-limit "$COST_LIMIT")
+          if [ -n "$IDS" ]; then args+=(--ids "$IDS"); fi
+          uv run airco-matrix "${args[@]}" --name "$NAME" --plan | tee plan.txt
+          {
+            echo "## Measurement $NAME"
+            echo
+            echo "| Input | Value |"
+            echo "| --- | --- |"
+            echo "| runner | \`$RUNNER\` |"
+            echo "| testset | \`$TESTSET\` |"
+            echo "| models | \`$MODELS\` |"
+            echo "| agents | \`$AGENTS\` |"
+            echo "| variants | \`$VARIANTS\` |"
+            echo "| ids | \`${IDS:-all}\` |"
+            echo "| epochs | \`$EPOCHS\` |"
+            echo "| cost_limit | \`$COST_LIMIT\` |"
+            echo "| publish | \`$PUBLISH\` |"
+            echo
+            echo '```text'
+            cat plan.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  measure:
+    needs: plan
+    # Secrets live in this environment and are released after a required reviewer approves.
+    environment: measurement
+    runs-on: ${{ inputs.runner == 'kadaster' && fromJSON('["self-hosted", "kadaster-airco"]') || 'ubuntu-latest' }}
+    timeout-minutes: ${{ inputs.runner == 'kadaster' && 1440 || 360 }}
+    permissions:
+      contents: read
+    env:
+      NAME: ${{ needs.plan.outputs.name }}
+    steps:
+      # No token stays on the machine; a self-hosted runner keeps its workspace.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
+      - run: uv sync --locked --all-extras
+      - id: matrix
+        env:
+          TESTSET: ${{ inputs.testset }}
+          MODELS: ${{ inputs.models }}
+          AGENTS: ${{ inputs.agents }}
+          VARIANTS: ${{ inputs.variants }}
+          IDS: ${{ inputs.ids }}
+          EPOCHS: ${{ inputs.epochs }}
+          COST_LIMIT: ${{ inputs.cost_limit }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          KADASTER_API_KEY: ${{ secrets.KADASTER_API_KEY }}
+          KADASTER_BASE_URL: ${{ vars.KADASTER_BASE_URL }}
+        run: |
+          args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --variants "$VARIANTS" --epochs "$EPOCHS" --cost-limit "$COST_LIMIT")
+          if [ -n "$IDS" ]; then args+=(--ids "$IDS"); fi
+          uv run airco-matrix "${args[@]}" --name "$NAME" --yes
+      # Artifacts and job logs of a public repository are visible to any GitHub user, so nothing leaves
+      # the runner before this check passes. A matrix that partly failed still uploads, and the job stays red.
+      - id: logcheck
+        if: ${{ !cancelled() }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          KADASTER_API_KEY: ${{ secrets.KADASTER_API_KEY }}
+          KADASTER_BASE_URL: ${{ vars.KADASTER_BASE_URL }}
+        run: uv run airco-logcheck --mask-emails "logs/$NAME" "reports/$NAME"
+      - if: ${{ !cancelled() && steps.logcheck.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: measurement-${{ needs.plan.outputs.name }}
+          path: |
+            logs/${{ needs.plan.outputs.name }}
+            reports/${{ needs.plan.outputs.name }}
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    if: ${{ inputs.publish }}
+    needs: [plan, measure]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      NAME: ${{ needs.plan.outputs.name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
+      - run: uv sync --locked --all-extras
+      - uses: actions/download-artifact@v8
+        with:
+          name: measurement-${{ needs.plan.outputs.name }}
+          path: .
+      - run: uv run airco-report "logs/$NAME" --out "reports/$NAME"
+      - run: uv run airco-logcheck "reports/$NAME"
+      - name: Open the pull request
+        env:
+          RUNNER: ${{ inputs.runner }}
+          TESTSET: ${{ inputs.testset }}
+          MODELS: ${{ inputs.models }}
+          AGENTS: ${{ inputs.agents }}
+          VARIANTS: ${{ inputs.variants }}
+          IDS: ${{ inputs.ids }}
+          EPOCHS: ${{ inputs.epochs }}
+          COST_LIMIT: ${{ inputs.cost_limit }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "measurement/$NAME"
+          git add "reports/$NAME"
+          git commit -m "chore(reports): add the $NAME measurement"
+          git push origin "measurement/$NAME"
+          body="Measurement $NAME, made by [this workflow run]($RUN_URL).
+
+          - runner: $RUNNER
+          - testset: $TESTSET
+          - models: $MODELS
+          - agents: $AGENTS
+          - variants: $VARIANTS
+          - ids: ${IDS:-all}
+          - epochs: $EPOCHS
+          - cost limit per run: $COST_LIMIT dollars"
+          gh pr create --base main --title "chore(reports): add the $NAME measurement" --body "$body"
