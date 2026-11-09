@@ -6,7 +6,7 @@ A test set is a folder under `testsets/` with questions for one purpose. Each qu
 
 | File | Content |
 | --- | --- |
-| `testsets/<name>/testset.json` | `purpose`, `version` and `date` of the test set |
+| `testsets/<name>/testset.json` | `purpose`, `version` and `date` of the test set, and optionally `limits` |
 | `testsets/<name>/samples/<id>/sample.json` | The question and its metadata, following `testsets/sample.schema.json`. The folder name is the sample id |
 | `testsets/<name>/samples/<id>/expected.json` | The scoring rule and the expected outcome |
 | `testsets/<name>/samples/<id>/answer.schema.json` | For a JSON answer, the JSON Schema (draft 2020-12) of the answer |
@@ -21,6 +21,7 @@ The sample id is `<name>-G<nn>-<nn>`, where `<name>` is the short name of the st
 | `task` | Task type, one of the values in `sample.schema.json`, such as `lookup` or `classify` |
 | `standard` | Standard with version, such as `imgeo-2.2`, or the name of a group of sources, such as `dsfl`. The allowlist for `source` uses the same name |
 | `input` | The question to the agent, with the requested answer format. It may be in Dutch, and then so are the answer keys |
+| `files` | Optional. Files the agent finds in its working directory: a file name and a path under `sources/`, such as `{"IMGeo.xmi": "imgeo-2.2/IMGeo.xmi"}`. Only the agent `claude-code` has a working directory, so the agents `model` and `inspect` get the question without the files |
 | `metadata.status` | `draft`, `approved` or `withdrawn` |
 | `metadata.hypothesis` | Why the question may fail |
 | `metadata.expected_variant` | The hypothesis of the test set note: the lowest variant on which the question is expected to pass. Which variants there will be is not defined yet; 0 is the standard as published today |
@@ -29,6 +30,8 @@ The sample id is `<name>-G<nn>-<nn>`, where `<name>` is the short name of the st
 | `metadata.also_defect`, `metadata.exploration_question` | Optional. A second defect the question touches, and the exploration question it comes from |
 
 `expected.json` always has `rule`, the name of the scoring rule, and may have `answer_schema` (the file name of the answer schema), `source` (where the expected answer comes from) and `note` (for the reviewer). The other keys depend on the rule.
+
+`limits` in `testset.json` raises the default limits per run for a test set whose task takes longer than a question, such as `{"message_limit": 600, "time_limit": 5400}`; the keys are `message_limit`, `token_limit`, `time_limit` and `cost_limit`. A limit given with `-T` or `--cost-limit` wins.
 
 Choose a test set with `-T testset=<name>` or `airco-matrix --testset <name>`; the default is `imgeo`. Each run records the name and version of its test set, and the git commit of the checkout.
 

@@ -1,0 +1,5 @@
+lxml>=5
+rdflib>=7
+pyshacl>=0.26
+pyyaml>=6
+access-parser==0.0.6  # .eap/.eapx; inventaris_eap.py corrigeert een fout in de memo-lezer van precies deze versie

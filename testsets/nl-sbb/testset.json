@@ -1,0 +1,6 @@
+{
+  "purpose": "Converting a UML information model to a concept scheme that follows NL-SBB, the Dutch standard for describing concepts. The first test of an agent skill as a publication form.",
+  "version": "0.1",
+  "date": "2026-11-10",
+  "limits": {"message_limit": 600, "token_limit": 8000000, "time_limit": 5400, "cost_limit": 25.0}
+}

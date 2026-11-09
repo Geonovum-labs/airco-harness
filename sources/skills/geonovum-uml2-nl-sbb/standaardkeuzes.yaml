@@ -1,0 +1,152 @@
+# Standaardkeuzes voor de omzetting XMI (UML) -> NL-SBB-begrippenkader.
+#
+# Deze waarden zijn de keuzes van de gebruiker bij de IMGeo-conversie (november 2026).
+# Wijzig dit bestand NIET per project: zet afwijkingen in een projectbestand (project.yaml).
+# Dat wordt diep samengevoegd met dit bestand: dicts worden aangevuld, lijsten en losse
+# waarden vervangen. Uitleg per keuze: references/keuzes.md.
+
+kader:
+  uri: null               # VERPLICHT in project.yaml, bv. http://definities.geostandaarden.nl/imgeo
+  titel: null             # bv. IMGeo-begrippenkader
+  omschrijving: null      # rdfs:comment bij het kader
+  taal: nl
+
+# URI-patronen. {kader} = kader.uri, {naam} = PascalCase van de voorkeursterm (begrip),
+# UML-naam (collectie) of bronsleutel (bron).
+uris:
+  begrip: "{kader}/id/begrip/{naam}"
+  collectie: "{kader}/id/collectie/{naam}"
+  bron: "{kader}/id/bron/{naam}"
+
+# Turtle-prefixen in de uitvoer (alleen leesbaarheid).
+prefixen: {}
+
+# Welke stereotypen bepalen de soort klasse (hoofdletterongevoelig).
+# uml:Enumeration is altijd een waardelijst, uml:DataType altijd een datatype.
+# Alle overige klassen zijn objecttypen.
+stereotypen:
+  # incl. MIM-stereotypen (Codelijst, Enumeratie, Gestructureerd datatype, Primitief datatype, Keuze)
+  waardelijst: [codeList, codelist, codelijst, enumeration, enumeratie, referentielijst, waardelijst]
+  datatype: [dataType, datatype, gegevensgroeptype, union, primitive, gestructureerd datatype,
+             primitief datatype, keuze]
+  overslaan: []
+
+# Keuze 6: alles meenemen.
+scope:
+  datatypen: true           # datatypen en hun attributen
+  abstracte_klassen: true
+  attributen: true          # ook generieke attributen van de basisklasse
+  waardelijsten: true       # incl. waardelijsten die geen attribuut gebruikt (bv. VoidReasonValue)
+  klassen_overslaan: []     # UML-namen
+  packages_overslaan: []
+
+# Definities en toelichtingen. Veel MIM-modellen zetten koppen in de notitie, bv.
+# "--Definitie-- ... --Toelichting-- ... --Regels--". Heeft een notitie zulke koppen, dan wordt alleen
+# de definitiesectie skos:definition. Toelichting(en) -> skos:scopeNote. Zonder koppen: hele notitie.
+definities:
+  sectie_definitie: [definitie, definition]     # koppen (kleine letters), samengevoegd in deze volgorde
+  sectie_toelichting: [toelichting, description]  # -> skos:scopeNote
+  sectie_bron: [source, bron, herkomst]           # herkomst als er geen herkomst-tag is (bronnen.tag)
+  sectie_negeren: [regels, name, notitie, omschrijving, notes voor beheer, noted voor beheer]  # bewust niet overgenomen (log)
+  toelichting_tag: [Toelichting, toelichting]   # tagged value(s) -> skos:scopeNote; [] = uit
+  # Standaardbeschrijvingen uit het MIM-profiel die in memo-tags zijn blijven staan (geen echte toelichting)
+  toelichting_negeer:
+    - "Een inhoudelijke toelichting op de (toepassing van het informatie-element|gegevensgroep|toepassing van het modelelement)\\.?"
+
+termen:
+  term_tag: null                  # tagged value met de voorkeursterm (bv. "Term(NL)" in IMKL); UML-naam -> altLabel
+  camelcase_splitsen: true
+  cijfers_scheiden: false         # true: "golflengte12_5" -> "golflengte 12,5" (underscore tussen cijfers = decimaalteken)
+  decimaalteken: ","
+  kleine_letters: true
+  afkortingen_behouden: true      # woorden met 2+ hoofdletters (BGT, OV-baan) blijven staan
+  naam_prefixen_verwijderen: []   # bv. ["bgt-", "plus-"]
+  vast: {}                        # UML-naam/alias (hoofdletterongevoelig) -> term, zonder omzetting
+  samenstellingen: {}             # "gebouw installatie": "gebouwinstallatie" (vervangen als deeltekst)
+  # Woorden die precies zo blijven staan: niet splitsen, geen kleine letters (namen van informatiemodellen)
+  woorden_behouden: [IMGeo, IMGeluid, IMBAG, IMKL, IMRO, IMEV, IMWA, IMOOV, IMNAP, IMBRT, IMBRO]
+  # Stereotypen waarvoor de alias de voorkeursterm is. De UML-naam wordt dan altLabel
+  # in taal alias_naam_als_altlabel (null = geen altLabel). Keuze: CityGML-namen als altLabel@en.
+  # Geldt ook voor attributen en waarden met een alias (bij "*" of als hun stereotype in de lijst staat).
+  # MIM-modellen: de alias is de naam in natuurlijke taal -> vaak ["*"].
+  alias_als_voorkeursterm: []     # bv. [ADEElement]; [ "*" ] = elk element met alias
+  alias_naam_als_altlabel: en
+
+# Keuze: attribuuttermen met objecttype-context.
+attributen:
+  context_altijd: [type, naam, tekst, positie, hoek, fysiek voorkomen]
+  context_bij_dubbele_naam: true      # zelfde naam, andere definitie -> "{term} {objecttype}"
+  context_bij_botsing_met_klasse: true
+  prefix_term: {}                     # UML-prefix -> voorvoegsel in term, bv. {"plus-": "plus "}
+  term_correcties: {}                 # UML-attribuutnaam -> basisterm (bv. typefout in UML-naam)
+  notatie: "{klasse}.{attribuut}"     # skos:notation, uniek per kader
+  samenvoegen: naam_en_definitie      # naam_en_definitie | nooit
+
+# Keuzes: duplicaten met zelfde definitie = één begrip; verschillende definitie = opschonen + splitsen.
+waarden:
+  samenvoegen: naam_en_definitie      # naam_en_definitie | nooit (dan één begrip per waardelijst)
+  leestekenverschil_samenvoegen: true # definities die alleen in leestekens/entiteiten verschillen
+  # Bij gelijke naam en inhoudelijk andere definitie stopt genereer.py, tenzij hieronder een
+  # splitsing staat. Sleutel "waardenaam|Waardelijst" (waardenaam in kleine letters) -> term.
+  splitsingen: {}
+  # Alternatief voor handmatige splitsingen: patroon voor alle overige conflicten, bv. "{lijst} {waarde}"
+  # (lijst = term van de waardelijst). null = genereer.py stopt bij een conflict (standaard).
+  automatisch_splitsen: null
+  # Waarden die één begrip zijn ondanks (kleine) definitieverschillen; meest voorkomende definitie wint.
+  zelfde_begrip: []
+  hernoem: {}                         # waardenaam (kleine letters) -> term, bv. {"niet-bgt": "niet-BGT-object"}
+  botsing_achtervoegsel: " waarde"    # als een waardeterm al als begrip bestaat
+  notatie_tag: null                   # tagged value voor skos:notation (bv. Code); null = geen
+
+relaties:
+  generalisatie: broaderGeneric   # broaderGeneric (skos:broader + isothes:broaderGeneric) | broader | geen
+  wortel: null                    # UML-naam: klassen zonder superklasse in het model komen hieronder
+  zelfstandig: []                 # klassen zonder superklasse die topbegrip blijven (niet onder wortel)
+  datatypen_topbegrip: true
+  externe_superklasse_op_naam: true   # externe superklasse met dezelfde naam als een modelklasse -> die klasse
+  attribuut_objecttype: related       # related | geen
+  waarde_attribuut: related           # related | geen (keuze: tegen verweesde waarden)
+  waarde_parent_tag: parent           # tagged value met bovenliggende waarde(n) -> broaderGeneric
+  parent_scheiding: ";"
+  # Waardelijst -> [klasse, attribuut] als het gebruik niet uit de attribuuttypen volgt.
+  # attribuut null = waarden related aan het objecttype; hele waarde null = niet relateren.
+  gebruik: {}
+
+bronnen:
+  tag: ["Herkomst definitie", herkomstDefinitie]  # tagged value(s) met de herkomst -> dct:source (eerste niet-lege)
+  negeer: ["", "<memo>", "-*"]    # regexen (volledige match) die geen bron zijn
+  # Eerste passende regel wint. patroon = regex op de tag in hoofdletters zonder spaties;
+  # named groups mogen in sleutel/titel. Onbekende tags komen in het log en analyse.
+  mapping: []
+
+collecties:
+  per_waardelijst: true
+
+# Keuze: harmonisatierelaties naar externe kaders. Lijst van {term, relatie, uri};
+# relatie = exactMatch | closeMatch | broadMatch | narrowMatch | relatedMatch.
+matches: []
+
+# Externe kaders: voor matchvoorstellen (analyseer.py) en als context bij de SHACL-validatie
+# (haal_context.py). data = bulkdownload (Turtle); per_begrip = URL-sjabloon met {uri}.
+externe_kaders:
+  - naam: NEN 3610:2011
+    namespace: http://definities.geostandaarden.nl/nen3610/id/begrip/
+    data: https://definities.geostandaarden.nl/rest/v1/nen3610-2011/data?format=text/turtle
+    prefix: nen3610
+  - naam: BAG (IMBAG)
+    namespace: http://bag.basisregistraties.overheid.nl/id/concept/
+    per_begrip: https://definities.geostandaarden.nl/rest/v1/IMBAG/data?uri={uri}&format=text/turtle
+    prefix: bag
+
+validatie:
+  profiel: https://register.geostandaarden.nl/shacl/nl-sbb/1.0.0/skos-ap-nl.ttl
+  profiel_fallback: https://raw.githubusercontent.com/Geonovum/NL-SBB/refs/heads/main/profiles/skos-ap-nl.ttl
+  # De extensie hoort in SKILL/shacl/. Ontbreekt die map na installatie, dan wordt deze kopie gebruikt.
+  extensie_fallback: https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/main/skills/geonovum-uml2-nl-sbb/shacl/skos-ap-nl-extensie.ttl
+  met_externe_context: true       # keuze: valideren mét externe kaders als context
+
+# Administratie (genereer.py negeert dit):
+# besloten = codes van VRAAG-punten die de gebruiker bewust op de standaard laat (analyseer: BESLOTEN)
+# notities = vrije tekst bij keuzes (wie besloot wat, LLM-voorstel, aanname), komt in het rapport
+besloten: []
+notities: []

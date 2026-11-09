@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-10-29T11:05:40Z",
+  "fetched": "2026-11-09T21:59:17Z",
   "files": [
     {
       "path": "dsfl/bag-arnhem-sport-panden.geojson",
@@ -14,6 +14,14 @@
       "url": "https://service.pdok.nl/lv/bag/wfs/v2_0?service=WFS&version=2.0.0&request=GetFeature&typeNames=bag%3Averblijfsobject&outputFormat=application%2Fjson&srsName=EPSG%3A4326&count=1000&FILTER=%3CFilter+xmlns%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3CAnd%3E%3CPropertyIsLike+wildCard%3D%22%2A%22+singleChar%3D%22.%22+escapeChar%3D%22%21%22%3E%3CValueReference%3Egebruiksdoel%3C%2FValueReference%3E%3CLiteral%3E%2Asportfunctie%2A%3C%2FLiteral%3E%3C%2FPropertyIsLike%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EArnhem%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3C%2FAnd%3E%3C%2FFilter%3E",
       "sha256": "498f5fdae994c272a96e383351231c05edc8fe44ae2564ced8e70c801f91ad2d",
       "bytes": 90753
+    },
+    {
+      "path": "imgeo-2.2/IMGeo.xmi",
+      "url": "https://register.geostandaarden.nl/informatiemodel/imgeo/2.2/IMGeo.xmi",
+      "last_modified": "Tue, 08 Sep 2020 08:56:24 GMT",
+      "etag": "\"31a6a7-5aec982763e00\"",
+      "sha256": "3f621deddf4ce7d9c4d0211907d757ded9c4a9ab3f4a06ceb3bc9f8749859123",
+      "bytes": 3253927
     },
     {
       "path": "imgeo-2.2/catalog-bgt.html",
@@ -84,6 +92,153 @@
       "etag": "\"5ed-616bf39d3aab2\"",
       "sha256": "ebdce7749c5f759870fe2772bddd78eb7c6f9121b87dfe192f9034f2a359223f",
       "bytes": 1517
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/SKILL.md",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/SKILL.md",
+      "etag": "\"ac1dd9d3a701c9c71f654989c0e774df1d387c83d7dfa9fcd3ad7cfe3b8293ce\"",
+      "sha256": "6449efe8a9b9ffc91600af01198d4126a6b70a41185ee79cbe63961fc313a55a",
+      "bytes": 12849
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/references/keuzes.md",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/references/keuzes.md",
+      "etag": "\"7ab09913522733ca750e1ac649f2808ab7390e1b84079cafb43f51e1950409d8\"",
+      "sha256": "297f4b49c4b10c2801dd17b32e5a4728e8f92745ff9357a45cf428956740c0c6",
+      "bytes": 9401
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/requirements.txt",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/requirements.txt",
+      "etag": "\"00f377f138dca601fb77f36d6e04fd86ebf0aec5791e54b4941c27a2f7c3f917\"",
+      "sha256": "314fe7fbfc9bb9b6e6e96e9dd7cc01d8272e706e34d5d667ef671d8eab2cb10a",
+      "bytes": 157
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/analyseer.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/analyseer.py",
+      "etag": "\"99d5fc95add29c5899f161f8d83584c6c2ef7b6f26f2b1da53654fae9086316f\"",
+      "sha256": "a06bb3706a5e74d2ca23e69d467d79af01cf9dba3ab41416a8c24fc2c6674b7e",
+      "bytes": 17329
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/bk.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/bk.py",
+      "etag": "\"2037f7857c84a8e6aba9c7b52b2f34e33a42fefe7756368b96b6dc83e796fa2c\"",
+      "sha256": "f4c959714b9e648fbc62971221a16efc4a7e33b5352cce0eb07a3ec5369ba94e",
+      "bytes": 50333
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/bronnencontrole.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/bronnencontrole.py",
+      "etag": "\"5a19769cc0688921e0c1d58297e9df242248e865bc90b649f597177ef7feb1f0\"",
+      "sha256": "227558693336a34e3ce0f5a6522918b34be8540e201573a8d12fa652191a6120",
+      "bytes": 3252
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/extern.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/extern.py",
+      "etag": "\"db9a331eb7d04a09b8f46ee8effbbaa1e89e679bdc1dd8601aaf2eb6cdf7248c\"",
+      "sha256": "76319719cc69abc6d45a282db9459f3220bc769de0fe86cbd635923fe895e060",
+      "bytes": 5493
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/genereer.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/genereer.py",
+      "etag": "\"10a01fe96f11ce38aeb9dcdb73fc23595de9e71e64eafcb916f8d94b5ac88091\"",
+      "sha256": "b693a3bf476594fc60e569220cc2563dd1ac67cd8c131118d9b9d4b1d009d92a",
+      "bytes": 22750
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/inventaris.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/inventaris.py",
+      "etag": "\"356f1f5a75bd786ed19acfea3562083f06d3224ea4edfbd5fd355e3832b673b9\"",
+      "sha256": "5e0af80509e54712524700b89f6f5294d8ec49c66e8a63287b9851f22c05eff3",
+      "bytes": 15541
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/inventaris_eap.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/inventaris_eap.py",
+      "etag": "\"a21eba2e7818b44c9bad6df0a685482f45c2abf996df600f5b49c5e447417704\"",
+      "sha256": "6a56fcef3d88fc0798b38bbf2d373b3201b6e32e5333b39b6aca38b8fec54c1a",
+      "bytes": 12715
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/kern.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/kern.py",
+      "etag": "\"88ff23fc9b64cbc61ae75d28fb4e50004694c44d83be8eb669d72b50840b86f3\"",
+      "sha256": "d29fe0689878c0191ca30c1c2b2d40d388ee10e310e7d6a3218234f8dc997e3f",
+      "bytes": 11054
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/valideer.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/valideer.py",
+      "etag": "\"e8ccbb2c86ac52180df08f56f0dec6e1e81a4c0301e145bae84aed73f5c50f47\"",
+      "sha256": "57cddd029d724fe319cfbcb53daf200caa3002ca0a049edb54b9687e75c1c230",
+      "bytes": 5346
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/scripts/vergelijk.py",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/scripts/vergelijk.py",
+      "etag": "\"6655f53f9029a148123d2efda67953bc26a49b30e0847b32bbd14ca6c2cf17fa\"",
+      "sha256": "d796298dc8db4932a25a3f5ae5b56ec1b3d93f181d63fbdd018a77e7e3c16875",
+      "bytes": 6305
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/shacl/skos-ap-nl-extensie.ttl",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/shacl/skos-ap-nl-extensie.ttl",
+      "etag": "\"435abcd7099684144095866ea295a1c0a1ef27c3c8130de75272e32e9bc88b29\"",
+      "sha256": "37ebed76a9ac4f5dd85f30e8eec7f738abdf6869d38cc980aa175c7cf0182e2f",
+      "bytes": 7089
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/standaardkeuzes.yaml",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/standaardkeuzes.yaml",
+      "etag": "\"911e09c5e88af696e01ba135cc181244d656988419ff41a7818c859bfc57dc3d\"",
+      "sha256": "1eb377ffbdd9c6adaa24e64adef74716a609dead85f4d76d885819e9ac006f60",
+      "bytes": 9016
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/voorbeelden/imev.yaml",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/voorbeelden/imev.yaml",
+      "etag": "\"3cf636f9864fe4f137f0c29a8012a5024a4c262442d442334a97d6e277934cac\"",
+      "sha256": "2913ec78725595ebfa1bb5bd7324427568d20e9f7132f3ac689abc8dd30b0bbc",
+      "bytes": 1822
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/voorbeelden/imgeluid.yaml",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/voorbeelden/imgeluid.yaml",
+      "etag": "\"08690eb45994bbaac80294a0ea3f2d06fc831279dc28596799893b42ae8084c5\"",
+      "sha256": "04054422cc1fd065603c1d8fc2b24106f045d5ecb33fc5f6af11b41d3bbf7e42",
+      "bytes": 1526
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/voorbeelden/imgeo.yaml",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/voorbeelden/imgeo.yaml",
+      "etag": "\"4cbbf4ee65ccedbb67d1714b4298329d83e540f8da4fbc38503d180d6b3f70b2\"",
+      "sha256": "977ffbbe39b49f3169b2412eb41dbcda6c2163dff504734225b0755dd4ee2b75",
+      "bytes": 10559
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/voorbeelden/imkl.yaml",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/voorbeelden/imkl.yaml",
+      "etag": "\"3241ecc337492a998d53f8124c0f109ec48340cbf20fd98120ebfedfaf2331ca\"",
+      "sha256": "ce6d30a9726058d06d4c86f7703100b405dcde1bc7d140cc11648dc09b943b78",
+      "bytes": 1466
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/voorbeelden/imro.yaml",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/voorbeelden/imro.yaml",
+      "etag": "\"4bbc0197a0d2b3a0d7b28fbacd44e712c57f24c998be396386f2542bccc4eb2b\"",
+      "sha256": "fc1cca9bb4d2ecccdb9c6efab4cac7ffa9a0bffa62c7115441dbfcbcbdaa4dec",
+      "bytes": 918
+    },
+    {
+      "path": "skills/geonovum-uml2-nl-sbb/voorbeelden/nen3610.yaml",
+      "url": "https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/746d8b2ce850c4667a3da748001bc95a0f3dfbca/skills/geonovum-uml2-nl-sbb/voorbeelden/nen3610.yaml",
+      "etag": "\"d0f481be61f8657031f7f888a0cc9430719a76141f4d5e11344451e97dd0f659\"",
+      "sha256": "b00f6bd1062f29d71af00e017befdd2b02a8fc2d4aab10e0bb76c8164f06a54c",
+      "bytes": 601
     }
   ]
 }

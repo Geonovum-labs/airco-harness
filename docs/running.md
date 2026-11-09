@@ -67,7 +67,7 @@ The matrix runs a test set across variants, models and epochs with one agent, as
 	paid models anthropic/claude-haiku-5-5, mistral/mistral-small-2603: rerun with --yes to start
 	```
 
-	The matrix runs the test set `imgeo` unless you add `--testset <name>`. `--agents model,inspect,claude-code` runs all agents in one matrix, so that one bundle holds the whole measurement; `--variants`, `--ids` and `--cost-limit` narrow it down; `--help` lists all options.
+	The matrix runs the test set `imgeo` unless you add `--testset <name>`. `--agents model,inspect,claude-code` runs all agents in one matrix, so that one bundle holds the whole measurement; `--variants`, `--ids` and `--cost-limit` narrow it down; `--help` lists all options. `--variants 0,skill` adds the variant `skill`, which only the agent `claude-code` runs; the test set `nl-sbb` sets higher limits per run in its `testset.json`, up to $25 and 90 minutes, so check the maximum cost the matrix prints.
 
 2. Commit first, so that the log records a commit that holds everything the run used. Then start the matrix with the same command plus `--yes`. The matrix is named after its start time, such as `2026-10-19T21-06-14`, so that bundles sort by time; `--name` overrides that. The logs go to `logs/<name>/` and the log bundle to `reports/<name>/logs/`.
 

@@ -1,0 +1,29 @@
+kader:
+  uri: http://definities.geostandaarden.nl/img
+  titel: IMGeluid-begrippenkader
+  omschrijving: >-
+    Begrippen uit IMGeluid 3.1.1, omgezet uit het UML-model in het Geonovum-register volgens NL-SBB.
+
+# Bron: register.geostandaarden.nl/informatiemodel/img/3.1.1/IMGeluid_v3_1_1.xmi, --package IMGeluid
+waarden:
+  # Codes 1..12 komen in meerdere lijsten voor met verschillende betekenis
+  automatisch_splitsen: "{lijst} {waarde}"
+  splitsingen:
+    industrieterrein|Geluidbron: geluidbron industrieterrein
+    schiet- of springterrein|Geluidbron: geluidbron schiet- of springterrein
+
+bronnen:
+  mapping:
+    - {patroon: "IMGELUID", sleutel: IMGeluid, titel: "Informatiemodel Geluid (IMGeluid) 3.1.1"}
+    - {patroon: "NEN3610:2011", sleutel: NEN3610-2011, titel: "NEN 3610:2011 Basismodel geo-informatie"}
+    - {patroon: "NEN3610", sleutel: NEN3610, titel: "NEN 3610 Basismodel geo-informatie"}
+    - {patroon: "OMGEVINGSREGELING(GELUID)?", sleutel: Omgevingsregeling, titel: "Omgevingsregeling"}
+    - {patroon: "ISO19107", sleutel: ISO19107, titel: "ISO 19107 Geographic information - Spatial schema"}
+    - {patroon: "AREGBIJLAGEIVE", sleutel: AREG-bijlage-IVe, titel: "Aanvullingsregeling geluid, bijlage IVe"}
+    - {patroon: "REKEN-ENMEETVOORSCHRIFTGELUID.*", sleutel: RMG2012, titel: "Reken- en meetvoorschrift geluid 2012"}
+
+termen:
+  vast:
+    0dB: 0 dB        # eenheid dB niet als camelCase splitsen
+    2dB: 2 dB
+  cijfers_scheiden: true      # amplitudeVoorGolflengte12_5 -> amplitude voor golflengte 12,5

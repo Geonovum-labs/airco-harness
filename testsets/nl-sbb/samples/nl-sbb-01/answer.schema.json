@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "begrippen": {"type": "integer"},
+    "objecttypen": {"type": "integer"},
+    "datatypen": {"type": "integer"},
+    "attributen": {"type": "integer"},
+    "waarden": {"type": "integer"},
+    "collecties": {"type": "integer"},
+    "violations": {"type": "integer"}
+  },
+  "required": ["begrippen", "objecttypen", "datatypen", "attributen", "waarden", "collecties", "violations"],
+  "additionalProperties": true
+}

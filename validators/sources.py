@@ -72,6 +72,31 @@ def _bag_panden_of_sport_arnhem() -> tuple[str, bytes]:
     return BAG_WFS, body.encode("utf-8")
 
 
+IMGEO_XMI = "imgeo-2.2/IMGeo.xmi"
+
+# The agent skill of the variant "skill": the skill geonovum-uml2-nl-sbb, pinned to a commit of its repo.
+SKILL_NAME = "geonovum-uml2-nl-sbb"
+SKILL_COMMIT = "746d8b2ce850c4667a3da748001bc95a0f3dfbca"
+SKILL_DIR = f"skills/{SKILL_NAME}"
+SKILL_FILES = [
+    "SKILL.md",
+    "references/keuzes.md",
+    "requirements.txt",
+    "standaardkeuzes.yaml",
+    "shacl/skos-ap-nl-extensie.ttl",
+    *(
+        f"scripts/{name}.py"
+        for name in ("analyseer", "bk", "bronnencontrole", "extern", "genereer", "inventaris", "inventaris_eap", "kern", "valideer", "vergelijk")
+    ),
+    *(f"voorbeelden/{name}.yaml" for name in ("imev", "imgeluid", "imgeo", "imkl", "imro", "nen3610")),
+]
+
+
+def skill_files() -> dict[str, Path]:
+    """The files of the skill, by their path inside the skill folder."""
+    return {name: path(f"{SKILL_DIR}/{name}") for name in SKILL_FILES}
+
+
 # Path under sources/ to URL, or to a function that gives the URL and the body of a POST. Fetched in this order.
 SOURCES: dict[str, str | Callable[[], tuple[str, bytes]]] = {
     "imgeo-2.2/imgeo2.2-mim-logisch.xml": "https://raw.githubusercontent.com/Geonovum/IMGeo-dev/30d750029fc4b81998d30a95185f78ff2c314ced/mim/imgeo2.2-mim-logisch.xml",
@@ -82,6 +107,12 @@ SOURCES: dict[str, str | Callable[[], tuple[str, bytes]]] = {
     **{schema_path(url): url for url in (f"https://register.geostandaarden.nl/xmlschema/mim/1.1.1/{name}" for name in MIM_XSD_IMPORTS)},
     DSFL_SPORT_VBO: _bag_sport_arnhem(),
     DSFL_SPORT_PANDEN: _bag_panden_of_sport_arnhem,
+    # The UML model of IMGeo 2.2 as Enterprise Architect exports it: the input of the test set nl-sbb.
+    IMGEO_XMI: "https://register.geostandaarden.nl/informatiemodel/imgeo/2.2/IMGeo.xmi",
+    **{
+        f"{SKILL_DIR}/{name}": f"https://raw.githubusercontent.com/fterpstra/skill-uml2-nl-sbb/{SKILL_COMMIT}/skills/{SKILL_NAME}/{name}"
+        for name in SKILL_FILES
+    },
 }
 
 

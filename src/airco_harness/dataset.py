@@ -12,6 +12,7 @@ import json
 
 from inspect_ai.dataset import MemoryDataset, Sample
 
+from validators import sources
 from validators.rules import TESTSETS_DIR
 
 DEFAULT_TESTSET = "imgeo"
@@ -43,8 +44,15 @@ def standards(testset: str) -> list[str]:
     return sorted({r["standard"] for r in records(testset)})
 
 
-def load(testset: str = DEFAULT_TESTSET, ids: list[str] | None = None) -> MemoryDataset:
-    """Samples of a test set, or of the ids in it."""
+def limits(testset: str) -> dict[str, float]:
+    """Limits per run that the test set sets in testset.json, for tasks that need more than a question does."""
+    if testset not in testsets():
+        raise ValueError(f"unknown test set {testset!r}; choose from {', '.join(testsets())}")
+    return manifest(testset).get("limits", {})
+
+
+def load(testset: str = DEFAULT_TESTSET, ids: list[str] | None = None, workdir: str | None = None) -> MemoryDataset:
+    """Samples of a test set, or of the ids in it. With a workdir (an agent with a sandbox), each sample's files are copied there."""
     rows = records(testset)
     if ids is not None:
         ids = [i.strip() for i in ids if i.strip()]
@@ -57,6 +65,7 @@ def load(testset: str = DEFAULT_TESTSET, ids: list[str] | None = None) -> Memory
             input=r["input"],
             target=f"{testset}/samples/{r['id']}/expected.json",
             metadata={"defect": r.get("defect"), "task": r["task"], "standard": r["standard"], **r["metadata"]},
+            files={f"{workdir}/{name}": str(sources.path(src)) for name, src in r.get("files", {}).items()} if workdir else None,
         )
         for r in rows
         if ids is None or r["id"] in ids

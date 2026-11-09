@@ -26,5 +26,15 @@
       "^https?://(www\\.|public\\.)?ep-online\\.nl/"
     ],
     "non_authoritative": []
+  },
+  "nl-sbb-1.0": {
+    "note": "The standard NL-SBB, its SHACL profile, and the IMGeo sources the conversion uses. On the variant skill, the scripts fetch the profile themselves, outside the conversation, so source counts only what the agent fetched with its own tools or in a command.",
+    "authoritative": [
+      "^https?://docs\\.geostandaarden\\.nl/nl-sbb/",
+      "^https?://register\\.geostandaarden\\.nl/(shacl/nl-sbb/1\\.0\\.0/|informatiemodel/imgeo/2\\.2)",
+      "^https?://(github\\.com|raw\\.githubusercontent\\.com)/Geonovum/NL-SBB/",
+      "^https?://definities\\.geostandaarden\\.nl/"
+    ],
+    "non_authoritative": []
   }
 }

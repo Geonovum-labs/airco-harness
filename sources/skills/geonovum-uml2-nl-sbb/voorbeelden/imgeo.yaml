@@ -1,0 +1,159 @@
+# Projectbestand IMGeo 2.1 (XMI 2013-03-29), conversie november 2026.
+# Alleen modelspecifieke aanvullingen op standaardkeuzes.yaml.
+
+kader:
+  uri: http://definities.geostandaarden.nl/imgeo
+  titel: IMGeo-begrippenkader
+  omschrijving: >-
+    Begrippen uit het Informatiemodel Geografie (IMGeo) 2.1: objecttypen, attributen en waarden
+    uit waardelijsten, omgezet uit het UML-model (XMI) volgens NL-SBB.
+
+prefixen:
+  imgeo: http://definities.geostandaarden.nl/imgeo/id/begrip/
+  col: http://definities.geostandaarden.nl/imgeo/id/collectie/
+  bron: http://definities.geostandaarden.nl/imgeo/id/bron/
+
+termen:
+  naam_prefixen_verwijderen: ["bgt-", "plus-"]
+  vast:
+    IMGeo-Object: IMGeo-object
+    NEN3610ID: NEN3610ID
+  samenstellingen:
+    gebouw installatie: gebouwinstallatie
+    vegetatie object: vegetatieobject
+  alias_als_voorkeursterm: [ADEElement]   # Nederlandse IMGeo-naam; CityGML-naam -> altLabel@en
+
+attributen:
+  context_altijd: [type, naam, tekst, positie, hoek, fysiek voorkomen]
+  prefix_term: {"plus-": "plus "}
+  term_correcties:
+    plus-fysiekVookomen: fysiek voorkomen   # typefout in UML-naam
+
+waarden:
+  hernoem:
+    niet-bgt: niet-BGT-object
+  splitsingen:   # inhoudelijk verschillende definities
+    onverhard|FysiekVoorkomenWeg: onverhard wegdeel
+    onverhard|FysiekVoorkomenOndersteunendWegdeel: onverhard wegdeel
+    onverhard|FysiekVoorkomenOnbegroeidTerrein: onverhard terreindeel
+    zand|FysiekVoorkomenOnbegroeidTerrein: zand terreindeel
+    zand|FysiekVoorkomenWegPlus: zand deklaag
+    zand|FysiekVoorkomenOndersteunendWegdeelPlus: zand deklaag
+    zand|FysiekVoorkomenOnbegroeidTerreinPlus: zand deklaag
+
+relaties:
+  wortel: _CityObject            # alle CityGML-objecten erven van _CityObject = IMGeo-object
+  zelfstandig: [Plaatsbepalingspunt]
+  # Attributen zijn GenericName in de XMI, dus het gebruik volgt niet uit de typen.
+  # attribuut null = CityGML-attribuut (function/class/surfaceMaterial) dat niet in de XMI staat.
+  gebruik:
+    Status: [_CityObject, bgt-status]
+    StatusPlus: [_CityObject, plus-status]
+    FunctieWeg: [TrafficArea, null]
+    FunctieWegPlus: [TrafficArea, plus-functieWegdeel]
+    FysiekVoorkomenWeg: [TrafficArea, null]
+    FysiekVoorkomenWegPlus: [TrafficArea, plus-fysiekVoorkomenWegdeel]
+    FunctieOndersteunendWegdeel: [AuxiliaryTrafficArea, null]
+    FysiekVoorkomenOndersteunendWegdeel: [AuxiliaryTrafficArea, null]
+    FysiekVoorkomenOndersteunendWegdeelPlus: [AuxiliaryTrafficArea, plus-fysiekVoorkomenOndersteunendWegdeel]
+    FunctieSpoor: [Railway, null]
+    FunctieSpoorPlus: [Railway, plus-functieSpoor]
+    FysiekVoorkomenOnbegroeidTerrein: [OnbegroeidTerreindeel, bgt-fysiekVoorkomen]
+    FysiekVoorkomenOnbegroeidTerreinPlus: [OnbegroeidTerreindeel, plus-fysiekVoorkomen]
+    FysiekVoorkomenBegroeidTerrein: [PlantCover, null]
+    FysiekVoorkomenBegroeidTerreinPlus: [PlantCover, plus-fysiekVookomen]
+    TypeWater: [Waterdeel, null]
+    TypeWaterPlus: [Waterdeel, plus-type]
+    TypeOndersteunendWaterdeel: [OndersteunendWaterdeel, null]
+    TypeOverigBouwwerk: [OverigBouwwerk, bgt-type]
+    TypeOverigBouwwerkPlus: [OverigBouwwerk, plus-type]
+    TypeOverbrugging: [BridgeConstructionElement, hoortBijTypeOverbrugging]
+    TypeOverbruggingsdeel: [BridgeConstructionElement, null]
+    TypeKunstwerk: [Kunstwerkdeel, bgt-type]
+    TypeKunstwerkPlus: [Kunstwerkdeel, plus-type]
+    TypeScheiding: [Scheiding, bgt-type]
+    TypeScheidingPlus: [Scheiding, plus-type]
+    TypeOpenbareRuimte: [OpenbareRuimteLabel, openbareRuimteType]
+    TypeFunctioneelGebied: [FunctioneelGebied, bgt-type]
+    TypeFunctioneelGebiedPlus: [FunctioneelGebied, plus-type]
+    Inwinningsmethode: [Plaatsbepalingspunt, inwinningsmethode]
+    VoidReasonValue: null
+    TypeGebouwInstallatie: [BuildingInstallation, null]
+    TypeGebouwInstallatiePlus: [BuildingInstallation, plus-typeGebouwInstallatie]
+    TypeVegetatieObject: [SolitaryVegetationObject, null]
+    TypeVegetatieObjectPlus: [SolitaryVegetationObject, plus-type]
+    TypeBak: [Bak, null]
+    TypeBakPlus: [Bak, plus-type]
+    TypeBord: [Bord, null]
+    TypeBordPlus: [Bord, plus-type]
+    TypeInstallatie: [Installatie, null]
+    TypeInstallatiePlus: [Installatie, plus-type]
+    TypeKast: [Kast, null]
+    TypeKastPlus: [Kast, plus-type]
+    TypeMast: [Mast, null]
+    TypeMastPlus: [Mast, plus-type]
+    TypePaal: [Paal, null]
+    TypePaalPlus: [Paal, plus-type]
+    TypePut: [Put, null]
+    TypePutPlus: [Put, plus-type]
+    TypeSensor: [Sensor, null]
+    TypeSensorPlus: [Sensor, plus-type]
+    TypeStraatmeubilair: [Straatmeubilair, null]
+    TypeStraatmeubilairPlus: [Straatmeubilair, plus-type]
+    TypeWaterinrichting: [Waterinrichtingselement, null]
+    TypeWaterinrichtingPlus: [Waterinrichtingselement, plus-type]
+    TypeWeginrichting: [Weginrichtingselement, null]
+    TypeWeginrichtingPlus: [Weginrichtingselement, plus-type]
+
+bronnen:
+  mapping:
+    - {patroon: "^NEN3610", sleutel: NEN3610-2011, titel: "NEN 3610:2011 Basismodel geo-informatie"}
+    - {patroon: "^BAG", sleutel: BAG-catalogus, titel: "Catalogus Basisregistraties Adressen en Gebouwen (BAG)"}
+    - {patroon: "^(BGT|BGT1\\.1)$", sleutel: BGT-catalogus, titel: "Gegevenscatalogus Basisregistratie Grootschalige Topografie (BGT)"}
+    - {patroon: "^IMGEO\\D*(?P<v>[0-9][0-9.]*)?", sleutel: "IMGeo-{v}", titel: "Informatiemodel Geografie (IMGeo) {v}"}
+    - {patroon: "^CROW$", sleutel: CROW, titel: "CROW-publicaties (kennisplatform infrastructuur, verkeer en vervoer)"}
+    - {patroon: "^AQUO$", sleutel: Aquo, titel: "Aquo-standaard (Informatiehuis Water)"}
+    - {patroon: "^WIKIPEDIA$", sleutel: Wikipedia, titel: "Wikipedia (Nederlandstalig)"}
+    - {patroon: "^CITYGML(1\\.0)?$", sleutel: CityGML-1.0, titel: "OGC City Geography Markup Language (CityGML) 1.0"}
+    - {patroon: "^BRTSTELSELCATALOGUS$", sleutel: BRT-stelselcatalogus, titel: "Stelselcatalogus, catalogus Basisregistratie Topografie (BRT)"}
+    - {patroon: "^STELSELCATALOGUS$", sleutel: Stelselcatalogus, titel: "Stelselcatalogus basisregistraties"}
+    - {patroon: "^RSGB$", sleutel: RSGB, titel: "Referentiemodel Stelsel van Gemeentelijke Basisgegevens (RSGB)"}
+    - {patroon: "^GWBRGEGEVENSWOORDENBOEKRIOLERING$", sleutel: GWSW, titel: "Gegevenswoordenboek Riolering (GWBR)"}
+    - {patroon: "^NEN2660$", sleutel: NEN2660, titel: "NEN 2660 Ordeningsregels gebouwde omgeving"}
+    - {patroon: "^INSPIRE$", sleutel: INSPIRE, titel: "INSPIRE-dataspecificaties"}
+    - {patroon: "^WEGENWIKI\\.NL$", sleutel: Wegenwiki, titel: "Wegenwiki (wegenwiki.nl)"}
+
+matches:
+  - {term: IMGeo-object, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/GeoObject"}
+  - {term: wegdeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Weg"}
+  - {term: ondersteunend wegdeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Weg"}
+  - {term: spoor, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Spoorbaan"}
+  - {term: onbegroeid terreindeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Terrein"}
+  - {term: begroeid terreindeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Terrein"}
+  - {term: waterdeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Water"}
+  - {term: ondersteunend waterdeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Water"}
+  - {term: pand, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Gebouw"}
+  - {term: kunstwerkdeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Kunstwerk"}
+  - {term: overbruggingsdeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Kunstwerk"}
+  - {term: tunneldeel, relatie: broadMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Kunstwerk"}
+  - {term: inrichtingselement, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Inrichtingselement"}
+  - {term: functioneel gebied, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/FunctioneelGebied"}
+  - {term: registratief gebied, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/RegistratiefGebied"}
+  - {term: identificatie, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/Identificatie"}
+  - {term: tijdstip registratie, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/TijdstipRegistratie"}
+  - {term: eind registratie, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/EindRegistratie"}
+  - {term: geen waarde, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/GeenWaarde"}
+  - {term: niet ondersteund, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/NietOndersteund"}
+  - {term: waarde onbekend, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/WaardeOnbekend"}
+  - {term: vastgesteld onbekend, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/VastgesteldOnbekend"}
+  - {term: niet geautoriseerd, relatie: closeMatch, uri: "http://definities.geostandaarden.nl/nen3610/id/begrip/NietGeautoriseerd"}
+  - {term: pand, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/Pand"}
+  - {term: openbare ruimte, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/OpenbareRuimte"}
+  - {term: openbare ruimte type, relatie: closeMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/TypeOpenbareRuimte"}
+  - {term: weg, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/Weg"}
+  - {term: water, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/Water"}
+  - {term: spoorbaan, relatie: closeMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/Spoorbaan"}
+  - {term: terrein, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/Terrein"}
+  - {term: kunstwerk, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/Kunstwerk"}
+  - {term: landschappelijk gebied, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/LandschappelijkGebied"}
+  - {term: administratief gebied, relatie: exactMatch, uri: "http://bag.basisregistraties.overheid.nl/id/concept/AdministratiefGebied"}
