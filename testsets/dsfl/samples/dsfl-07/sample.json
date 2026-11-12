@@ -1,0 +1,12 @@
+{
+  "task": "location",
+  "standard": "dsfl",
+  "input": "Which groundwater monitoring wells are within 500 meters of Stadhuisplein 1 in Amersfoort? Show them on the map.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The agent has to geocode the address, search the BRO for monitoring wells in a circle around it, keep the wells that lie within 500 meters and still exist, and show them with show_on_map. Likely failures: a radius in degrees, wells from DINOloket or another register, removed wells, longitude and latitude swapped, only a few wells.",
+    "expected_variant": 1,
+    "location": "BRO GMW registrations within 1 km of Stadhuisplein 1 (centroid of adresseerbaarobject 0307010000408914), by their delivered RD location",
+    "absence": false
+  }
+}

@@ -50,6 +50,11 @@ VOOR_1800 = vendored("bag-amersfoort-voor-1800-panden.geojson")
 MUST_1800 = set(Case.load(TARGETS["dsfl-05"]).expected["must"])
 HOMES_1800_POINTS = must_points("dsfl-05", VOOR_1800)
 NO_HOME_POINTS = [shapely.geometry.shape(f["geometry"]).representative_point() for f in VOOR_1800 if f["id"] not in MUST_1800]
+WELLS = vendored("bro-gmw-amersfoort-1km.geojson")
+MUST_WELLS = Case.load(TARGETS["dsfl-07"]).expected["must"]
+WELL_PLACES = {f["id"]: f["geometry"]["coordinates"] for f in WELLS}
+STADHUISPLEIN = (5.38416472, 52.15671963)
+METERS_PER_DEGREE_LON = 111_320 * 0.6097  # cos(52.157 degrees)
 RIVER = (5.3792, 52.164)  # north of the center, on no pand: a place from another source
 
 
@@ -105,6 +110,36 @@ CASES = [
     # Old panden without a home only.
     ("dsfl-05", shown([point(p.x, p.y) for p in NO_HOME_POINTS]), full(0, 0.0, 0)),
     ("dsfl-05", shown([point(p.y, p.x) for p in HOMES_1800_POINTS]), full(0, 0.0, len(MUST_1800))),
+    ("dsfl-06", as_json({"level_cm_nap": 213}), full()),
+    ("dsfl-06", as_json({"level_cm_nap": 213}, fenced=False), full()),
+    # The depth below ground (ground level 5.61 m NAP), positive or negative.
+    ("dsfl-06", as_json({"level_cm_nap": 348}), full(0, 0.0, 0)),
+    ("dsfl-06", as_json({"level_cm_nap": -348}), full(0, 0.0, 0)),
+    # The level of the neighboring day, or of the last measurement.
+    ("dsfl-06", as_json({"level_cm_nap": 212}), full(0, 0.0, 0)),
+    ("dsfl-06", as_json({"level_cm_nap": 248}), full(0, 0.0, 0)),
+    ("dsfl-06", as_json({"level_cm_nap": "2.13 m"}), full(0, 0.0, 0, 0)),
+    ("dsfl-06", as_json({"level_cm_nap": 2.13}), full(0, 0.0, 0, 0)),
+    ("dsfl-06", "The level was about 2.13 m above NAP.", full(0, 0.0, 0, 0)),
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in MUST_WELLS]), full()),
+    # Every well of the search, within 1 km: more than required, but all in the reference.
+    ("dsfl-07", shown(WELLS), full()),
+    # The required wells and the removed well at 428 m, which is optional.
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000133351"]]), full()),
+    # The required wells and the well at 603 m, which is in the reference.
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000009371"]]), full()),
+    # Coordinates rounded to six decimals, as an agent copies them: about 0.1 m.
+    ("dsfl-07", shown([point(*(round(c, 6) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
+    # Only the nearest 6.
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in MUST_WELLS[:6]]), full(0, 0.5, 0)),
+    ("dsfl-07", shown([*(point(*WELL_PLACES[i]) for i in MUST_WELLS), point(*STADHUISPLEIN)]), full(0, 1.0, 1)),
+    ("dsfl-07", shown([point(*STADHUISPLEIN)]), full(0, 0.0, 1)),
+    ("dsfl-07", shown([point(WELL_PLACES[i][1], WELL_PLACES[i][0]) for i in MUST_WELLS]), full(0, 0.0, len(MUST_WELLS))),
+    # 3 m east of each well: within tolerance, but both places of the twin wells 0.8 m apart match the eastern one.
+    ("dsfl-07", shown([point(WELL_PLACES[i][0] + 3 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full(0, round(11 / 12, 4), 0)),
+    ("dsfl-07", shown([point(WELL_PLACES[i][0] + 10 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full(0, 0.0, len(MUST_WELLS))),
+    ("dsfl-07", shown([point(*(round(c, 5) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
+    ("dsfl-07", shown([]), full(0, 0.0, 0)),
 ]
 
 

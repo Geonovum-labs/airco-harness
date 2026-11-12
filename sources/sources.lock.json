@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-12T12:34:35Z",
+  "fetched": "2026-11-12T13:52:37Z",
   "files": [
     {
       "path": "dsfl/bag-amersfoort-bouw-gestart.json",
@@ -45,6 +45,40 @@
       "url": "https://bag.ldproxy.net/bag/search/verblijfsobjecten-in-panden?gebied=0307&bouwjaarTot=1799&gebruiksdoel=woonfunctie",
       "sha256": "3df53941cacb06de91f047ac0f42d70dc524ed069da4ef88d561b1c0c79ee1aa",
       "bytes": 220948
+    },
+    {
+      "path": "dsfl/bro-gld000000025798.csv",
+      "url": "https://publiek.broservices.nl/gm/gld/v1/seriesAsCsv/GLD000000025798",
+      "sha256": "9a9a5a71f27653efa4bff58e4c9c76a07485867c9bde83d394fd842656a1405c",
+      "bytes": 1119816
+    },
+    {
+      "path": "dsfl/bro-gmw-amersfoort-1km.geojson",
+      "url": "https://publiek.broservices.nl/gm/gmw/v1/characteristics/searches",
+      "method": "derived",
+      "derived_from": "dsfl/bro-gmw-amersfoort-1km.xml",
+      "sha256": "69178553f22b4814e6a4b0b6ecc72282071b1eb3f75f420c5efff90d067cfeb7",
+      "bytes": 16091
+    },
+    {
+      "path": "dsfl/bro-gmw-amersfoort-1km.xml",
+      "url": "https://publiek.broservices.nl/gm/gmw/v1/characteristics/searches",
+      "method": "POST",
+      "body_sha256": "fe32c7e35c999244b11750dc050b6e7c9fe870b230fe16cace48566489e697b3",
+      "sha256": "b5b0efb4a66849244f504060c8d0364deffa12661e0db22a3fa67856e49c46a1",
+      "bytes": 116653
+    },
+    {
+      "path": "dsfl/bro-gmw000000009441-relations.json",
+      "url": "https://publiek.broservices.nl/gm/v1/gmw-relations/GMW000000009441",
+      "sha256": "b59679b784c0292e86e3adb5a406eceacd4175c86b1ed66a1ab2ea0823bdcbc1",
+      "bytes": 460
+    },
+    {
+      "path": "dsfl/bro-gmw000000009441.xml",
+      "url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000009441",
+      "sha256": "d4fc1976dee41221084942446a2221c3c703493b51b0dd687797705e1b9e6955",
+      "bytes": 4373
     },
     {
       "path": "imgeo-2.2/catalog-bgt.html",

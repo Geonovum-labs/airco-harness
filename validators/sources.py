@@ -9,7 +9,8 @@ GitHub is pinned to a commit in its URL. A source whose query is too long for
 a GET is a POST, with a body built from a file fetched before it; the lock
 then records the method and the sha256 of the body. A source that is too big
 to keep is an Aggregate: its pages are fetched one by one, reduced to a small
-JSON file, and the lock records method "GET, paged". The lock records the sha256 and size
+JSON file, and the lock records method "GET, paged". A Derived file is computed
+from another source file, and the lock records method "derived". The lock records the sha256 and size
 of each file, and Last-Modified and ETag when the server sends them. The MIM
 XSD and the schemas it imports are stored under schemas/<host>/<path>, where
 LocalSchemas finds them, so XML validation needs no network.
@@ -66,7 +67,13 @@ def _bag_sport_amersfoort() -> str:
     return f"{BAG_WFS}?{urllib.parse.urlencode(query)}"
 
 
-def _bag_panden_of_sport_amersfoort() -> tuple[str, bytes]:
+class Post(NamedTuple):
+    url: str
+    body: bytes
+    content_type: str = "application/xml"
+
+
+def _bag_panden_of_sport_amersfoort() -> Post:
     """The panden of the verblijfsobjecten in DSFL_SPORT_VBO, as GeoJSON in WGS84. 112 ids are too long for a GET."""
     vbo = json.loads(path(DSFL_SPORT_VBO).read_text(encoding="utf-8"))
     ids = sorted({f["properties"]["pandidentificatie"] for f in vbo["features"]})
@@ -78,7 +85,7 @@ def _bag_panden_of_sport_amersfoort() -> tuple[str, bytes]:
         'outputFormat="application/json" count="1000"><wfs:Query typeNames="bag:pand" srsName="EPSG:4326">'
         f"<fes:Filter><fes:Or>{clauses}</fes:Or></fes:Filter></wfs:Query></wfs:GetFeature>"
     )
-    return BAG_WFS, body.encode("utf-8")
+    return Post(BAG_WFS, body.encode("utf-8"))
 
 
 BAG_API = "https://bag.ldproxy.net/bag"
@@ -125,8 +132,51 @@ def _per_decade(features: list[dict]) -> dict:
     return {"panden": len(features), "per_status": {s: {str(d): n for d, n in sorted(c.items())} for s, c in sorted(counts.items())}}
 
 
-# Path under sources/ to a URL, an Aggregate, or a function that gives the URL and the body of a POST. Fetched in this order.
-SOURCES: dict[str, str | Aggregate | Callable[[], tuple[str, bytes]]] = {
+class Derived(NamedTuple):
+    """A file computed from another source file, so an expected answer needs no live service: the lock records it with the path it comes from."""
+
+    source: str
+    build: Callable[[bytes], bytes]
+
+
+BRO = "https://publiek.broservices.nl"
+# Stadhuisplein 1, 3811LM Amersfoort: the centroid of adresseerbaarobject 0307010000408914 in the PDOK Locatieserver (centroide_ll).
+STADHUISPLEIN_LAT, STADHUISPLEIN_LON = 52.15671963, 5.38416472
+DSFL_GMW_SEARCH = "dsfl/bro-gmw-amersfoort-1km.xml"
+DSFL_GMW_WELLS = "dsfl/bro-gmw-amersfoort-1km.geojson"
+DSFL_GMW_OBJECT = "dsfl/bro-gmw000000009441.xml"
+DSFL_GMW_RELATIONS = "dsfl/bro-gmw000000009441-relations.json"
+DSFL_GLD_SERIES = "dsfl/bro-gld000000025798.csv"
+BRO_NS = {"d": "http://www.broservices.nl/xsd/dsgmw/1.1", "brocom": "http://www.broservices.nl/xsd/brocommon/3.0", "gml": "http://www.opengis.net/gml/3.2"}
+
+
+def _gmw_search() -> Post:
+    """The GMW characteristics of every well within 1 km of Stadhuisplein 1. The body is JSON, unlike the XML of the BAG POST."""
+    body = {
+        "registrationPeriod": {"beginDate": "2000-01-01", "endDate": "2026-11-12"},
+        "area": {"enclosingCircle": {"center": {"lat": STADHUISPLEIN_LAT, "lon": STADHUISPLEIN_LON}, "radius": 1}},
+    }
+    return Post(f"{BRO}/gm/gmw/v1/characteristics/searches", json.dumps(body, separators=(",", ":")).encode("utf-8"), "application/json")
+
+
+def _wells_geojson(search: bytes) -> bytes:
+    """One Point per GMW_C of the search, from its standardizedLocation (EPSG:4258, latitude first in gml:pos), with the broId as id and identificatie."""
+    wells = []
+    for c in etree.fromstring(search).iter("{http://www.broservices.nl/xsd/dsgmw/1.1}GMW_C"):
+        bro_id = c.findtext("brocom:broId", namespaces=BRO_NS)
+        lat, lon = (float(v) for v in c.findtext("brocom:standardizedLocation/gml:pos", namespaces=BRO_NS).split())
+        wells.append({
+            "type": "Feature",
+            "id": bro_id,
+            "properties": {"identificatie": bro_id, "wellCode": c.findtext("d:wellCode", namespaces=BRO_NS), "removed": c.findtext("d:removed", namespaces=BRO_NS)},
+            "geometry": {"type": "Point", "coordinates": [lon, lat]},
+        })  # fmt: skip
+    wells.sort(key=lambda f: f["id"])
+    return (json.dumps({"type": "FeatureCollection", "features": wells}, indent=1) + "\n").encode("utf-8")
+
+
+# Path under sources/ to a URL, an Aggregate, a Derived, or a function that gives the Post (URL, body, content type). Fetched in this order.
+SOURCES: dict[str, str | Aggregate | Derived | Callable[[], Post]] = {
     "imgeo-2.2/imgeo2.2-mim-logisch.xml": "https://raw.githubusercontent.com/Geonovum/IMGeo-dev/30d750029fc4b81998d30a95185f78ff2c314ced/mim/imgeo2.2-mim-logisch.xml",
     "imgeo-2.2/catalog-bgt.html": "https://docs.geostandaarden.nl/imgeo/catalogus/bgt/",
     "imgeo-2.2/catalog-imgeo.html": "https://docs.geostandaarden.nl/imgeo/catalogus/imgeo/",
@@ -145,6 +195,11 @@ SOURCES: dict[str, str | Aggregate | Callable[[], tuple[str, bytes]]] = {
         properties="geometrie,status,oorspronkelijkBouwjaar,beginGeldigheid",
     ),
     DSFL_VOOR_1800_WONINGEN: _ldproxy("search/verblijfsobjecten-in-panden", gebied=AMERSFOORT, bouwjaarTot=1799, gebruiksdoel="woonfunctie"),
+    DSFL_GMW_SEARCH: _gmw_search,
+    DSFL_GMW_WELLS: Derived(DSFL_GMW_SEARCH, _wells_geojson),
+    DSFL_GMW_OBJECT: f"{BRO}/gm/gmw/v1/objects/GMW000000009441",
+    DSFL_GMW_RELATIONS: f"{BRO}/gm/v1/gmw-relations/GMW000000009441",
+    DSFL_GLD_SERIES: f"{BRO}/gm/gld/v1/seriesAsCsv/GLD000000025798",
 }
 
 
@@ -202,9 +257,9 @@ def mim_schema() -> etree.XMLSchema:
     return etree.XMLSchema(etree.parse(str(path(MIM_XSD)), parser, base_url=url(MIM_XSD)))
 
 
-def _get(source_url: str, body: bytes | None = None) -> tuple[bytes, dict[str, str]]:
+def _get(source_url: str, body: bytes | None = None, content_type: str = "application/xml") -> tuple[bytes, dict[str, str]]:
     """The body and validators of a response. bag.ldproxy.net answers 404 on everything for about a minute after heavy paging, so a 404 or 5xx is retried."""
-    headers = {"User-Agent": "airco-harness-sources/0.1"} | ({"Content-Type": "application/xml"} if body else {})
+    headers = {"User-Agent": "airco-harness-sources/0.1"} | ({"Content-Type": content_type} if body else {})
     req = urllib.request.Request(source_url, data=body, headers=headers)
     for attempt in range(RETRIES):
         try:
@@ -240,6 +295,7 @@ def fetch(prefix: str = "") -> None:
     """Fetch the sources whose path starts with `prefix`, and keep the lock records of the others."""
     kept = [r for r in json.loads(LOCK_FILE.read_text(encoding="utf-8"))["files"] if not r["path"].startswith(prefix)] if prefix else []
     records = []
+    urls = {r["path"]: r["url"] for r in json.loads(LOCK_FILE.read_text(encoding="utf-8"))["files"]}
     for target, source in SOURCES.items():
         if not target.startswith(prefix):
             continue
@@ -250,13 +306,17 @@ def fetch(prefix: str = "") -> None:
             case Aggregate(source_url, _):
                 method, headers = {"method": "GET, paged"}, {}
                 data = _get_paged(source)
+            case Derived(origin, build):
+                source_url, method, headers = urls[origin], {"method": "derived", "derived_from": origin}, {}
+                data = build(path(origin).read_bytes())
             case _:
-                source_url, body = source()
+                source_url, body, content_type = source()
                 method = {"method": "POST", "body_sha256": hashlib.sha256(body).hexdigest()}
-                data, headers = _get(source_url, body)
+                data, headers = _get(source_url, body, content_type)
         file = SOURCES_DIR / target
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_bytes(data)
+        urls[target] = source_url
         records.append({"path": target, "url": source_url, **method, **headers, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
     payload = {"fetched": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "files": sorted(kept + records, key=lambda r: r["path"])}
     LOCK_FILE.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

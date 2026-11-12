@@ -1,0 +1,917 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "GMW000000009347",
+   "properties": {
+    "identificatie": "GMW000000009347",
+    "wellCode": "GMW32B002803",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39318398,
+     52.15087199
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009353",
+   "properties": {
+    "identificatie": "GMW000000009353",
+    "wellCode": "GMW32B001900",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38470445,
+     52.16489785
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009365",
+   "properties": {
+    "identificatie": "GMW000000009365",
+    "wellCode": "GMW32B002088",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39052132,
+     52.16232726
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009370",
+   "properties": {
+    "identificatie": "GMW000000009370",
+    "wellCode": "GMW32B001995",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39113405,
+     52.1510833
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009371",
+   "properties": {
+    "identificatie": "GMW000000009371",
+    "wellCode": "GMW32B001994",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.3875543,
+     52.15172152
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009384",
+   "properties": {
+    "identificatie": "GMW000000009384",
+    "wellCode": "GMW32B001988",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37700332,
+     52.15855195
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009387",
+   "properties": {
+    "identificatie": "GMW000000009387",
+    "wellCode": "GMW32D001278",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.3927558,
+     52.15032824
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009389",
+   "properties": {
+    "identificatie": "GMW000000009389",
+    "wellCode": "GMW32B001988",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37700332,
+     52.15855195
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009391",
+   "properties": {
+    "identificatie": "GMW000000009391",
+    "wellCode": "GMW32B001989",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38983419,
+     52.15900174
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009402",
+   "properties": {
+    "identificatie": "GMW000000009402",
+    "wellCode": "GMW32B000362",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39228959,
+     52.16119472
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009405",
+   "properties": {
+    "identificatie": "GMW000000009405",
+    "wellCode": "GMW32B001950",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39705234,
+     52.15422873
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009420",
+   "properties": {
+    "identificatie": "GMW000000009420",
+    "wellCode": "GMW32B001898",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37894596,
+     52.16414261
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009426",
+   "properties": {
+    "identificatie": "GMW000000009426",
+    "wellCode": "GMW32B000618",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.3911926,
+     52.15217084
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009430",
+   "properties": {
+    "identificatie": "GMW000000009430",
+    "wellCode": "GMW32B147446",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.384813761,
+     52.162046027
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009434",
+   "properties": {
+    "identificatie": "GMW000000009434",
+    "wellCode": "GMW32B000356",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37026651,
+     52.15822762
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009441",
+   "properties": {
+    "identificatie": "GMW000000009441",
+    "wellCode": "GMW32B001895",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.3808181,
+     52.15403126
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009443",
+   "properties": {
+    "identificatie": "GMW000000009443",
+    "wellCode": "GMW32B000366",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39534233,
+     52.15228746
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009450",
+   "properties": {
+    "identificatie": "GMW000000009450",
+    "wellCode": "GMW32B000358",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38639992,
+     52.160323
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009451",
+   "properties": {
+    "identificatie": "GMW000000009451",
+    "wellCode": "GMW32B001929",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39657166,
+     52.16120343
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009454",
+   "properties": {
+    "identificatie": "GMW000000009454",
+    "wellCode": "GMW32B000367",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38907389,
+     52.15163162
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009459",
+   "properties": {
+    "identificatie": "GMW000000009459",
+    "wellCode": "GMW32D000279",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37981038,
+     52.15066072
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009466",
+   "properties": {
+    "identificatie": "GMW000000009466",
+    "wellCode": "GMW32B001899",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38115306,
+     52.16297431
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009470",
+   "properties": {
+    "identificatie": "GMW000000009470",
+    "wellCode": "GMW32B000343",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39151459,
+     52.15721308
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009478",
+   "properties": {
+    "identificatie": "GMW000000009478",
+    "wellCode": "GMW32B000344",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38989233,
+     52.15445382
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009483",
+   "properties": {
+    "identificatie": "GMW000000009483",
+    "wellCode": "GMW32B001885",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37621467,
+     52.15647566
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009490",
+   "properties": {
+    "identificatie": "GMW000000009490",
+    "wellCode": "GMW32B000349",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37339567,
+     52.15208924
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009491",
+   "properties": {
+    "identificatie": "GMW000000009491",
+    "wellCode": "GMW32B000366",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39534233,
+     52.15228746
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009494",
+   "properties": {
+    "identificatie": "GMW000000009494",
+    "wellCode": "GMW32D000287",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38550873,
+     52.15058902
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009505",
+   "properties": {
+    "identificatie": "GMW000000009505",
+    "wellCode": "GMW32B000370",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37811358,
+     52.16048445
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009507",
+   "properties": {
+    "identificatie": "GMW000000009507",
+    "wellCode": "GMW32D000280",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39243425,
+     52.14951035
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000009510",
+   "properties": {
+    "identificatie": "GMW000000009510",
+    "wellCode": "GMW32D000280",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39243425,
+     52.14951035
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000023988",
+   "properties": {
+    "identificatie": "GMW000000023988",
+    "wellCode": "GMW32B000314",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38432484,
+     52.15761759
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000024250",
+   "properties": {
+    "identificatie": "GMW000000024250",
+    "wellCode": "GMW32B001888",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38653149,
+     52.15372583
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000026185",
+   "properties": {
+    "identificatie": "GMW000000026185",
+    "wellCode": "GMW32D000252",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.3874812,
+     52.14885435
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000038888",
+   "properties": {
+    "identificatie": "GMW000000038888",
+    "wellCode": "GMW32B000228",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.37357014,
+     52.160911569
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000046908",
+   "properties": {
+    "identificatie": "GMW000000046908",
+    "wellCode": "GMW32B128831",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38918869,
+     52.15154591
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000046911",
+   "properties": {
+    "identificatie": "GMW000000046911",
+    "wellCode": "GMW32B128834",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38662532,
+     52.1602663
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000046914",
+   "properties": {
+    "identificatie": "GMW000000046914",
+    "wellCode": "GMW32B128837",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.38984528,
+     52.15900391
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000046915",
+   "properties": {
+    "identificatie": "GMW000000046915",
+    "wellCode": "GMW32B128838",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.39105851,
+     52.15108664
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000062549",
+   "properties": {
+    "identificatie": "GMW000000062549",
+    "wellCode": "GMW32B135214",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.378126743,
+     52.160484775
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000086294",
+   "properties": {
+    "identificatie": "GMW000000086294",
+    "wellCode": "GMW32B000326",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.372883462,
+     52.154632765
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000086534",
+   "properties": {
+    "identificatie": "GMW000000086534",
+    "wellCode": "GMW32B000327",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.373175985,
+     52.153734002
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000086718",
+   "properties": {
+    "identificatie": "GMW000000086718",
+    "wellCode": "GMW32B000073",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.379312842,
+     52.155172638
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000086743",
+   "properties": {
+    "identificatie": "GMW000000086743",
+    "wellCode": "GMW32B000324",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.371422466,
+     52.153913543
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000094472",
+   "properties": {
+    "identificatie": "GMW000000094472",
+    "wellCode": "GMW32B002083",
+    "removed": "ja"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.390316755,
+     52.163001357
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000094475",
+   "properties": {
+    "identificatie": "GMW000000094475",
+    "wellCode": "GMW32B000373",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.376214658,
+     52.156484639
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000094509",
+   "properties": {
+    "identificatie": "GMW000000094509",
+    "wellCode": "GMW32B000361",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.390112139,
+     52.162956423
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000094527",
+   "properties": {
+    "identificatie": "GMW000000094527",
+    "wellCode": "GMW32B000431",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.394949679,
+     52.16254275
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000094583",
+   "properties": {
+    "identificatie": "GMW000000094583",
+    "wellCode": "GMW32B002416",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.377003309,
+     52.158551941
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000094640",
+   "properties": {
+    "identificatie": "GMW000000094640",
+    "wellCode": "GMW32B000431",
+    "removed": "ja"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.394949679,
+     52.16254275
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000094654",
+   "properties": {
+    "identificatie": "GMW000000094654",
+    "wellCode": "GMW32B001896",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.379662385,
+     52.162443924
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000111060",
+   "properties": {
+    "identificatie": "GMW000000111060",
+    "wellCode": "GMW32B160883",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.387203649,
+     52.155172888
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000120052",
+   "properties": {
+    "identificatie": "GMW000000120052",
+    "wellCode": "GMW32B168815",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.380812587,
+     52.15848979
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000120053",
+   "properties": {
+    "identificatie": "GMW000000120053",
+    "wellCode": "GMW32B168816",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.380269962,
+     52.158119878
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000133273",
+   "properties": {
+    "identificatie": "GMW000000133273",
+    "wellCode": "GMW32B000332",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.371874657,
+     52.15626845
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000133292",
+   "properties": {
+    "identificatie": "GMW000000133292",
+    "wellCode": "GMW32D000258",
+    "removed": "nee"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.384223079,
+     52.148189199
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GMW000000133351",
+   "properties": {
+    "identificatie": "GMW000000133351",
+    "wellCode": "GMW32B000331",
+    "removed": "ja"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     5.378260199,
+     52.157976811
+    ]
+   }
+  }
+ ]
+}

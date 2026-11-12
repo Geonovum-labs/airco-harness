@@ -1,5 +1,5 @@
 {
-  "purpose": "Questions for the Dataspace Fysieke Leefomgeving as a citizen asks them, whose answers are in the BAG. The five samples are the BAG questions of scenario 1 of the use case group.",
-  "version": "0.5",
+  "purpose": "Questions for the Dataspace Fysieke Leefomgeving as a citizen asks them, whose answers are in the BAG or the BRO. Five samples are the BAG questions of scenario 1 of the use case group, two are groundwater questions from the meeting with the BRO groundwater MCP team.",
+  "version": "0.6",
   "date": "2026-11-12"
 }

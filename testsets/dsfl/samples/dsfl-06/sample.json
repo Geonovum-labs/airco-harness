@@ -1,0 +1,12 @@
+{
+  "task": "lookup",
+  "standard": "dsfl",
+  "input": "What was the groundwater level in monitoring well GMW000000009441 in Amersfoort on 21 September 2026? Answer with only a JSON object with the key \"level_cm_nap\": the level in centimeters relative to NAP, rounded to whole centimeters.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The agent has to find the groundwater level series (GLD) of the well via its GMW, in the BRO relations or the BRO-loket, read a CSV or XML series, pick the right day and convert meters relative to NAP to centimeters. Likely failures: the depth below ground (about 348 cm) instead of the level relative to NAP, the level of another tube or well, the last measurement instead of the asked date, a guess.",
+    "expected_variant": 1,
+    "location": "BRO GLD000000025798, the series of tube 1 of well GMW000000009441 (well code GMW32B001895), linked to the well in the BRO relations",
+    "absence": false
+  }
+}
