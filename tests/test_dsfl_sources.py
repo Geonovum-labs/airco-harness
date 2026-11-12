@@ -116,6 +116,7 @@ def test_dsfl_07_must_is_the_wells_within_500_m_that_are_not_removed():
     assert min(math.dist(STADHUISPLEIN_RD, xy) for i, (xy, _) in wells.items() if i not in within) == pytest.approx(505.93, abs=0.01)
     assert sorted(i for i in within if wells[i][1] == "nee") == expected("dsfl-07")["must"]
     assert {i for i in within if wells[i][1] == "ja"} == {"GMW000000133351"}
+    assert sorted(i for i in within if wells[i][1] == "ja") == expected("dsfl-07")["optional"]
 
 
 def test_dsfl_07_reference_is_the_wells_of_the_search_as_points():

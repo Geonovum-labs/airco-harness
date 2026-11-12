@@ -126,8 +126,7 @@ def rule_fields(answer: str, case: Case) -> Assessment:
 
 
 def rule_map(answer: str, case: Case) -> Assessment:
-    """Places on the map, matched to the panden of the reference extract: every pand in `must`
-    has to be on it, and a place that matches no pand of the extract is invented.
+    """Places on the map, matched to the features of the reference extract.
 
     `answer` is the GeoJSON the agent passed to show_on_map, or "" when it showed no map.
     """
@@ -139,16 +138,20 @@ def rule_map(answer: str, case: Case) -> Assessment:
         return unparseable(f"not GeoJSON: {error}")
     reference = geo.Reference.load(case.expected["reference"])
     tolerance = case.expected["tolerance_m"]
-    matched = [(place, reference.nearest(place, tolerance)) for place in places]
-    shown = {pand for _, pand in matched if pand}
     must = set(case.expected["must"])
+    if "optional" in case.expected:
+        identifiers = reference.assign_points(places, tolerance, must | set(case.expected["optional"]))
+    else:
+        identifiers = [reference.nearest(place, tolerance) for place in places]
+    matched = list(zip(places, identifiers))
+    shown = {identifier for _, identifier in matched if identifier}
     missing = sorted(must - shown)
-    unmatched = [[round(place.x, 6), round(place.y, 6)] for place, pand in matched if pand is None]
+    unmatched = [[round(place.x, 6), round(place.y, 6)] for place, identifier in matched if identifier is None]
     details = {"places": len(places), "shown": sorted(shown), "missing": missing, "unmatched": unmatched,
                "swapped": sum(geo.swapped(place) for place, _ in matched)}  # fmt: skip
-    complete = 1 - len(missing) / len(must)
+    complete = 1 - len(missing) / len(must) if must else 1.0
     return Assessment(not missing and not unmatched, complete, len(unmatched), True,
-                      f"{len(must) - len(missing)} of {len(must)} required panden shown; {len(unmatched)} places match no pand", details)  # fmt: skip
+                      f"{len(must) - len(missing)} of {len(must)} required features shown; {len(unmatched)} places match no allowed feature", details)  # fmt: skip
 
 
 RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map}

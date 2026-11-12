@@ -410,7 +410,7 @@ function retrievedFrom(run) {
   });
 }
 
-const INVENTED = "invented, on no pand";
+const INVENTED = "invented, no allowed match";
 
 /** The colour key of a kind of pand, or of a place on no pand, as the map draws it. */
 function swatch(kind) {
@@ -437,18 +437,18 @@ function pairDetail(name, [model, agent], runs) {
     const scoring = [...new Set(onMap.map(r => r.sample))].map(s => {
       const entry = data.maps[`${name}/${s}`];
       return h("div", {class: "scoring"},
-        h("p", {}, h("b", {text: "Required: "}), `the ${entry.must.length} panden the map has to show; each one missing lowers complete. `,
-          h("b", {text: "Optional: "}), `the other ${entry.optional} panden of the BAG extract; the map may show them or leave them out, without effect on the score. `,
-          h("b", {text: "Invented: "}), "a place on none of these panden."),
-        entry.note ? h("details", {}, h("summary", {text: `Why these panden${onMap.some(r => r.sample !== s) ? ` (${s})` : ""}`}), h("p", {text: entry.note})) : null);
+        h("p", {}, h("b", {text: "Required: "}), `the ${entry.must.length} features the map has to show; each one missing lowers complete. `,
+          h("b", {text: "Optional: "}), `${entry.optional} other reference features may be shown without effect on the score. `,
+          h("b", {text: "Invented: "}), "a place with no allowed match."),
+        entry.note ? h("details", {}, h("summary", {text: `Why these features${onMap.some(r => r.sample !== s) ? ` (${s})` : ""}`}), h("p", {text: entry.note})) : null);
     });
     section.append(h("p", {class: "muted", style: "margin:0.25rem 0"}, "What the agent showed with ", h("code", {text: "show_on_map"}),
-      ", on the BRT achtergrondkaart in RD; each pand has a marker in its colour. Click a pand or a dot for what the agent said about that place."),
+      ", on the BRT achtergrondkaart in RD; each feature has a marker in its colour. Click a feature or a dot for what the agent said about that place."),
       ...scoring, result, element, counts);
     const draw = createMap(element);
     showOnMap = async run => {
       const sample = mapOf(run);
-      const c = draw(run, sample.must, await panden(root, sample.panden));
+      const c = draw(run, sample.must, await panden(root, sample.panden), sample.allowed_optional ?? null);
       result.textContent = `${run.sample} · epoch ${run.epoch}: ${run.explanation}`;
       counts.replaceChildren(...Object.keys(KINDS).map(k => h("li", {}, swatch(k), `${KINDS[k].label}: `, h("b", {text: String(c[k])}))),
         h("li", {}, swatch("invented"), `${INVENTED}: `, h("b", {text: String(c.unmatched)})));

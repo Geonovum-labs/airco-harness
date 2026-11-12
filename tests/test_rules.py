@@ -37,7 +37,7 @@ def vendored(name: str) -> list[dict]:
 def must_points(sample_id: str, features: list[dict]) -> list:
     """The point every map gets for a pand: inside it, as an agent that takes the pand's centre or its address would place it."""
     must = set(Case.load(TARGETS[sample_id]).expected["must"])
-    return [shapely.geometry.shape(f["geometry"]).representative_point() for f in features if geo.pand_id(f) in must]
+    return [shapely.geometry.shape(f["geometry"]).representative_point() for f in features if geo.feature_id(f) in must]
 
 
 PANDEN = bag("panden.geojson")
@@ -122,12 +122,12 @@ CASES = [
     ("dsfl-06", as_json({"level_cm_nap": 2.13}), full(0, 0.0, 0, 0)),
     ("dsfl-06", "The level was about 2.13 m above NAP.", full(0, 0.0, 0, 0)),
     ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in MUST_WELLS]), full()),
-    # Every well of the search, within 1 km: more than required, but all in the reference.
-    ("dsfl-07", shown(WELLS), full()),
+    # Every well of the search: the 44 outside the requested radius are invented.
+    ("dsfl-07", shown(WELLS), full(0, 1.0, 44)),
     # The required wells and the removed well at 428 m, which is optional.
     ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000133351"]]), full()),
-    # The required wells and the well at 603 m, which is in the reference.
-    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000009371"]]), full()),
+    # The required wells and a well outside the requested radius.
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000009371"]]), full(0, 1.0, 1)),
     # Coordinates rounded to six decimals, as an agent copies them: about 0.1 m.
     ("dsfl-07", shown([point(*(round(c, 6) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
     # Only the nearest 6.
@@ -135,8 +135,9 @@ CASES = [
     ("dsfl-07", shown([*(point(*WELL_PLACES[i]) for i in MUST_WELLS), point(*STADHUISPLEIN)]), full(0, 1.0, 1)),
     ("dsfl-07", shown([point(*STADHUISPLEIN)]), full(0, 0.0, 1)),
     ("dsfl-07", shown([point(WELL_PLACES[i][1], WELL_PLACES[i][0]) for i in MUST_WELLS]), full(0, 0.0, len(MUST_WELLS))),
-    # 3 m east of each well: within tolerance, but both places of the twin wells 0.8 m apart match the eastern one.
-    ("dsfl-07", shown([point(WELL_PLACES[i][0] + 3 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full(0, round(11 / 12, 4), 0)),
+    # Two distinct places can be assigned to the twins even if both are nearer the same well.
+    ("dsfl-07", shown([point(WELL_PLACES[i][0] + 3 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full()),
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in MUST_WELLS if i != "GMW000000009391"]), full(0, round(11 / 12, 4), 0)),
     ("dsfl-07", shown([point(WELL_PLACES[i][0] + 10 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full(0, 0.0, len(MUST_WELLS))),
     ("dsfl-07", shown([point(*(round(c, 5) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
     ("dsfl-07", shown([]), full(0, 0.0, 0)),

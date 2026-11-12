@@ -70,11 +70,12 @@ The answer is what the agent showed on the map: the `geojson` argument of its la
 
 | `expected.json` | Content |
 | --- | --- |
-| `reference` | A GeoJSON file under `sources/` with the panden (or, for `dsfl-07`, the wells as points) the map may show, each with its `identificatie` |
+| `reference` | A GeoJSON file under `sources/` with reference geometries, as points when the reference has no area, each with its `identificatie` |
 | `must` | The `identificatie` of every pand the map has to show; all are in `reference` |
+| `optional` | Optional, for a point reference. The identifiers that may be shown besides `must`; other places are invented. Places are assigned one-to-one to required and optional features within tolerance, so nearby features need distinct places. Extra places matching an allowed feature are not invented. |
 | `tolerance_m` | How far in meters a place may lie from a pand or well and still match it |
 
-Each feature counts as one point per geometry part: a point as it is, a line or polygon by its representative point. A point matches the pand that contains it, else the nearest pand of `reference` within `tolerance_m`. `complete` is the share of `must` that is shown, `invented` the number of points that match no pand, and `correct` is 1 only if all of `must` is shown and nothing is invented. Two points on one pand are not invented. A reference of points, such as the wells of `dsfl-07`, has no area that contains a point, so only the nearest well within `tolerance_m` matches. A map with no call, or GeoJSON that cannot be read, gets `parseable` 0; an empty map is parseable with `complete` 0. The score details list the missing panden, the unmatched points and how many points lie in the Netherlands only with longitude and latitude swapped.
+Each feature counts as one point per geometry part: a point as it is, a line or polygon by its representative point. Without `optional`, a point matches the nearest reference geometry within `tolerance_m`, including polygons containing it. `complete` is the share of `must` shown, `invented` the number of points that match no allowed feature, and `correct` is 1 only if all of `must` is shown and nothing is invented. Two points on one feature are not invented. A map with no call, or GeoJSON that cannot be read, gets `parseable` 0; an empty map is parseable with `complete` 0 when features are required. The score details list missing features, unmatched points and how many points lie in the Netherlands only with longitude and latitude swapped.
 
 For `dsfl-04`, 78 panden are required. A map of all 112 panden of the extract gets the full score, and so does a map of the 116 verblijfsobjecten, because each lies in its pand. A sports location from OpenStreetMap on no pand of the extract is invented. Two demolished panden can share one footprint, as in `dsfl-03`; a place then matches only the one with the lowest `identificatie`, so `must` leaves out the other.
 
