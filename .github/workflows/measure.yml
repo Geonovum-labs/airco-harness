@@ -65,7 +65,11 @@ jobs:
           EPOCHS: ${{ inputs.epochs }}
           COST_LIMIT: ${{ inputs.cost_limit }}
           PUBLISH: ${{ inputs.publish }}
+          # Kadaster models get their base URL on the kadaster runner only; elsewhere the matrix skips them.
+          # A repository variable, as plan has no environment, so that the plan skips the same models as measure.
+          KADASTER_BASE_URL: ${{ inputs.runner == 'kadaster' && vars.KADASTER_BASE_URL || '' }}
         run: |
+          set -o pipefail  # without it, tee hides a matrix that refuses to run
           args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --variants "$VARIANTS" --epochs "$EPOCHS" --cost-limit "$COST_LIMIT")
           if [ -n "$IDS" ]; then args+=(--ids "$IDS"); fi
           uv run airco-matrix "${args[@]}" --name "$NAME" --plan | tee plan.txt
@@ -120,7 +124,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           KADASTER_API_KEY: ${{ secrets.KADASTER_API_KEY }}
-          KADASTER_BASE_URL: ${{ vars.KADASTER_BASE_URL }}
+          KADASTER_BASE_URL: ${{ inputs.runner == 'kadaster' && vars.KADASTER_BASE_URL || '' }}
         run: |
           args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --variants "$VARIANTS" --epochs "$EPOCHS" --cost-limit "$COST_LIMIT")
           if [ -n "$IDS" ]; then args+=(--ids "$IDS"); fi
@@ -135,7 +139,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           KADASTER_API_KEY: ${{ secrets.KADASTER_API_KEY }}
-          KADASTER_BASE_URL: ${{ vars.KADASTER_BASE_URL }}
+          KADASTER_BASE_URL: ${{ inputs.runner == 'kadaster' && vars.KADASTER_BASE_URL || '' }}
         run: uv run airco-logcheck --mask-emails "logs/$NAME" "reports/$NAME"
       - if: ${{ !cancelled() && steps.logcheck.outcome == 'success' }}
         uses: actions/upload-artifact@v7

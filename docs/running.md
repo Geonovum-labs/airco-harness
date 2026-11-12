@@ -17,7 +17,7 @@ A model needs a key in `.env`, which `.gitignore` lists, and a price in `model-c
 	| OpenAI-compatible endpoint, such as vLLM at Kadaster | `KADASTER_BASE_URL`, `KADASTER_API_KEY` | `openai-api/kadaster/<model-name>` |
 	| Local Ollama | `LOCAL_BASE_URL`, `LOCAL_API_KEY` | `openai-api/local/<model-name>` |
 
-	For `openai-api/<service>/...`, Inspect reads `<SERVICE>_BASE_URL` and `<SERVICE>_API_KEY`, with the service name in capital letters. If the endpoint needs no key, set any value, because Inspect refuses to start without one.
+	For `openai-api/<service>/...`, Inspect reads `<SERVICE>_BASE_URL` and `<SERVICE>_API_KEY`, with the service name in capital letters. If the endpoint needs no key, set any value, because Inspect refuses to start without one. The matrix skips such a model when `<SERVICE>_BASE_URL` is empty or missing, and stops if no model is left.
 
 2. Check that `model-costs.yaml` has the model with its current list price, in dollars per million tokens; the header names the sources and the date the prices were read. Without a price, a task with `cost_limit` refuses to start with `cost_limit requires cost data for all models`, and the report cannot compute the cost per correct answer. For a local model or your own GPU, set 0 or an agreed rate. Commit a price change before the run, so that the log's commit holds the prices it was costed with.
 
@@ -142,7 +142,9 @@ gh workflow run measure.yml -f models=anthropic/claude-haiku-5-5 -f epochs=1
 
 The inputs map to the options of `airco-matrix`: `testset` (default `dsfl`), `models`, `agents`, `variants`, `ids` (empty runs all samples), `epochs` and `cost_limit`. `runner` chooses `github` or `kadaster`, and `publish` is off by default.
 
-**One-time settings.** Under Settings, Environments, create `measurement`. Add required reviewers, limit deployment branches to `main`, and add the secrets `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` and `KADASTER_API_KEY` and the variable `KADASTER_BASE_URL`. Leave out the ones you do not use. For `publish`, switch on "Allow GitHub Actions to create and approve pull requests" under Settings, Actions, General.
+**One-time settings.** Under Settings, Environments, create `measurement`. Add required reviewers, limit deployment branches to `main`, and add the secrets `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` and `KADASTER_API_KEY`. Leave out the ones you do not use. Add `KADASTER_BASE_URL` as a repository variable under Settings, Secrets and variables, Actions, not in the environment, because the job `plan` has no environment and must skip the same models as `measure`. For `publish`, switch on "Allow GitHub Actions to create and approve pull requests" under Settings, Actions, General.
+
+**Kadaster models.** Only `runner=kadaster` passes `KADASTER_BASE_URL` to the matrix. On `runner=github`, the matrix skips the `openai-api/kadaster/...` models, and the plan shows which ones.
 
 **Self-hosted runner.** With `runner=kadaster`, the job runs on a runner with the label `kadaster-airco`. The machine runs Linux with Docker, which the agent `claude-code` needs, and needs outbound HTTPS only. Register the runner as ephemeral, so that every job starts with a clean workspace. The workflow accepts `workflow_dispatch` only: the repository is public, and a pull request or a fork must never be able to start code on a machine inside Kadaster. A job on a runner also waits for the approval above.
 

@@ -6,7 +6,9 @@
 
 Paid models need --yes after the planned number of runs is shown. --plan shows
 the runs and the maximum cost, then stops with exit code 0 without running
-anything, paid models or not. The logs and the bundle are named after the start
+anything, paid models or not. An openai-api/<service>/... model whose
+<SERVICE>_BASE_URL is not set is skipped, such as a Kadaster model on a GitHub
+runner. The logs and the bundle are named after the start
 time unless --name says otherwise.
 """
 
@@ -29,6 +31,13 @@ from .tasks import VARIANTS, AgentName, airco
 FREE_PREFIXES = ("mockllm/", "openai-api/local/", "ollama/")
 # Claude Code is built for Claude: behind the bridge another model does not use its tools, so such a run measures nothing.
 CLAUDE_CODE_PROVIDERS = ("anthropic/", "mockllm/")
+
+
+def unreachable(model: str) -> bool:
+    """An openai-api/<service>/... model without <SERVICE>_BASE_URL, as Inspect names it; empty counts as missing, as GitHub passes an undefined variable."""
+    provider, _, rest = model.partition("/")
+    service = rest.partition("/")[0]
+    return provider == "openai-api" and not os.environ.get(f"{service.upper().replace('-', '_')}_BASE_URL")
 
 
 def strip_absolute_log_dir(bundle_dir: Path, log_dir: Path) -> None:
@@ -69,6 +78,13 @@ def main() -> None:
     if not args.models:
         build_parser().error("no models: pass --models or set AIRCO_MATRIX_MODELS")
     models = [m.strip() for m in args.models.split(",") if m.strip()]
+    without_url = [m for m in models if unreachable(m)]
+    models = [m for m in models if m not in without_url]
+    if without_url:
+        print(f"no base URL set; skipped {', '.join(without_url)}")
+    if not models:
+        print("no models left to run", file=sys.stderr)
+        sys.exit(2)
     variants = [v.strip() for v in args.variants.split(",")]
     agents = [a.strip() for a in args.agents.split(",") if a.strip()]
     unknown = [a for a in agents if a not in get_args(AgentName)]

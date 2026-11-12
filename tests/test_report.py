@@ -181,6 +181,36 @@ def test_matrix_plan_shows_runs_and_cost_for_paid_models_without_running(monkeyp
     assert "rerun with --yes" not in out.err
 
 
+KADASTER = "openai-api/kadaster/qwen3.5-27b"
+
+
+def test_matrix_skips_a_kadaster_model_without_base_url(monkeypatch, capsys):
+    monkeypatch.setenv("KADASTER_BASE_URL", "")
+    monkeypatch.setattr(sys, "argv", ["airco-matrix", "--models", f"mockllm/model,{KADASTER}", "--ids", SAMPLE, "--epochs", "1", "--plan"])
+    matrix.main()
+    out = capsys.readouterr().out
+    assert f"no base URL set; skipped {KADASTER}" in out
+    assert "1 samples x 1 agent-model pairs x 1 epochs = 1 runs" in out
+
+
+def test_matrix_keeps_a_kadaster_model_with_base_url(monkeypatch, capsys):
+    monkeypatch.setenv("KADASTER_BASE_URL", "https://vllm.example/v1")
+    monkeypatch.setattr(sys, "argv", ["airco-matrix", "--models", f"mockllm/model,{KADASTER}", "--ids", SAMPLE, "--epochs", "1", "--plan"])
+    matrix.main()
+    out = capsys.readouterr().out
+    assert "skipped" not in out
+    assert "1 samples x 2 agent-model pairs x 1 epochs = 2 runs" in out
+
+
+def test_matrix_stops_when_every_model_is_skipped(monkeypatch, capsys):
+    monkeypatch.setenv("KADASTER_BASE_URL", "")
+    monkeypatch.setattr(sys, "argv", ["airco-matrix", "--models", KADASTER, "--ids", SAMPLE, "--plan"])
+    with pytest.raises(SystemExit) as stop:
+        matrix.main()
+    assert stop.value.code == 2
+    assert "no models left to run" in capsys.readouterr().err
+
+
 def test_bundle_index_keeps_no_absolute_log_dir(tmp_path):
     (tmp_path / "index.html").write_text('<script>{"log_dir": "logs", "abs_log_dir": "/Users/someone/airco-harness/logs/x"}</script>', encoding="utf-8")
     matrix.strip_absolute_log_dir(tmp_path, Path("logs/x"))
