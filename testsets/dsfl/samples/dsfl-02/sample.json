@@ -1,12 +1,12 @@
 {
-  "task": "location",
+  "task": "query",
   "standard": "dsfl",
-  "input": "Vind alle gebouwen met sportfunctie in Amersfoort en toon ze op de kaart.",
+  "input": "In which part of the municipality of Amersfoort is the most construction currently taking place? Answer with only a JSON object with the key \"part\": the name of the area.",
   "metadata": {
     "status": "draft",
-    "hypothesis": "A citizen does not know the BAG. The agent has to read 'gebouw met sportfunctie' as a pand with a verblijfsobject whose gebruiksdoel includes sportfunctie, query the BAG with a filter, and show the result with show_on_map. Likely failures: no map, only the first results, sport locations from OpenStreetMap or web search instead of the BAG, longitude and latitude swapped",
+    "hypothesis": "'Currently under construction' is a status of a pand, Bouw gestart, and 'part' is a wijk of the CBS Wijk- en Buurtkaart. The agent has to find that status, count per area and name the area with most. Likely failures: counting building permits (Bouwvergunning verleend) instead of construction that has started, counting verblijfsobjecten instead of panden, which makes De Hoef lead, or news and planning documents from the web instead of the BAG.",
     "expected_variant": 1,
-    "location": "BAG verblijfsobjecten with gebruiksdoel sportfunctie in woonplaats Amersfoort, and the panden they are in; Hoogland and Hooglanderveen, also in gemeente Amersfoort, may be shown",
+    "location": "BAG panden of gemeente Amersfoort with status Bouw gestart, grouped by wijknaam",
     "absence": false
   }
 }

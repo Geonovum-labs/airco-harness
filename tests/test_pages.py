@@ -83,7 +83,7 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     reports = tmp_path / "reports"
     imgeo_measurement(reports)
     name = "2026-10-29T12-10-00"
-    must = json.loads((report.rules.TESTSETS_DIR / "dsfl/samples/dsfl-02/expected.json").read_text(encoding="utf-8"))["must"]
+    must = json.loads((report.rules.TESTSETS_DIR / "dsfl/samples/dsfl-04/expected.json").read_text(encoding="utf-8"))["must"]
     panden = json.loads(sources.path("dsfl/bag-amersfoort-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
     river = {
         "type": "Feature",
@@ -96,7 +96,7 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
         ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de kaart."}),
     ]
     eval(
-        airco(testset="dsfl", agent="inspect", ids="dsfl-02", cost_limit=None),
+        airco(testset="dsfl", agent="inspect", ids="dsfl-04", cost_limit=None),
         model=get_model("mockllm/model", custom_outputs=steps),
         log_dir=str(reports / name / "logs" / "logs"),
         display="none",
@@ -112,8 +112,8 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     places = run["map"]["places"]
     assert {p["pand"] for p in places if p["pand"]} == set(must)
     assert [p["details"] for p in places if not p["pand"]] == [{"name": "Roeivereniging", "sport": '{"type": "roeien"}'}]
-    entry = data["maps"]["dsfl-02"]
-    assert entry["must"] == must and entry["optional"] == len(panden) - len(must) and entry["note"].startswith("The question is ambiguous on purpose")
+    entry = data["maps"]["dsfl-04"]
+    assert entry["must"] == must and entry["optional"] == len(panden) - len(must) and entry["note"].startswith("Deck wording: Where are the sports halls")
     assert len(strict(site / entry["panden"])["features"]) == len(panden)
     assert "proj4leaflet" in (site / name / "report.html").read_text(encoding="utf-8")
     assert "leaflet" not in (site / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")

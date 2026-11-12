@@ -25,7 +25,8 @@ def test_classify(url, expected):
     [
         ("https://service.pdok.nl/lv/bag/wfs/v2_0?service=WFS&request=GetFeature&typeNames=bag:verblijfsobject", "authoritative"),
         ("https://bagviewer.kadaster.nl/lvbag/bag-viewer/?objectId=0202010000417964", "authoritative"),
-        ("https://www.ep-online.nl/Energylabel/Search", "authoritative"),
+        ("https://bag.ldproxy.net/bag/collections/pand/items?f=json&status=Pand+gesloopt", "authoritative"),
+        ("https://www.ep-online.nl/Energylabel/Search", "other"),
         ("https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=6842CV%208", "other"),
         ("https://www.funda.nl/", "other"),
     ],

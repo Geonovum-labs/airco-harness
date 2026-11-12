@@ -24,6 +24,11 @@ NETHERLANDS = (3.2, 50.7, 7.3, 53.6)  # lon/lat bounding box, to recognize swapp
 METERS_PER_DEGREE = 111_320
 
 
+def pand_id(feature: dict) -> str:
+    """The identificatie of a pand: a property in the PDOK WFS extracts, the feature id in the bag.ldproxy.net ones."""
+    return (feature.get("properties") or {}).get("identificatie") or feature["id"]
+
+
 @dataclass(frozen=True)
 class Reference:
     """Pand polygons by identificatie, in meters around `lat0`."""
@@ -34,9 +39,9 @@ class Reference:
     @classmethod
     @cache
     def load(cls, source: str) -> Reference:
-        """`source` is a GeoJSON file under sources/ with the identificatie of each pand in its properties."""
+        """`source` is a GeoJSON file under sources/ with a pand per feature, see pand_id."""
         features = json.loads(sources.path(source).read_text(encoding="utf-8"))["features"]
-        polygons = {f["properties"]["identificatie"]: shape(f["geometry"]) for f in features}
+        polygons = {pand_id(f): shape(f["geometry"]) for f in features}
         lat0 = sum(p.centroid.y for p in polygons.values()) / len(polygons)
         return cls({i: _metric(p, lat0) for i, p in polygons.items()}, lat0)
 

@@ -176,7 +176,7 @@ def panden(reference: str) -> dict:
         "features": [
             {
                 "type": "Feature",
-                "properties": {"identificatie": f["properties"]["identificatie"]},
+                "properties": {"identificatie": geo.pand_id(f)},
                 "geometry": {"type": f["geometry"]["type"], "coordinates": rounded(f["geometry"]["coordinates"])},
             }  # fmt: skip
             for f in features

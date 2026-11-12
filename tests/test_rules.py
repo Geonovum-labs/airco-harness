@@ -6,7 +6,7 @@ import re
 import pytest
 import shapely
 
-from validators import rules, sources
+from validators import geo, rules, sources
 from validators.rules import Case
 
 TARGETS = {p.parent.name: p.relative_to(rules.TESTSETS_DIR).as_posix() for p in rules.TESTSETS_DIR.glob("*/samples/*/expected.json")}
@@ -30,10 +30,26 @@ def bag(name: str) -> list[dict]:
     return json.loads(sources.path(f"dsfl/bag-amersfoort-sport-{name}").read_text(encoding="utf-8"))["features"]
 
 
+def vendored(name: str) -> list[dict]:
+    return json.loads(sources.path(f"dsfl/{name}").read_text(encoding="utf-8"))["features"]
+
+
+def must_points(sample_id: str, features: list[dict]) -> list:
+    """The point every map gets for a pand: inside it, as an agent that takes the pand's centre or its address would place it."""
+    must = set(Case.load(TARGETS[sample_id]).expected["must"])
+    return [shapely.geometry.shape(f["geometry"]).representative_point() for f in features if geo.pand_id(f) in must]
+
+
 PANDEN = bag("panden.geojson")
-MUST = set(Case.load(TARGETS["dsfl-02"]).expected["must"])
-# The point every map gets for a pand: inside it, as an agent that takes the pand's centre or its address would place it.
-MUST_POINTS = [shapely.geometry.shape(f["geometry"]).representative_point() for f in PANDEN if f["properties"]["identificatie"] in MUST]
+MUST = set(Case.load(TARGETS["dsfl-04"]).expected["must"])
+SPORT_POINTS = must_points("dsfl-04", PANDEN)
+GESLOOPT = vendored("bag-amersfoort-gesloopt.geojson")
+DEMOLISHED_POINTS = must_points("dsfl-03", GESLOOPT)
+MUST_DEMOLISHED = Case.load(TARGETS["dsfl-03"]).expected["must"]
+VOOR_1800 = vendored("bag-amersfoort-voor-1800-panden.geojson")
+MUST_1800 = set(Case.load(TARGETS["dsfl-05"]).expected["must"])
+HOMES_1800_POINTS = must_points("dsfl-05", VOOR_1800)
+NO_HOME_POINTS = [shapely.geometry.shape(f["geometry"]).representative_point() for f in VOOR_1800 if f["id"] not in MUST_1800]
 RIVER = (5.3792, 52.164)  # north of the center, on no pand: a place from another source
 
 
@@ -43,7 +59,7 @@ def shown(features: list[dict]) -> str:
 
 
 def point(lon: float, lat: float) -> dict:
-    return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, lat]}, "properties": {"name": "sporthal"}}
+    return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, lat]}, "properties": {"name": "place"}}
 
 
 CASES = [
@@ -54,25 +70,41 @@ CASES = [
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk", "type": "zwembad"}), full(0, 0.5, 1)),
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk"}), full(0, 0.0, 0, 0)),
     ("imgeo-G04-03", "An open-air pool is a Waterdeel.", full(0, 0.0, 0, 0)),
-    ("dsfl-01", as_json({"year_built": 1920, "energy_label": None, "floor_area_m2": 280}), full()),
-    ("dsfl-01", as_json({"year_built": 1920, "energy_label": None, "floor_area_m2": 280.0}, fenced=False), full()),
-    # No label is registered: the label of Barchman Wuytierslaan 2 is wrong.
-    ("dsfl-01", as_json({"year_built": 1920, "energy_label": "B", "floor_area_m2": 280}), full(0, 0.6667, 0)),
-    ("dsfl-01", as_json({"year_built": 1930, "energy_label": "C", "floor_area_m2": 300}), full(0, 0.0, 0)),
-    ("dsfl-01", as_json({"year_built": "1920", "energy_label": None, "floor_area_m2": 280}), full(0, 0.0, 0, 0)),
-    ("dsfl-02", shown([point(p.x, p.y) for p in MUST_POINTS]), full()),
+    ("dsfl-01", as_json({"decade": 1990}), full()),
+    ("dsfl-01", as_json({"decade": 1990}, fenced=False), full()),
+    # The runner-up decade.
+    ("dsfl-01", as_json({"decade": 1980}), full(0, 0.0, 0)),
+    ("dsfl-01", as_json({"decade": "1990s"}), full(0, 0.0, 0, 0)),
+    ("dsfl-02", as_json({"part": "Vathorst"}), full()),
+    ("dsfl-02", as_json({"part": "Vathorst-De Laak"}), full()),
+    # De Hoef leads when counting verblijfsobjecten gevormd, which includes permits that have not started.
+    ("dsfl-02", as_json({"part": "De Hoef"}), full(0, 0.0, 0)),
+    ("dsfl-02", as_json({"part": "Eemkwartier"}), full(0, 0.0, 0)),
+    ("dsfl-03", shown([point(p.x, p.y) for p in DEMOLISHED_POINTS]), full()),
+    ("dsfl-03", shown(GESLOOPT), full()),
+    # Only the first 1000 results of a query.
+    ("dsfl-03", shown([point(p.x, p.y) for p in DEMOLISHED_POINTS[:1000]]), full(0, round(1000 / len(DEMOLISHED_POINTS), 4), 0)),
+    # Panden that still exist, as the PDOK WFS returns them. 4 of the 78 lie within 15 m of a demolished pand (3 of them required ones); the other 74 match none.
+    ("dsfl-03", shown([point(p.x, p.y) for p in SPORT_POINTS]), full(0, round(3 / len(MUST_DEMOLISHED), 4), 74)),
+    ("dsfl-04", shown([point(p.x, p.y) for p in SPORT_POINTS]), full()),
     # Every pand of the extract as a polygon, one of them twice: mixed use may be shown, and a duplicate is not invented.
-    ("dsfl-02", shown([*PANDEN, PANDEN[0]]), full()),
+    ("dsfl-04", shown([*PANDEN, PANDEN[0]]), full()),
     # The verblijfsobjecten as points: each lies in its pand, so a map of verblijfsobjecten is a map of panden.
-    ("dsfl-02", shown(bag("verblijfsobjecten.json")), full()),
+    ("dsfl-04", shown(bag("verblijfsobjecten.json")), full()),
     # Only the first results of a query.
-    ("dsfl-02", shown([point(p.x, p.y) for p in MUST_POINTS[:10]]), full(0, round(10 / len(MUST), 4), 0)),
-    ("dsfl-02", shown([*(point(p.x, p.y) for p in MUST_POINTS), point(*RIVER)]), full(0, 1.0, 1)),
-    ("dsfl-02", shown([point(p.y, p.x) for p in MUST_POINTS]), full(0, 0.0, len(MUST))),
-    ("dsfl-02", shown([]), full(0, 0.0, 0)),
-    ("dsfl-02", "", full(0, 0.0, 0, 0)),
-    ("dsfl-02", "the sports halls of Amersfoort", full(0, 0.0, 0, 0)),
-    ("dsfl-02", json.dumps({"type": "Polygon", "coordinates": "here"}), full(0, 0.0, 0, 0)),
+    ("dsfl-04", shown([point(p.x, p.y) for p in SPORT_POINTS[:10]]), full(0, round(10 / len(MUST), 4), 0)),
+    ("dsfl-04", shown([*(point(p.x, p.y) for p in SPORT_POINTS), point(*RIVER)]), full(0, 1.0, 1)),
+    ("dsfl-04", shown([point(p.y, p.x) for p in SPORT_POINTS]), full(0, 0.0, len(MUST))),
+    ("dsfl-04", shown([]), full(0, 0.0, 0)),
+    ("dsfl-04", "", full(0, 0.0, 0, 0)),
+    ("dsfl-04", "the sports halls of Amersfoort", full(0, 0.0, 0, 0)),
+    ("dsfl-04", json.dumps({"type": "Polygon", "coordinates": "here"}), full(0, 0.0, 0, 0)),
+    ("dsfl-05", shown([point(p.x, p.y) for p in HOMES_1800_POINTS]), full()),
+    # Every old pand, churches and barns too: more than required, but all in the reference.
+    ("dsfl-05", shown(VOOR_1800), full()),
+    # Old panden without a home only.
+    ("dsfl-05", shown([point(p.x, p.y) for p in NO_HOME_POINTS]), full(0, 0.0, 0)),
+    ("dsfl-05", shown([point(p.y, p.x) for p in HOMES_1800_POINTS]), full(0, 0.0, len(MUST_1800))),
 ]
 
 
@@ -102,8 +134,8 @@ def test_validators_never_import_inspect():
 
 
 def test_map_details_name_what_is_missing_and_flag_swapped_coordinates():
-    case = Case.load(TARGETS["dsfl-02"])
-    result = rules.assess(shown([point(p.y, p.x) for p in MUST_POINTS]), case)
+    case = Case.load(TARGETS["dsfl-04"])
+    result = rules.assess(shown([point(p.y, p.x) for p in SPORT_POINTS]), case)
     assert (result.details["places"], result.details["swapped"], sorted(result.details["missing"])) == (len(MUST), len(MUST), sorted(MUST))
     result = rules.assess(shown([point(*RIVER)]), case)
     assert (result.details["unmatched"], result.details["swapped"]) == ([list(RIVER)], 0)

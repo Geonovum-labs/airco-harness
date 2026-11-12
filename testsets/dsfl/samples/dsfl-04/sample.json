@@ -1,0 +1,12 @@
+{
+  "task": "location",
+  "standard": "dsfl",
+  "input": "Where are the sports halls in Amersfoort? Show them on the map.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "A citizen does not know the BAG. The agent has to read 'sports hall' as a pand with a verblijfsobject whose gebruiksdoel includes sportfunctie, query the BAG with a filter, and show the result with show_on_map. Likely failures: no map, only the first results, sport locations from OpenStreetMap or web search instead of the BAG, longitude and latitude swapped.",
+    "expected_variant": 1,
+    "location": "BAG verblijfsobjecten with gebruiksdoel sportfunctie in gemeente Amersfoort (woonplaatsen Amersfoort, Hoogland and Hooglanderveen), and the panden they are in",
+    "absence": false
+  }
+}

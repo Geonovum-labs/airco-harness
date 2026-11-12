@@ -1,0 +1,12 @@
+{
+  "task": "location",
+  "standard": "dsfl",
+  "input": "Show on the map which buildings in Amersfoort have been demolished in the last 10 years.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The PDOK WFS and most BAG viewers hold no demolished panden, so an agent needs a source with history, such as the BAG 2.0 Extract at bag.ldproxy.net. Then it has to find the status Pand gesloopt, filter on the date of the status, and show about 2,800 panden on a map. Likely failures: a map of panden that still exist, only the first page of results (bag.ldproxy.net returns 10 features by default and at most 5,000 per page, and its next links fail), or no map at all.",
+    "expected_variant": 1,
+    "location": "BAG panden of gemeente Amersfoort with status Pand gesloopt and beginGeldigheid in the last 10 years; the geometry is the last known shape of the pand",
+    "absence": false
+  }
+}

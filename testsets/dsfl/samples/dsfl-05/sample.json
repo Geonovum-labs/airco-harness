@@ -1,0 +1,12 @@
+{
+  "task": "location",
+  "standard": "dsfl",
+  "input": "Which houses were built before 1800 in Amersfoort? Show them on the map.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The agent has to read 'house' as a verblijfsobject with gebruiksdoel woonfunctie, and 'built before 1800' as the oorspronkelijkBouwjaar of its pand. Likely failures: only the first results, a bouwjaar filter that leaves out estimated years such as 1750, or a map from a heritage register instead of the BAG.",
+    "expected_variant": 1,
+    "location": "BAG panden of gemeente Amersfoort with oorspronkelijkBouwjaar before 1800 that hold a verblijfsobject with gebruiksdoel woonfunctie",
+    "absence": false
+  }
+}

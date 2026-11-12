@@ -75,7 +75,7 @@ The answer is what the agent showed on the map: the `geojson` argument of its la
 
 Each feature counts as one point per geometry part: a point as it is, a line or polygon by its representative point. A point matches the pand that contains it, else the nearest pand of `reference` within `tolerance_m`. `complete` is the share of `must` that is shown, `invented` the number of points that match no pand, and `correct` is 1 only if all of `must` is shown and nothing is invented. Two points on one pand are not invented. A map with no call, or GeoJSON that cannot be read, gets `parseable` 0; an empty map is parseable with `complete` 0. The score details list the missing panden, the unmatched points and how many points lie in the Netherlands only with longitude and latitude swapped.
 
-For `dsfl-02`, a map of all 112 panden of the extract gets the full score, and so does a map of the 116 verblijfsobjecten, because each lies in its pand. A sports location from OpenStreetMap on no pand of the extract is invented.
+For `dsfl-04`, 78 panden are required. A map of all 112 panden of the extract gets the full score, and so does a map of the 116 verblijfsobjecten, because each lies in its pand. A sports location from OpenStreetMap on no pand of the extract is invented. Two demolished panden can share one footprint, as in `dsfl-03`; a place then matches only the one with the lowest `identificatie`, so `must` leaves out the other.
 
 ### The scorer `source`
 

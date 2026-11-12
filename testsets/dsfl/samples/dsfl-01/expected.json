@@ -1,11 +1,9 @@
 {
   "rule": "fields",
   "expected": {
-    "year_built": 1920,
-    "energy_label": null,
-    "floor_area_m2": 280
+    "decade": 1990
   },
-  "source": "Retrieved 12 November 2026. BAG via the PDOK WFS (service.pdok.nl/lv/bag/wfs/v2_0), verblijfsobject 0307010000443458: oppervlakte 280, gebruiksdoel woonfunctie, bouwjaar 1920 of pand 0307100000358825, the only verblijfsobject in the pand. EP-Online search (www.ep-online.nl/Energylabel/Search) on 3818LH 20 and on the verblijfsobject id: 'Er is geen registratie gevonden'.",
-  "note": "floor_area_m2 is the gebruiksoppervlakte in the BAG. energy_label is null because EP-Online has no registration for the address; any label scores as wrong. Both registrations change over time, and a label may be registered later; check the values again before the sample is approved.",
+  "source": "Retrieved 12 November 2026 from the BAG 2.0 Extract (stand 8 October 2026) at bag.ldproxy.net, paged and counted per status and decade: sources/dsfl/bag-amersfoort-bouwjaar-per-decade.json, recorded in sources/sources.lock.json with its query URL (https://bag.ldproxy.net/bag/collections/pand/items?gemeentecode=0307&properties=oorspronkelijkBouwjaar,status, 5,000 features per page).",
+  "note": "Deck wording: How has the city I live in grown? Buildings are the existing panden of gemeente 0307: status Pand in gebruik, Pand in gebruik (niet ingemeten), Verbouwing pand, Sloopvergunning verleend or Pand buiten gebruik. Demolished, withdrawn and never built panden do not count. The decade is that of oorspronkelijkBouwjaar. 1990 has 16,885 panden, 1980 has 11,581. Counting homes (verblijfsobjecten with woonfunctie in a live status, by bouwjaarPand) also gives 1990, with 13,317 against 10,609. Narrowing an open question to the decade with the most buildings is a draft for the working group, who may prefer another measure of growth, such as a count per decade or the number of homes.",
   "answer_schema": "answer.schema.json"
 }

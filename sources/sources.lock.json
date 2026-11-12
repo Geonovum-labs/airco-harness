@@ -1,6 +1,25 @@
 {
-  "fetched": "2026-11-12T10:59:04Z",
+  "fetched": "2026-11-12T12:34:35Z",
   "files": [
+    {
+      "path": "dsfl/bag-amersfoort-bouw-gestart.json",
+      "url": "https://bag.ldproxy.net/bag/collections/pand/items?f=json&limit=5000&gemeentecode=0307&status=Bouw+gestart&properties=status,wijknaam,buurtnaam,beginGeldigheid",
+      "sha256": "bdad75a773e93fa4cbef47708f340bc855144e82c727e9ffc6ff75e762b16a36",
+      "bytes": 45501
+    },
+    {
+      "path": "dsfl/bag-amersfoort-bouwjaar-per-decade.json",
+      "url": "https://bag.ldproxy.net/bag/collections/pand/items?f=json&limit=5000&gemeentecode=0307&properties=oorspronkelijkBouwjaar,status",
+      "method": "GET, paged",
+      "sha256": "094c8c3cd7aeb457e9b6d36a8fa699db69d86f7d006c20df744cc78cac06c449",
+      "bytes": 2667
+    },
+    {
+      "path": "dsfl/bag-amersfoort-gesloopt.geojson",
+      "url": "https://bag.ldproxy.net/bag/collections/pand/items?f=json&limit=5000&gemeentecode=0307&status=Pand+gesloopt&filter=beginGeldigheid+%3E%3D+DATE%28%272015-11-12%27%29&properties=geometrie,status,oorspronkelijkBouwjaar,beginGeldigheid",
+      "sha256": "e91f16881f618755dcec6aa05c2b675f3e15cea37a3a58a3d9b6f4cc2d89b986",
+      "bytes": 1123985
+    },
     {
       "path": "dsfl/bag-amersfoort-sport-panden.geojson",
       "url": "https://service.pdok.nl/lv/bag/wfs/v2_0",
@@ -14,6 +33,18 @@
       "url": "https://service.pdok.nl/lv/bag/wfs/v2_0?service=WFS&version=2.0.0&request=GetFeature&typeNames=bag%3Averblijfsobject&outputFormat=application%2Fjson&srsName=EPSG%3A4326&count=1000&FILTER=%3CFilter+xmlns%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3CAnd%3E%3CPropertyIsLike+wildCard%3D%22%2A%22+singleChar%3D%22.%22+escapeChar%3D%22%21%22%3E%3CValueReference%3Egebruiksdoel%3C%2FValueReference%3E%3CLiteral%3E%2Asportfunctie%2A%3C%2FLiteral%3E%3C%2FPropertyIsLike%3E%3COr%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EAmersfoort%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EHoogland%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EHooglanderveen%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3C%2FOr%3E%3C%2FAnd%3E%3C%2FFilter%3E",
       "sha256": "bd7e9cb07ac29e49056db96e0d4e61e3f86bb61da02b46e14e0d01352389d817",
       "bytes": 87469
+    },
+    {
+      "path": "dsfl/bag-amersfoort-voor-1800-panden.geojson",
+      "url": "https://bag.ldproxy.net/bag/collections/pand/items?f=json&limit=5000&gemeentecode=0307&filter=oorspronkelijkBouwjaar+%3C+1800+AND+status+IN+%28%27Pand+in+gebruik%27,%27Pand+in+gebruik+%28niet+ingemeten%29%27,%27Verbouwing+pand%27,%27Sloopvergunning+verleend%27,%27Pand+buiten+gebruik%27%29&properties=geometrie,status,oorspronkelijkBouwjaar,beginGeldigheid",
+      "sha256": "f48c861884b86a2fe41973b892da6b0733c2318292233f835c4bbac873c397b0",
+      "bytes": 149540
+    },
+    {
+      "path": "dsfl/bag-amersfoort-voor-1800-woningen.json",
+      "url": "https://bag.ldproxy.net/bag/search/verblijfsobjecten-in-panden?gebied=0307&bouwjaarTot=1799&gebruiksdoel=woonfunctie",
+      "sha256": "3df53941cacb06de91f047ac0f42d70dc524ed069da4ef88d561b1c0c79ee1aa",
+      "bytes": 220948
     },
     {
       "path": "imgeo-2.2/catalog-bgt.html",

@@ -2,23 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "year_built": {
+    "decade": {
       "type": "integer"
-    },
-    "energy_label": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "floor_area_m2": {
-      "type": "number"
     }
   },
   "required": [
-    "year_built",
-    "energy_label",
-    "floor_area_m2"
+    "decade"
   ],
   "additionalProperties": true
 }

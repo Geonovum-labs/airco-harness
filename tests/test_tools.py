@@ -101,10 +101,10 @@ def test_show_on_map_counts_the_places_and_rejects_what_is_not_geojson():
 
 
 def test_agent_inspect_gets_show_on_map_only_in_a_test_set_with_a_map_question(tmp_path):
-    """The map of the right panden is the answer for dsfl-02, whatever the agent submits."""
+    """The map of the right panden is the answer for dsfl-04, whatever the agent submits."""
     from airco_harness import dataset
 
-    must = json.loads((dataset.TESTSETS_DIR / "dsfl/samples/dsfl-02/expected.json").read_text(encoding="utf-8"))["must"]
+    must = json.loads((dataset.TESTSETS_DIR / "dsfl/samples/dsfl-04/expected.json").read_text(encoding="utf-8"))["must"]
     panden = json.loads(sources.path("dsfl/bag-amersfoort-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
     geojson = {"type": "FeatureCollection", "features": [f for f in panden if f["properties"]["identificatie"] in must]}
     steps = [
@@ -112,7 +112,7 @@ def test_agent_inspect_gets_show_on_map_only_in_a_test_set_with_a_map_question(t
         ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de kaart."}),
     ]
     [log] = eval(
-        airco(testset="dsfl", agent="inspect", ids="dsfl-02"), model=get_model("mockllm/model", custom_outputs=steps), log_dir=str(tmp_path), display="none"
+        airco(testset="dsfl", agent="inspect", ids="dsfl-04"), model=get_model("mockllm/model", custom_outputs=steps), log_dir=str(tmp_path), display="none"
     )
     [sample] = log.samples
     assert sample.messages[3].role == "tool" and sample.messages[3].text == f"{len(must)} places shown on the map."

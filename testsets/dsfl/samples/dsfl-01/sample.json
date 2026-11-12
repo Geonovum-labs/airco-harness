@@ -1,12 +1,12 @@
 {
-  "task": "lookup",
+  "task": "query",
   "standard": "dsfl",
-  "input": "I live at Barchman Wuytierslaan 20 in Amersfoort. What year was this building built? What's the energy label and floor area? Answer with only a JSON object with the keys \"year_built\", \"energy_label\" and \"floor_area_m2\". Use null for a value that is not registered.",
+  "input": "How has Amersfoort grown? In which decade were most of the buildings that stand in Amersfoort today built? Answer with only a JSON object with the key \"decade\": the first year of the decade, such as 1950.",
   "metadata": {
     "status": "draft",
-    "hypothesis": "The answer needs two registrations: the BAG for the building year and floor area, EP-Online for the energy label. EP-Online has no label for this address, so the right energy_label is null. A model without tools can only guess. Likely failure: an invented label, or the label of another address, such as Barchman Wuytierslaan 2. EP-Online shows a result only after a POST of its search form, which a fetch by GET cannot do, so an agent may not tell 'no label' from 'not found'",
+    "hypothesis": "The open question 'how has the city grown' is narrowed here to one number, so the score is deterministic. The BAG has no ready-made count per decade: an agent has to count roughly 100,000 panden by oorspronkelijkBouwjaar, which takes paging through the API or an aggregate query. Likely failures: a guess from the age of the city center, a count of only the first page of results, or a count that includes demolished panden.",
     "expected_variant": 1,
-    "location": "BAG verblijfsobject 0307010000443458 in pand 0307100000358825; no EP-Online registration for that verblijfsobject",
-    "absence": true
+    "location": "BAG panden of gemeente Amersfoort (gemeentecode 0307), property oorspronkelijkBouwjaar",
+    "absence": false
   }
 }
