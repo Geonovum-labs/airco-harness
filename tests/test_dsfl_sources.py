@@ -4,6 +4,7 @@ import csv
 import datetime
 import json
 import math
+import statistics
 import zoneinfo
 
 import pytest
@@ -82,20 +83,22 @@ def test_dsfl_05_must_is_the_old_panden_with_a_home_in_use():
     assert all(f["properties"]["oorspronkelijkBouwjaar"] < 1800 and f["properties"]["status"] in sources.PAND_EXISTS for f in reference)
 
 
-def test_dsfl_06_level_of_the_well_on_the_day_in_cm_nap():
+def test_dsfl_06_daily_mean_of_tube_one_in_m_nap():
     rows = list(csv.DictReader(sources.path("dsfl/bro-gld000000025798.csv").read_text(encoding="utf-8").splitlines()))
     day = datetime.date(2026, 9, 21)
-    levels = {"utc": set(), "local": set()}
+    levels = []
     for r in rows:
         value = r["Voorlopige Waarde [m]"]
         moment = datetime.datetime.fromtimestamp(int(r["Tijdstip"]) / 1000, datetime.timezone.utc)
-        if value and moment.date() == day:
-            levels["utc"].add(round(float(value) * 100))
         if value and moment.astimezone(AMSTERDAM).date() == day:
-            levels["local"].add(round(float(value) * 100))
-    assert levels["utc"] == levels["local"] == {expected("dsfl-06")["expected"]["level_cm_nap"]}
+            levels.append(float(value))
+    fields = expected("dsfl-06")["expected"]
+    assert len(levels) == 24
+    assert statistics.mean(levels) == pytest.approx(fields["value"]["value"])
+    assert fields["value"]["tolerance"] == 0.005
+    assert (fields["unit"], fields["reference_plane"]) == ("m", "NAP")
     relations = json.loads(sources.path("dsfl/bro-gmw000000009441-relations.json").read_text(encoding="utf-8"))
-    assert [t["gldReferences"][0]["broId"] for t in relations["monitoringTubeReferences"]] == ["GLD000000025798"]
+    assert [(t["tubeNumber"], [g["broId"] for g in t["gldReferences"]]) for t in relations["monitoringTubeReferences"]] == [(1, ["GLD000000025798"])]
     well = etree.parse(str(sources.path("dsfl/bro-gmw000000009441.xml"))).getroot()
     assert float(well.findtext(".//{*}groundLevelPosition")) == 5.61
 

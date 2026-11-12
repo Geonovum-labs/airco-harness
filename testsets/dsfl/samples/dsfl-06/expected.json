@@ -1,9 +1,11 @@
 {
   "rule": "fields",
   "expected": {
-    "level_cm_nap": 213
+    "value": {"value": 2.1308333333333334, "tolerance": 0.005},
+    "unit": "m",
+    "reference_plane": "NAP"
   },
   "answer_schema": "answer.schema.json",
   "source": "BRO groundwater monitoring, retrieved 12 November 2026 through publiek.broservices.nl: sources/dsfl/bro-gld000000025798.csv (the series), sources/dsfl/bro-gmw000000009441.xml (the well) and sources/dsfl/bro-gmw000000009441-relations.json (the link from well to series), recorded in sources/sources.lock.json.",
-  "note": "Origin: the meeting with Sjaak (TNO, BRO groundwater MCP) on 12 November 2026, a simple groundwater question to check that the mechanism works, first without his MCP. Well GMW000000009441 (well code GMW32B001895) lies 377 m from Stadhuisplein 1 in Amersfoort and has one tube, with the series GLD000000025798. The values are hourly provisional (voorlopig) values in m relative to NAP. On 21 September 2026 every value rounds to 213 cm, by UTC day and by Dutch local day (CEST). Ground level is 5.61 m NAP, so the depth below ground is about 3.48 m; an answer of 348 or -348 is the likely wrong reading. Neighboring days drift about 1 cm per day. 1 October 2026 rose 12 cm in a day and was not chosen for that reason. Open for the working group: the values are provisional and can change when the BRO assesses them, so check the sample again before it is approved, and decide whether a provisional value counts as the level."
+  "note": "Origin: an initial groundwater question using public BRO services. GLD000000025798 belongs to tube 1 of GMW000000009441. The 24 provisional hourly readings on 21 September 2026 in Europe/Amsterdam average 2.1308333333333334 m relative to NAP. A tolerance of 0.005 m permits rounding to centimeters. Ground level is 5.61 m NAP. Values are provisional and must be checked again before approval."
 }

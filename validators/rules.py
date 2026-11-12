@@ -96,8 +96,15 @@ def _same(answer: object, expected: object) -> bool:
 
 
 def _accepted(want: object) -> list[object]:
-    """`want` is a literal, or {"one_of": [...]} for alternatives."""
-    return want["one_of"] if isinstance(want, dict) else [want]
+    """`want` is a literal, alternatives, or a numeric value with tolerance."""
+    return want["one_of"] if isinstance(want, dict) and "one_of" in want else [want]
+
+
+def _matches(answer: object, want: object) -> bool:
+    if isinstance(want, dict) and "tolerance" in want:
+        return (isinstance(answer, (int, float)) and not isinstance(answer, bool)
+                and abs(answer - want["value"]) <= want["tolerance"])
+    return _same(answer, want)
 
 
 def _invented_terms(values: list) -> list[str]:
@@ -116,7 +123,7 @@ def rule_fields(answer: str, case: Case) -> Assessment:
     if failure:
         return failure
     fields: dict[str, object] = case.expected["expected"]
-    wrong = {key: {"expected": want, "given": data.get(key)} for key, want in fields.items() if not any(_same(data.get(key), a) for a in _accepted(want))}
+    wrong = {key: {"expected": want, "given": data.get(key)} for key, want in fields.items() if not any(_matches(data.get(key), a) for a in _accepted(want))}
     term_values = [data.get(k) for k in case.expected.get("term_fields", []) if k in wrong]
     invented = _invented_terms(term_values)
     details |= {"wrong": wrong, "invented_terms": invented}

@@ -57,7 +57,7 @@ Each field of the answer has an expected value.
 
 | `expected.json` | Content |
 | --- | --- |
-| `expected` | For each field, a value, or `{"one_of": [...]}` for alternatives |
+| `expected` | For each field, a value, `{"one_of": [...]}` for alternatives, or `{"value": 2.131, "tolerance": 0.005}` for a numeric value within an absolute tolerance (inclusive) |
 | `term_fields` | Optional. Fields in which a value that differs from the expected one must be a known term |
 
 `complete` is the share of fields that match. `invented` is the number of differing values in `term_fields` that are not a known term, and `correct` is 1 only if everything matches and nothing is invented.

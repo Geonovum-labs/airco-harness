@@ -110,17 +110,14 @@ CASES = [
     # Old panden without a home only.
     ("dsfl-05", shown([point(p.x, p.y) for p in NO_HOME_POINTS]), full(0, 0.0, 0)),
     ("dsfl-05", shown([point(p.y, p.x) for p in HOMES_1800_POINTS]), full(0, 0.0, len(MUST_1800))),
-    ("dsfl-06", as_json({"level_cm_nap": 213}), full()),
-    ("dsfl-06", as_json({"level_cm_nap": 213}, fenced=False), full()),
-    # The depth below ground (ground level 5.61 m NAP), positive or negative.
-    ("dsfl-06", as_json({"level_cm_nap": 348}), full(0, 0.0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": -348}), full(0, 0.0, 0)),
-    # The level of the neighboring day, or of the last measurement.
-    ("dsfl-06", as_json({"level_cm_nap": 212}), full(0, 0.0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": 248}), full(0, 0.0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": "2.13 m"}), full(0, 0.0, 0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": 2.13}), full(0, 0.0, 0, 0)),
-    ("dsfl-06", "The level was about 2.13 m above NAP.", full(0, 0.0, 0, 0)),
+    ("dsfl-06", as_json({"value": 2.13, "unit": "m", "reference_plane": "NAP"}), full()),
+    ("dsfl-06", as_json({"value": 2.134, "unit": "m", "reference_plane": "nap"}, fenced=False), full()),
+    ("dsfl-06", as_json({"value": 2.14, "unit": "m", "reference_plane": "NAP"}), full(0, 0.6667, 0)),
+    ("dsfl-06", as_json({"value": -3.48, "unit": "m", "reference_plane": "NAP"}), full(0, 0.6667, 0)),
+    ("dsfl-06", as_json({"value": 2.13, "unit": "cm", "reference_plane": "maaiveld"}), full(0, 0.3333, 0)),
+    ("dsfl-06", as_json({"value": "2.13", "unit": "m", "reference_plane": "NAP"}), full(0, 0.0, 0, 0)),
+    ("dsfl-06", as_json({"value": 2.13}), full(0, 0.0, 0, 0)),
+    ("dsfl-06", "De stand was 2,13 m NAP.", full(0, 0.0, 0, 0)),
     ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in MUST_WELLS]), full()),
     # Every well of the search: the 44 outside the requested radius are invented.
     ("dsfl-07", shown(WELLS), full(0, 1.0, 44)),
