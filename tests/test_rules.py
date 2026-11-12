@@ -54,12 +54,12 @@ CASES = [
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk", "type": "zwembad"}), full(0, 0.5, 1)),
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk"}), full(0, 0.0, 0, 0)),
     ("imgeo-G04-03", "An open-air pool is a Waterdeel.", full(0, 0.0, 0, 0)),
-    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A++", "floor_area_m2": 7755}), full()),
-    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "a++", "floor_area_m2": 7755.0}, fenced=False), full()),
-    # The area of the thermal zone in EP-Online is not the floor area.
-    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A++", "floor_area_m2": 7316.0}), full(0, 0.6667, 0)),
-    ("dsfl-01", as_json({"year_built": 2000, "energy_label": "A", "floor_area_m2": 7000}), full(0, 0.0, 0)),
-    ("dsfl-01", as_json({"year_built": "1999", "energy_label": "A++", "floor_area_m2": 7755}), full(0, 0.0, 0, 0)),
+    ("dsfl-01", as_json({"year_built": 1920, "energy_label": None, "floor_area_m2": 280}), full()),
+    ("dsfl-01", as_json({"year_built": 1920, "energy_label": None, "floor_area_m2": 280.0}, fenced=False), full()),
+    # No label is registered: the label of Barchman Wuytierslaan 2 is wrong.
+    ("dsfl-01", as_json({"year_built": 1920, "energy_label": "B", "floor_area_m2": 280}), full(0, 0.6667, 0)),
+    ("dsfl-01", as_json({"year_built": 1930, "energy_label": "C", "floor_area_m2": 300}), full(0, 0.0, 0)),
+    ("dsfl-01", as_json({"year_built": "1920", "energy_label": None, "floor_area_m2": 280}), full(0, 0.0, 0, 0)),
     ("dsfl-02", shown([point(p.x, p.y) for p in MUST_POINTS]), full()),
     # Every pand of the extract as a polygon, one of them twice: mixed use may be shown, and a duplicate is not invented.
     ("dsfl-02", shown([*PANDEN, PANDEN[0]]), full()),

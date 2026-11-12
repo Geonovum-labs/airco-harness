@@ -6,7 +6,10 @@
       "type": "integer"
     },
     "energy_label": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "floor_area_m2": {
       "type": "number"
