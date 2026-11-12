@@ -1,7 +1,7 @@
 """Scan logs for secrets and personal data before they are published.
 
     uv run airco-logcheck reports/<name>/logs
-    uv run airco-logcheck --mask-emails reports/<name>/logs   # first replace email addresses, then scan
+    uv run airco-logcheck --mask reports/<name>/logs   # first replace email addresses and home paths, then scan
 
 Reads every .eval log through Inspect and every .json, .html, .md and .csv
 file, and searches the text of every string in them, decoded, for: the values
@@ -10,9 +10,11 @@ addresses and home directory paths. A log that cannot be read is reported too.
 Exits 1 on any finding, and 2 when a given path does not exist.
 
 An agent that reads the web brings contact addresses from the pages into its
-log. --mask-emails replaces every email address that is not in ALLOWED with
-MASK, in the JSON of each .eval log and in every .json file, before the scan.
-The rest of the log stays as it was, so the scores do not change.
+log, and a traceback names the home folder of the machine that ran it. --mask
+replaces every email address that is not in ALLOWED and every home path, as
+MASKS says, in the JSON of each .eval log and in every .json file, before the
+scan, and prints where it replaced home paths. The rest of the log stays as it
+was, so the scores do not change.
 """
 
 from __future__ import annotations
@@ -66,52 +68,63 @@ def _allowed(match: re.Match, text: str) -> bool:
     )
 
 
-MASK = "[email removed]"
+# What --mask replaces, and with what. A home path is the user name of the machine that ran the matrix; on a GitHub
+# runner it shows up in tracebacks through uv's Python and through the checkout, both under /home/runner.
+MASKS = {"email": (PATTERNS["email"], "[email removed]"), "home path": (PATTERNS["home path"], "~")}
 
 
-def _masked(value: object, count: list[int]) -> object:
-    """`value` with every email address outside ALLOWED replaced by MASK; count[0] counts the replacements."""
+def _masked(value: object, where: str, found: list[tuple[str, str]]) -> object:
+    """`value` with every email address outside ALLOWED and every home path masked; appends (label, JSON key path) to found."""
     if isinstance(value, str):
+        for label, (pattern, mask) in MASKS.items():
 
-        def replace(m: re.Match) -> str:
-            if m.group(0) in ALLOWED:
-                return m.group(0)
-            count[0] += 1
-            return MASK
+            def replace(m: re.Match, label: str = label, mask: str = mask) -> str:
+                if m.group(0) in ALLOWED:
+                    return m.group(0)
+                found.append((label, where))
+                return mask
 
-        return PATTERNS["email"].sub(replace, value)
+            value = pattern.sub(replace, value)
+        return value
     if isinstance(value, dict):
-        return {_masked(k, count): _masked(v, count) for k, v in value.items()}
+        masked = {}
+        for k, v in value.items():
+            key = _masked(k, where, found)  # the location names the masked key, so it never prints what it masks
+            masked[key] = _masked(v, f"{where}.{key}", found)
+        return masked
     if isinstance(value, list):
-        return [_masked(v, count) for v in value]
+        return [_masked(v, f"{where}[]", found) for v in value]
     return value
 
 
-def mask_emails(path: Path) -> int:
-    """Mask the email addresses in a .eval log (each JSON member of the zip) or a .json file, in place; the number masked."""
-    count = [0]
+def mask(path: Path) -> list[tuple[str, str]]:
+    """Mask email addresses and home paths in a .eval log (each JSON member of the zip) or a .json file, in place.
+
+    Returns one (label, location) per replacement; the location is the zip member and the JSON key path, which tells a
+    traceback from a tool result without printing the text itself."""
+    found: list[tuple[str, str]] = []
     if path.suffix == ".json":
-        data = _masked(json.loads(path.read_text(encoding="utf-8")), count)
-        if count[0]:
+        data = _masked(json.loads(path.read_text(encoding="utf-8")), "", found)
+        if found:
             path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-        return count[0]
+        return found
     with zipfile.ZipFile(path) as source:
         members = [(info, source.read(info)) for info in source.infolist()]
     rewritten = []
     for info, body in members:
         if info.filename.endswith(".json"):
-            before = count[0]
-            data = _masked(json.loads(body), count)
-            if count[0] > before:
+            before = len(found)
+            data = _masked(json.loads(body), f"{info.filename}:", found)
+            if len(found) > before:
                 body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         rewritten.append((info, body))
-    if count[0]:
+    if found:
         temporary = path.with_suffix(".eval.tmp")
         with zipfile.ZipFile(temporary, "w", zipfile.ZIP_DEFLATED) as target:
             for info, body in rewritten:
                 target.writestr(info, body)
         temporary.replace(path)
-    return count[0]
+    return found
 
 
 TRIVIAL = {"", "ollama", "dummy", "none"}
@@ -175,7 +188,9 @@ def scan(root: str) -> list[str]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="airco-logcheck", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("roots", nargs="+", help="files or folders to scan")
-    parser.add_argument("--mask-emails", action="store_true", help="replace email addresses in .eval and .json files before the scan; changes the files")
+    parser.add_argument(
+        "--mask", action="store_true", help="replace email addresses and home paths in .eval and .json files before the scan; changes the files"
+    )
     return parser
 
 
@@ -185,14 +200,18 @@ def main() -> None:
     if missing:
         print(f"not found: {', '.join(missing)}", file=sys.stderr)
         sys.exit(2)
-    if args.mask_emails:
+    if args.mask:
         for root in args.roots:
             base = Path(root)
             for path in [base] if base.is_file() else sorted(base.rglob("*")):
                 if path.is_file() and path.suffix in (".eval", ".json"):
-                    masked = mask_emails(path)
-                    if masked:
-                        print(f"{path}: {masked} email addresses masked")
+                    found = mask(path)
+                    emails = sum(label == "email" for label, _ in found)
+                    homes = sorted({where for label, where in found if label == "home path"})
+                    if emails:
+                        print(f"{path}: {emails} email addresses masked")
+                    if homes:
+                        print(f"{path}: {len(found) - emails} home paths masked, at {', '.join(homes[:10])}")
     hits = [h for root in args.roots for h in scan(root)]
     for h in hits[:200]:
         print(h)

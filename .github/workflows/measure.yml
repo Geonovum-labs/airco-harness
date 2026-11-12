@@ -189,7 +189,7 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           KADASTER_API_KEY: ${{ secrets.KADASTER_API_KEY }}
           KADASTER_BASE_URL: ${{ inputs.runner == 'kadaster' && vars.KADASTER_BASE_URL || '' }}
-        run: uv run airco-logcheck --mask-emails "logs/$NAME" "reports/$NAME"
+        run: uv run airco-logcheck --mask "logs/$NAME" "reports/$NAME"
       - if: ${{ !cancelled() && steps.logcheck.outcome == 'success' }}
         uses: actions/upload-artifact@v7
         with:

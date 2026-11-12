@@ -82,22 +82,65 @@ def test_image_name_with_a_pixel_density_is_not_an_email(tmp_path):
     assert hits(tmp_path) == ["email huren@example.nl"]
 
 
-def test_mask_emails_replaces_addresses_in_a_log_and_keeps_the_rest(tmp_path):
+def test_mask_replaces_addresses_in_a_log_and_keeps_the_rest(tmp_path):
     page = "Contact: info@sportbedrijfarnhem.nl, or imgeo@geonovum.nl for the standard. Tel 026 123."
     model = get_model("mockllm/model", custom_outputs=[ModelOutput.from_content("mockllm/model", f"I read: {page}")])
     [log] = eval(Task(dataset=[Sample(input=page)], solver=generate()), model=model, log_dir=str(tmp_path), display="none")
     path = Path(log.location)
     assert hits(path) == ["email info@sportbedrijfarnhem.nl"]
 
-    assert logcheck.mask_emails(path) > 2  # in the input, the answer, the events, the journal and the summaries
+    assert len(logcheck.mask(path)) > 2  # in the input, the answer, the events, the journal and the summaries
     assert hits(path) == []
     [sample] = read_eval_log(str(path)).samples
     assert sample.output.completion == "I read: Contact: [email removed], or imgeo@geonovum.nl for the standard. Tel 026 123."
-    assert logcheck.mask_emails(path) == 0
+    assert logcheck.mask(path) == []
 
 
-def test_mask_emails_in_a_json_file(tmp_path):
+def test_mask_in_a_json_file(tmp_path):
     listing = tmp_path / "listing.json"
     listing.write_text(json.dumps({"a": ["x@example.nl", "huren@geldersepoort.nl"]}), encoding="utf-8")
-    assert logcheck.mask_emails(listing) == 1
+    assert logcheck.mask(listing) == [("email", ".a[]")]
     assert json.loads(listing.read_text(encoding="utf-8")) == {"a": ["[email removed]", "huren@geldersepoort.nl"]}
+
+
+RUNNER_TRACEBACKS = {
+    "uv_python": 'File "/home/runner/.local/share/uv/python/cpython-3.15.2-linux-x86_64-gnu/lib/python3.15/asyncio/tasks.py", line 1',
+    "checkout": 'File "/home/runner/work/airco-harness/airco-harness/src/airco_harness/tools.py", line 1',
+}
+
+
+def test_home_paths_of_a_github_runner_are_findings_without_mask(tmp_path):
+    (tmp_path / "log.json").write_text(json.dumps({"error": RUNNER_TRACEBACKS}), encoding="utf-8")
+    assert hits(tmp_path) == ["home path /home/runner"]
+
+
+def test_mask_replaces_home_paths_and_says_where(tmp_path, monkeypatch, capsys):
+    log = tmp_path / "log.json"
+    log.write_text(json.dumps({"error": RUNNER_TRACEBACKS, "mail": "x@example.nl"}), encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["airco-logcheck", "--mask", str(tmp_path)])
+    with pytest.raises(SystemExit) as stop:
+        logcheck.main()
+    assert stop.value.code == 0
+    out = capsys.readouterr().out
+    assert f"{log}: 1 email addresses masked" in out
+    assert f"{log}: 2 home paths masked, at .error.checkout, .error.uv_python" in out
+    assert json.loads(log.read_text(encoding="utf-8"))["error"]["checkout"].startswith('File "~/work/airco-harness/')
+
+
+def test_mask_names_the_member_of_an_eval_log(tmp_path):
+    model = get_model("mockllm/model", custom_outputs=[ModelOutput.from_content("mockllm/model", "see /home/runner/work/x")])
+    [log] = eval(Task(dataset=[Sample(input="x")], solver=generate()), model=model, log_dir=str(tmp_path), display="none")
+    path = Path(log.location)
+    assert hits(path) == ["home path /home/runner"]
+    found = logcheck.mask(path)
+    assert {label for label, _ in found} == {"home path"}
+    assert any(where.startswith("samples/") for _, where in found)
+    assert hits(path) == []
+    [sample] = read_eval_log(str(path)).samples
+    assert sample.output.completion == "see ~/work/x"
+
+
+def test_mask_never_prints_a_masked_key_as_location(tmp_path):
+    log = tmp_path / "log.json"
+    log.write_text(json.dumps({"/home/someone/notes": "see /home/someone/x"}), encoding="utf-8")
+    assert logcheck.mask(log) == [("home path", ""), ("home path", ".~/notes")]
