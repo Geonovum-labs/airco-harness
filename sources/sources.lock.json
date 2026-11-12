@@ -1,19 +1,19 @@
 {
-  "fetched": "2026-10-29T11:05:40Z",
+  "fetched": "2026-11-12T10:59:04Z",
   "files": [
     {
-      "path": "dsfl/bag-arnhem-sport-panden.geojson",
+      "path": "dsfl/bag-amersfoort-sport-panden.geojson",
       "url": "https://service.pdok.nl/lv/bag/wfs/v2_0",
       "method": "POST",
-      "body_sha256": "f9e033e7af8243c47a2ef81ed836f1774ba969722655fe22e27ae8e2ff1d2108",
-      "sha256": "7c15f43de8a49be5e969b5c1fcf3b0c6b55280fa1e5f823c7da7a8a9afab4a0b",
-      "bytes": 194528
+      "body_sha256": "edff0f949172da286761b307c4dfd4af623fb2d9df388a3d2eef2799574ba2b2",
+      "sha256": "63376575c07a7f506b4c922650cb54c19c840ba130a54657d2ee2eaf118b4aab",
+      "bytes": 164004
     },
     {
-      "path": "dsfl/bag-arnhem-sport-verblijfsobjecten.json",
-      "url": "https://service.pdok.nl/lv/bag/wfs/v2_0?service=WFS&version=2.0.0&request=GetFeature&typeNames=bag%3Averblijfsobject&outputFormat=application%2Fjson&srsName=EPSG%3A4326&count=1000&FILTER=%3CFilter+xmlns%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3CAnd%3E%3CPropertyIsLike+wildCard%3D%22%2A%22+singleChar%3D%22.%22+escapeChar%3D%22%21%22%3E%3CValueReference%3Egebruiksdoel%3C%2FValueReference%3E%3CLiteral%3E%2Asportfunctie%2A%3C%2FLiteral%3E%3C%2FPropertyIsLike%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EArnhem%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3C%2FAnd%3E%3C%2FFilter%3E",
-      "sha256": "498f5fdae994c272a96e383351231c05edc8fe44ae2564ced8e70c801f91ad2d",
-      "bytes": 90753
+      "path": "dsfl/bag-amersfoort-sport-verblijfsobjecten.json",
+      "url": "https://service.pdok.nl/lv/bag/wfs/v2_0?service=WFS&version=2.0.0&request=GetFeature&typeNames=bag%3Averblijfsobject&outputFormat=application%2Fjson&srsName=EPSG%3A4326&count=1000&FILTER=%3CFilter+xmlns%3D%22http%3A%2F%2Fwww.opengis.net%2Ffes%2F2.0%22%3E%3CAnd%3E%3CPropertyIsLike+wildCard%3D%22%2A%22+singleChar%3D%22.%22+escapeChar%3D%22%21%22%3E%3CValueReference%3Egebruiksdoel%3C%2FValueReference%3E%3CLiteral%3E%2Asportfunctie%2A%3C%2FLiteral%3E%3C%2FPropertyIsLike%3E%3COr%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EAmersfoort%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EHoogland%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3CPropertyIsEqualTo%3E%3CValueReference%3Ewoonplaats%3C%2FValueReference%3E%3CLiteral%3EHooglanderveen%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3C%2FOr%3E%3C%2FAnd%3E%3C%2FFilter%3E",
+      "sha256": "bd7e9cb07ac29e49056db96e0d4e61e3f86bb61da02b46e14e0d01352389d817",
+      "bytes": 87469
     },
     {
       "path": "imgeo-2.2/catalog-bgt.html",

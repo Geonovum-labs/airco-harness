@@ -105,7 +105,7 @@ def test_agent_inspect_gets_show_on_map_only_in_a_test_set_with_a_map_question(t
     from airco_harness import dataset
 
     must = json.loads((dataset.TESTSETS_DIR / "dsfl/samples/dsfl-02/expected.json").read_text(encoding="utf-8"))["must"]
-    panden = json.loads(sources.path("dsfl/bag-arnhem-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
+    panden = json.loads(sources.path("dsfl/bag-amersfoort-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
     geojson = {"type": "FeatureCollection", "features": [f for f in panden if f["properties"]["identificatie"] in must]}
     steps = [
         ModelOutput.for_tool_call("mockllm/model", "show_on_map", {"geojson": geojson}),

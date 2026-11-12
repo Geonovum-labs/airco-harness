@@ -84,8 +84,12 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     imgeo_measurement(reports)
     name = "2026-10-29T12-10-00"
     must = json.loads((report.rules.TESTSETS_DIR / "dsfl/samples/dsfl-02/expected.json").read_text(encoding="utf-8"))["must"]
-    panden = json.loads(sources.path("dsfl/bag-arnhem-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
-    river = {"type": "Feature", "geometry": {"type": "Point", "coordinates": [5.905, 51.976]}, "properties": {"name": "Roeivereniging", "sport": {"type": "roeien"}}}
+    panden = json.loads(sources.path("dsfl/bag-amersfoort-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
+    river = {
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [5.3792, 52.164]},
+        "properties": {"name": "Roeivereniging", "sport": {"type": "roeien"}},
+    }
     geojson = {"type": "FeatureCollection", "features": [f for f in panden if f["properties"]["identificatie"] in must] + [river]}
     steps = [
         ModelOutput.for_tool_call("mockllm/model", "show_on_map", {"geojson": geojson}),
@@ -103,7 +107,7 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     site = tmp_path / "site"
     data = strict(site / "data.json")
     [run] = [r for r in data["runs"] if r["m"] == name]
-    assert (run["agent"], len(run["map"]["shown"]), run["map"]["missing"], run["map"]["unmatched"]) == ("inspect", len(must), [], [[5.905, 51.976]])
+    assert (run["agent"], len(run["map"]["shown"]), run["map"]["missing"], run["map"]["unmatched"]) == ("inspect", len(must), [], [[5.3792, 52.164]])
     # What the agent said per place: matched to its pand by the scorer's rule, the river on none, the details as text.
     places = run["map"]["places"]
     assert {p["pand"] for p in places if p["pand"]} == set(must)
@@ -118,7 +122,7 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
 def test_a_question_loses_only_the_role_of_a_single_user_message():
     from airco_harness.sitedata import question
 
-    assert question("user:\nVind alle gebouwen met sportfunctie in Arnhem.\n") == "Vind alle gebouwen met sportfunctie in Arnhem."
+    assert question("user:\nVind alle gebouwen met sportfunctie in Amersfoort.\n") == "Vind alle gebouwen met sportfunctie in Amersfoort."
     conversation = "system:\nJe bent een assistent.\n\nuser:\nVind de gebouwen.\n"
     assert question(conversation) == conversation.strip()
     assert question(None) == ""

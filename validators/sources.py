@@ -40,25 +40,28 @@ def schema_path(schema_url: str) -> str:
 
 
 BAG_WFS = "https://service.pdok.nl/lv/bag/wfs/v2_0"
-DSFL_SPORT_VBO = "dsfl/bag-arnhem-sport-verblijfsobjecten.json"
-DSFL_SPORT_PANDEN = "dsfl/bag-arnhem-sport-panden.geojson"
+DSFL_SPORT_VBO = "dsfl/bag-amersfoort-sport-verblijfsobjecten.json"
+DSFL_SPORT_PANDEN = "dsfl/bag-amersfoort-sport-panden.geojson"
 
 
-def _bag_sport_arnhem() -> str:
-    """Verblijfsobjecten in woonplaats Arnhem whose gebruiksdoel includes sportfunctie, as GeoJSON in WGS84."""
+def _bag_sport_amersfoort() -> str:
+    """Verblijfsobjecten in gemeente Amersfoort (its woonplaatsen) whose gebruiksdoel includes sportfunctie, as GeoJSON in WGS84."""
+    woonplaatsen = "".join(
+        f"<PropertyIsEqualTo><ValueReference>woonplaats</ValueReference><Literal>{w}</Literal></PropertyIsEqualTo>"
+        for w in ("Amersfoort", "Hoogland", "Hooglanderveen")
+    )
     fes = (
         '<Filter xmlns="http://www.opengis.net/fes/2.0"><And>'
         '<PropertyIsLike wildCard="*" singleChar="." escapeChar="!"><ValueReference>gebruiksdoel</ValueReference><Literal>*sportfunctie*</Literal></PropertyIsLike>'
-        "<PropertyIsEqualTo><ValueReference>woonplaats</ValueReference><Literal>Arnhem</Literal></PropertyIsEqualTo>"
-        "</And></Filter>"
+        f"<Or>{woonplaatsen}</Or></And></Filter>"
     )
     query = {"service": "WFS", "version": "2.0.0", "request": "GetFeature", "typeNames": "bag:verblijfsobject",
              "outputFormat": "application/json", "srsName": "EPSG:4326", "count": "1000", "FILTER": fes}  # fmt: skip
     return f"{BAG_WFS}?{urllib.parse.urlencode(query)}"
 
 
-def _bag_panden_of_sport_arnhem() -> tuple[str, bytes]:
-    """The panden of the verblijfsobjecten in DSFL_SPORT_VBO, as GeoJSON in WGS84. 113 ids are too long for a GET."""
+def _bag_panden_of_sport_amersfoort() -> tuple[str, bytes]:
+    """The panden of the verblijfsobjecten in DSFL_SPORT_VBO, as GeoJSON in WGS84. 112 ids are too long for a GET."""
     vbo = json.loads(path(DSFL_SPORT_VBO).read_text(encoding="utf-8"))
     ids = sorted({f["properties"]["pandidentificatie"] for f in vbo["features"]})
     clauses = "".join(
@@ -80,8 +83,8 @@ SOURCES: dict[str, str | Callable[[], tuple[str, bytes]]] = {
     "imgeo-2.2/concept-register-imgeo.ttl": "https://definities.geostandaarden.nl/rest/v1/imgeo/data?format=text/turtle",
     MIM_XSD: "https://register.geostandaarden.nl/xmlschema/mim/1.1.1/MIMFORMAT_Mim_relatiesoort.xsd",
     **{schema_path(url): url for url in (f"https://register.geostandaarden.nl/xmlschema/mim/1.1.1/{name}" for name in MIM_XSD_IMPORTS)},
-    DSFL_SPORT_VBO: _bag_sport_arnhem(),
-    DSFL_SPORT_PANDEN: _bag_panden_of_sport_arnhem,
+    DSFL_SPORT_VBO: _bag_sport_amersfoort(),
+    DSFL_SPORT_PANDEN: _bag_panden_of_sport_amersfoort,
 }
 
 

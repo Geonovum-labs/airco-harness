@@ -2,10 +2,10 @@
   "rule": "fields",
   "expected": {
     "year_built": 1999,
-    "energy_label": "A+",
-    "floor_area_m2": 6921
+    "energy_label": "A++",
+    "floor_area_m2": 7755
   },
-  "source": "Retrieved 29 October 2026. BAG via the PDOK WFS (service.pdok.nl/lv/bag/wfs/v2_0), verblijfsobject 0202010000417964: oppervlakte 6921, gebruiksdoel kantoorfunctie, bouwjaar 1999 of pand 0202100000219642, the only verblijfsobject in the pand. EP-Online search on 6842CV 8 (www.ep-online.nl/Energylabel/Search): labelklasse A+, status Bestaand, registered 19-12-2024, valid until 30-10-2034.",
-  "note": "floor_area_m2 is the gebruiksoppervlakte in the BAG. EP-Online gives 6630,96 m2 as the area of the thermal zone, which is not the floor area and scores as wrong. Both registrations change over time; check the values again before the sample is approved.",
+  "source": "Retrieved 12 November 2026. BAG via the PDOK WFS (service.pdok.nl/lv/bag/wfs/v2_0), verblijfsobject 0307010000582270: oppervlakte 7755, gebruiksdoel kantoorfunctie, bouwjaar 1999 of pand 0307100000332305, the only verblijfsobject in the pand. EP-Online search on 3821AG 52 (www.ep-online.nl/Energylabel/Search): labelklasse A++, status Bestaand, definitief, registered 16-05-2025, valid until 30-04-2035.",
+  "note": "floor_area_m2 is the gebruiksoppervlakte in the BAG. EP-Online gives 7316,00 m2 as the area of the thermal zone, which is not the floor area and scores as wrong. Both registrations change over time; check the values again before the sample is approved.",
   "answer_schema": "answer.schema.json"
 }

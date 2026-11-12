@@ -27,14 +27,14 @@ def as_json(obj: dict, fenced: bool = True) -> str:
 
 
 def bag(name: str) -> list[dict]:
-    return json.loads(sources.path(f"dsfl/bag-arnhem-sport-{name}").read_text(encoding="utf-8"))["features"]
+    return json.loads(sources.path(f"dsfl/bag-amersfoort-sport-{name}").read_text(encoding="utf-8"))["features"]
 
 
 PANDEN = bag("panden.geojson")
 MUST = set(Case.load(TARGETS["dsfl-02"]).expected["must"])
 # The point every map gets for a pand: inside it, as an agent that takes the pand's centre or its address would place it.
 MUST_POINTS = [shapely.geometry.shape(f["geometry"]).representative_point() for f in PANDEN if f["properties"]["identificatie"] in MUST]
-RIVER = (5.905, 51.976)  # in the Rijn, on no pand: a place from another source
+RIVER = (5.3792, 52.164)  # north of the center, on no pand: a place from another source
 
 
 def shown(features: list[dict]) -> str:
@@ -54,12 +54,12 @@ CASES = [
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk", "type": "zwembad"}), full(0, 0.5, 1)),
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk"}), full(0, 0.0, 0, 0)),
     ("imgeo-G04-03", "An open-air pool is a Waterdeel.", full(0, 0.0, 0, 0)),
-    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A+", "floor_area_m2": 6921}), full()),
-    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "a+", "floor_area_m2": 6921.0}, fenced=False), full()),
+    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A++", "floor_area_m2": 7755}), full()),
+    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "a++", "floor_area_m2": 7755.0}, fenced=False), full()),
     # The area of the thermal zone in EP-Online is not the floor area.
-    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A+", "floor_area_m2": 6630.96}), full(0, 0.6667, 0)),
+    ("dsfl-01", as_json({"year_built": 1999, "energy_label": "A++", "floor_area_m2": 7316.0}), full(0, 0.6667, 0)),
     ("dsfl-01", as_json({"year_built": 2000, "energy_label": "A", "floor_area_m2": 7000}), full(0, 0.0, 0)),
-    ("dsfl-01", as_json({"year_built": "1999", "energy_label": "A+", "floor_area_m2": 6921}), full(0, 0.0, 0, 0)),
+    ("dsfl-01", as_json({"year_built": "1999", "energy_label": "A++", "floor_area_m2": 7755}), full(0, 0.0, 0, 0)),
     ("dsfl-02", shown([point(p.x, p.y) for p in MUST_POINTS]), full()),
     # Every pand of the extract as a polygon, one of them twice: mixed use may be shown, and a duplicate is not invented.
     ("dsfl-02", shown([*PANDEN, PANDEN[0]]), full()),
@@ -71,7 +71,7 @@ CASES = [
     ("dsfl-02", shown([point(p.y, p.x) for p in MUST_POINTS]), full(0, 0.0, len(MUST))),
     ("dsfl-02", shown([]), full(0, 0.0, 0)),
     ("dsfl-02", "", full(0, 0.0, 0, 0)),
-    ("dsfl-02", "the sports halls of Arnhem", full(0, 0.0, 0, 0)),
+    ("dsfl-02", "the sports halls of Amersfoort", full(0, 0.0, 0, 0)),
     ("dsfl-02", json.dumps({"type": "Polygon", "coordinates": "here"}), full(0, 0.0, 0, 0)),
 ]
 
