@@ -6,31 +6,64 @@ on:
   workflow_dispatch:
     inputs:
       runner:
-        description: Where the measurement runs
+        description: Runner
         type: choice
         options: [github, kadaster]
         default: github
       testset:
-        description: Test set under testsets/
+        description: Test set
+        type: choice
+        options: [dsfl, imgeo]
         default: dsfl
-      models:
-        description: Comma-separated models
-        required: true
-      agents:
-        description: Comma-separated agents (model, inspect, claude-code)
-        default: model
-      variants:
-        description: Comma-separated variants
-        default: "0"
-      ids:
-        description: Comma-separated sample ids; empty runs all samples
+      agent_model:
+        description: "Agent: model (the model alone)"
+        type: boolean
+        default: true
+      agent_inspect:
+        description: "Agent: inspect (Inspect's react agent with web search and fetch)"
+        type: boolean
+        default: true
+      agent_claude_code:
+        description: "Agent: claude-code (Claude Code, Anthropic models only)"
+        type: boolean
+        default: true
+      haiku:
+        description: "Model: anthropic/claude-haiku-5-5"
+        type: boolean
+        default: true
+      sonnet:
+        description: "Model: anthropic/claude-sonnet-5-5"
+        type: boolean
+        default: true
+      opus:
+        description: "Model: anthropic/claude-opus-5-5"
+        type: boolean
+        default: true
+      mistral_small:
+        description: "Model: mistral/mistral-small-2603"
+        type: boolean
+        default: true
+      mistral_medium:
+        description: "Model: mistral/mistral-medium-2604"
+        type: boolean
+        default: true
+      mistral_large:
+        description: "Model: mistral/mistral-large-4"
+        type: boolean
+        default: true
+      kadaster_qwen:
+        description: "Model: openai-api/kadaster/qwen3.5-27b"
+        type: boolean
+        default: true
+      other_models:
+        description: Other models, comma-separated
         default: ""
       epochs:
-        description: Runs per sample, variant and model
+        description: Epochs
         default: "3"
-      cost_limit:
-        description: Cost limit per run in dollars
-        default: "2"
+      options:
+        description: Other airco-matrix options, such as --ids dsfl-01 --cost-limit 1
+        default: ""
       publish:
         description: Open a pull request with the report
         type: boolean
@@ -44,6 +77,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       name: ${{ steps.name.outputs.name }}
+      agents: ${{ steps.pick.outputs.agents }}
+      models: ${{ steps.pick.outputs.models }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -52,26 +87,44 @@ jobs:
       - run: uv sync --locked --all-extras
       - id: name
         run: echo "name=$(TZ=Europe/Amsterdam date +%Y-%m-%dT%H-%M-%S)" >> "$GITHUB_OUTPUT"
+      # The form has a checkbox per agent and model; this joins the checked ones into the lists the matrix takes.
+      - id: pick
+        env:
+          AGENTS: |
+            ${{ inputs.agent_model && 'model' || '' }}
+            ${{ inputs.agent_inspect && 'inspect' || '' }}
+            ${{ inputs.agent_claude_code && 'claude-code' || '' }}
+          MODELS: |
+            ${{ inputs.haiku && 'anthropic/claude-haiku-5-5' || '' }}
+            ${{ inputs.sonnet && 'anthropic/claude-sonnet-5-5' || '' }}
+            ${{ inputs.opus && 'anthropic/claude-opus-5-5' || '' }}
+            ${{ inputs.mistral_small && 'mistral/mistral-small-2603' || '' }}
+            ${{ inputs.mistral_medium && 'mistral/mistral-medium-2604' || '' }}
+            ${{ inputs.mistral_large && 'mistral/mistral-large-4' || '' }}
+            ${{ inputs.kadaster_qwen && 'openai-api/kadaster/qwen3.5-27b' || '' }}
+            ${{ inputs.other_models }}
+        run: |
+          join() { tr ',' '\n' | sed 's/^ *//; s/ *$//; /^$/d' | paste -sd, -; }
+          echo "agents=$(printf '%s' "$AGENTS" | join)" >> "$GITHUB_OUTPUT"
+          echo "models=$(printf '%s' "$MODELS" | join)" >> "$GITHUB_OUTPUT"
       # No secrets here. An argument the matrix rejects fails the run before anything is approved.
       - name: Plan the matrix
         env:
           NAME: ${{ steps.name.outputs.name }}
           RUNNER: ${{ inputs.runner }}
           TESTSET: ${{ inputs.testset }}
-          MODELS: ${{ inputs.models }}
-          AGENTS: ${{ inputs.agents }}
-          VARIANTS: ${{ inputs.variants }}
-          IDS: ${{ inputs.ids }}
+          MODELS: ${{ steps.pick.outputs.models }}
+          AGENTS: ${{ steps.pick.outputs.agents }}
           EPOCHS: ${{ inputs.epochs }}
-          COST_LIMIT: ${{ inputs.cost_limit }}
+          OPTIONS: ${{ inputs.options }}
           PUBLISH: ${{ inputs.publish }}
           # Kadaster models get their base URL on the kadaster runner only; elsewhere the matrix skips them.
           # A repository variable, as plan has no environment, so that the plan skips the same models as measure.
           KADASTER_BASE_URL: ${{ inputs.runner == 'kadaster' && vars.KADASTER_BASE_URL || '' }}
         run: |
           set -o pipefail  # without it, tee hides a matrix that refuses to run
-          args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --variants "$VARIANTS" --epochs "$EPOCHS" --cost-limit "$COST_LIMIT")
-          if [ -n "$IDS" ]; then args+=(--ids "$IDS"); fi
+          read -ra options <<< "$OPTIONS"
+          args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --epochs "$EPOCHS" "${options[@]}")
           uv run airco-matrix "${args[@]}" --name "$NAME" --plan | tee plan.txt
           {
             echo "## Measurement $NAME"
@@ -82,10 +135,8 @@ jobs:
             echo "| testset | \`$TESTSET\` |"
             echo "| models | \`$MODELS\` |"
             echo "| agents | \`$AGENTS\` |"
-            echo "| variants | \`$VARIANTS\` |"
-            echo "| ids | \`${IDS:-all}\` |"
             echo "| epochs | \`$EPOCHS\` |"
-            echo "| cost_limit | \`$COST_LIMIT\` |"
+            echo "| options | \`${OPTIONS:-none}\` |"
             echo "| publish | \`$PUBLISH\` |"
             echo
             echo '```text'
@@ -113,12 +164,10 @@ jobs:
       - id: matrix
         env:
           TESTSET: ${{ inputs.testset }}
-          MODELS: ${{ inputs.models }}
-          AGENTS: ${{ inputs.agents }}
-          VARIANTS: ${{ inputs.variants }}
-          IDS: ${{ inputs.ids }}
+          MODELS: ${{ needs.plan.outputs.models }}
+          AGENTS: ${{ needs.plan.outputs.agents }}
           EPOCHS: ${{ inputs.epochs }}
-          COST_LIMIT: ${{ inputs.cost_limit }}
+          OPTIONS: ${{ inputs.options }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -126,8 +175,8 @@ jobs:
           KADASTER_API_KEY: ${{ secrets.KADASTER_API_KEY }}
           KADASTER_BASE_URL: ${{ inputs.runner == 'kadaster' && vars.KADASTER_BASE_URL || '' }}
         run: |
-          args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --variants "$VARIANTS" --epochs "$EPOCHS" --cost-limit "$COST_LIMIT")
-          if [ -n "$IDS" ]; then args+=(--ids "$IDS"); fi
+          read -ra options <<< "$OPTIONS"
+          args=(--testset "$TESTSET" --models "$MODELS" --agents "$AGENTS" --epochs "$EPOCHS" "${options[@]}")
           uv run airco-matrix "${args[@]}" --name "$NAME" --yes
       # Artifacts and job logs of a public repository are visible to any GitHub user, so nothing leaves
       # the runner before this check passes. A matrix that partly failed still uploads, and the job stays red.
@@ -175,12 +224,10 @@ jobs:
         env:
           RUNNER: ${{ inputs.runner }}
           TESTSET: ${{ inputs.testset }}
-          MODELS: ${{ inputs.models }}
-          AGENTS: ${{ inputs.agents }}
-          VARIANTS: ${{ inputs.variants }}
-          IDS: ${{ inputs.ids }}
+          MODELS: ${{ needs.plan.outputs.models }}
+          AGENTS: ${{ needs.plan.outputs.agents }}
           EPOCHS: ${{ inputs.epochs }}
-          COST_LIMIT: ${{ inputs.cost_limit }}
+          OPTIONS: ${{ inputs.options }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           git config user.name "github-actions[bot]"
@@ -195,8 +242,6 @@ jobs:
           - testset: $TESTSET
           - models: $MODELS
           - agents: $AGENTS
-          - variants: $VARIANTS
-          - ids: ${IDS:-all}
           - epochs: $EPOCHS
-          - cost limit per run: $COST_LIMIT dollars"
+          - options: ${OPTIONS:-none}"
           gh pr create --base main --title "chore(reports): add the $NAME measurement" --body "$body"

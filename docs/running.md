@@ -137,10 +137,10 @@ The site is built from git and is not committed; `.gitignore` lists `site/`. The
 Dispatch it from the Actions tab (Run a measurement, Run workflow) or from the command line:
 
 ```bash
-gh workflow run measure.yml -f models=anthropic/claude-haiku-5-5 -f epochs=1
+gh workflow run measure.yml -f sonnet=false -f opus=false -f mistral_medium=false -f mistral_large=false -f kadaster_qwen=false -f agent_claude_code=false -f epochs=1
 ```
 
-The inputs map to the options of `airco-matrix`: `testset` (default `dsfl`), `models`, `agents`, `variants`, `ids` (empty runs all samples), `epochs` and `cost_limit`. `runner` chooses `github` or `kadaster`, and `publish` is off by default.
+The form has a checkbox per agent and per model the working group uses, all checked, so a plain dispatch runs the full matrix; the plan in the run summary shows its size and maximum cost before you approve. Uncheck what you do not need, and add models outside the list in `other_models`. `epochs` maps to `--epochs`; put any other `airco-matrix` option in `options`, such as `--ids dsfl-01 --cost-limit 1` for a quick check. `runner` chooses `github` or `kadaster`, and `publish` is off by default.
 
 **One-time settings.** Under Settings, Environments, create `measurement`. Add required reviewers, limit deployment branches to `main`, and add the secrets `ANTHROPIC_API_KEY`, `MISTRAL_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` and `KADASTER_API_KEY`. Leave out the ones you do not use. Add `KADASTER_BASE_URL` as a repository variable under Settings, Secrets and variables, Actions, not in the environment, because the job `plan` has no environment and must skip the same models as `measure`. For `publish`, switch on "Allow GitHub Actions to create and approve pull requests" under Settings, Actions, General.
 
