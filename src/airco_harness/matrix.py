@@ -87,6 +87,8 @@ def main() -> None:
         sys.exit(2)
     variants = [v.strip() for v in args.variants.split(",")]
     agents = [a.strip() for a in args.agents.split(",") if a.strip()]
+    if not agents:
+        build_parser().error("no agents: pass --agents")
     unknown = [a for a in agents if a not in get_args(AgentName)]
     if unknown:
         build_parser().error(f"unknown agents {', '.join(unknown)}; choose from {', '.join(get_args(AgentName))}")

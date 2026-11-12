@@ -211,6 +211,14 @@ def test_matrix_stops_when_every_model_is_skipped(monkeypatch, capsys):
     assert "no models left to run" in capsys.readouterr().err
 
 
+def test_matrix_stops_without_agents(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["airco-matrix", "--models", "mockllm/model", "--agents", "", "--ids", SAMPLE, "--plan"])
+    with pytest.raises(SystemExit) as stop:
+        matrix.main()
+    assert stop.value.code == 2
+    assert "no agents" in capsys.readouterr().err
+
+
 def test_bundle_index_keeps_no_absolute_log_dir(tmp_path):
     (tmp_path / "index.html").write_text('<script>{"log_dir": "logs", "abs_log_dir": "/Users/someone/airco-harness/logs/x"}</script>', encoding="utf-8")
     matrix.strip_absolute_log_dir(tmp_path, Path("logs/x"))
