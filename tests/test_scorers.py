@@ -131,6 +131,22 @@ def test_the_map_is_the_last_show_on_map_call_that_succeeded():
     assert map_shown(call(0, "mcp__map__show_on_map", json.dumps(second))) == json.dumps(second)
 
 
+def test_series_is_the_last_successful_plot_call_including_bridged_calls():
+    from airco_harness.scorers import series_shown
+
+    def call(i, name, data, error=None):
+        return [
+            ChatMessageAssistant(content="", tool_calls=[ToolCall(id=f"plot-{i}", function=name, arguments={"data": data})]),
+            ChatMessageTool(content="", tool_call_id=f"plot-{i}", function=name, error=ToolCallError("unknown", error) if error else None),
+        ]
+
+    first, second = {"points": []}, {"points": [{"date": "2023-01-01", "value": None}]}
+    assert series_shown([]) == ""
+    assert series_shown([*call(0, "plot_series", first), *call(1, "mcp__plot__plot_series", second)]) == json.dumps(second)
+    assert series_shown([*call(0, "plot_series", first), *call(1, "plot_series", second, "invalid")]) == json.dumps(first)
+    assert series_shown(call(0, "mcp__plot__plot_series", json.dumps(second))) == json.dumps(second)
+
+
 def test_a_url_in_a_shell_command_or_code_that_ran_is_a_retrieval():
     """Claude Code often fetches with curl or a script in Bash; the URLs in the command count, as the command ran."""
     bag = "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/items?f=json&limit=5"

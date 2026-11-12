@@ -118,3 +118,26 @@ def test_agent_inspect_gets_show_on_map_only_in_a_test_set_with_a_map_question(t
     assert sample.messages[3].role == "tool" and sample.messages[3].text == f"{len(must)} places shown on the map."
     assert sample.scores["quality"].value == {"correct": 1, "complete": 1.0, "invented": 0, "parseable": 1}
     assert dataset.asks_for_map("dsfl") and not dataset.asks_for_map("imgeo")
+
+
+def test_plot_series_validates_and_agent_scores_the_call_not_the_answer(tmp_path):
+    from airco_harness import dataset
+
+    expected = json.loads((dataset.TESTSETS_DIR / "dsfl/samples/dsfl-08/expected.json").read_text(encoding="utf-8"))
+    data = {"points": [{"date": date, "value": value} for date, value in expected["points"].items()],
+            "unit": "m", "reference_plane": "NAP", "connect_gaps": False}
+    plot = tools.plot_series()
+    assert asyncio.run(plot(data=data)) == "11 daily entries shown in the plot."
+    with pytest.raises(ToolError):
+        asyncio.run(plot(data={**data, "points": [{"date": "2023-02-30", "value": 1}]}))
+    steps = [
+        ModelOutput.for_tool_call("mockllm/model", "plot_series", {"data": data}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de grafiek."}),
+    ]
+    [log] = eval(
+        airco(testset="dsfl", agent="inspect", ids="dsfl-08"),
+        model=get_model("mockllm/model", custom_outputs=steps), log_dir=str(tmp_path), display="none",
+    )
+    [sample] = log.samples
+    assert sample.scores["quality"].value == {"correct": 1, "complete": 1.0, "invented": 0, "parseable": 1}
+    assert dataset.asks_for_series("dsfl") and not dataset.asks_for_series("imgeo")

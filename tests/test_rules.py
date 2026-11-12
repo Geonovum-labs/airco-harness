@@ -53,6 +53,13 @@ NO_HOME_POINTS = [shapely.geometry.shape(f["geometry"]).representative_point() f
 WELLS = vendored("bro-gmw-amersfoort-1km.geojson")
 MUST_WELLS = Case.load(TARGETS["dsfl-07"]).expected["must"]
 WELL_PLACES = {f["id"]: f["geometry"]["coordinates"] for f in WELLS}
+SERIES_EXPECTED = Case.load(TARGETS["dsfl-08"]).expected
+SERIES = {
+    "points": [{"date": date, "value": value} for date, value in SERIES_EXPECTED["points"].items()],
+    "unit": "m",
+    "reference_plane": "NAP",
+    "connect_gaps": False,
+}
 STADHUISPLEIN = (5.38416472, 52.15671963)
 METERS_PER_DEGREE_LON = 111_320 * 0.6097  # cos(52.157 degrees)
 RIVER = (5.3792, 52.164)  # north of the center, on no pand: a place from another source
@@ -138,6 +145,7 @@ CASES = [
     ("dsfl-07", shown([point(WELL_PLACES[i][0] + 10 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full(0, 0.0, len(MUST_WELLS))),
     ("dsfl-07", shown([point(*(round(c, 5) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
     ("dsfl-07", shown([]), full(0, 0.0, 0)),
+    ("dsfl-08", json.dumps(SERIES), full()),
 ]
 
 
@@ -155,6 +163,32 @@ def test_rules_are_repeatable():
     case = Case.load(TARGETS[sample_id])
     first, second = rules.assess(answer, case), rules.assess(answer, case)
     assert (first.score_value(), first.explanation, first.details) == (second.score_value(), second.explanation, second.details)
+
+
+def test_series_scores_dates_values_gaps_and_metadata():
+    def assess(**changes):
+        return rules.assess(json.dumps({**SERIES, **changes}), Case.load(TARGETS["dsfl-08"]))
+
+    points = SERIES["points"]
+    assert assess(points=points[1:]).score_value() == full(0, round(10 / 11, 4), 0)
+    assert assess(points=[*points, {"date": "2023-01-21", "value": 3.0}]).score_value() == full(0, 1, 1)
+    assert assess(points=[*points, points[-1]]).score_value() == full(0, 1, 1)
+    assert assess(points=[{**p, "value": 2.9} if p["date"] == "2023-01-15" else p for p in points]).score_value() == full(0, round(10 / 11, 4), 1)
+    assert assess(points=[{**p, "value": 50} if p["date"] == "2023-01-10" else p for p in points]).score_value() == full(0, round(10 / 11, 4), 0)
+    assert assess(points=list(reversed(points))).score_value() == full(0, 1, 0)
+    assert assess(unit="cm").score_value() == full(0, 1, 0)
+    assert assess(reference_plane="maaiveld").score_value() == full(0, 1, 0)
+    assert assess(connect_gaps=True).score_value() == full(0, 1, 0)
+    assert assess(points=[{"date": "2023-02-30", "value": 2}]).score_value() == full(0, 0, 0, 0)
+    assert assess(points=[{"date": "2023-01-10", "value": float("nan")}]).score_value() == full(0, 0, 0, 0)
+    assert rules.assess("", Case.load(TARGETS["dsfl-08"])).score_value() == full(0, 0, 0, 0)
+
+
+def test_point_map_can_score_a_zero_result_selection():
+    original = Case.load(TARGETS["dsfl-07"])
+    case = Case(original.sample_id, {**original.expected, "must": [], "optional": []}, original.directory)
+    assert rules.assess(shown([]), case).score_value() == full()
+    assert rules.assess(shown([point(*WELL_PLACES[MUST_WELLS[0]])]), case).score_value() == full(0, 1, 1)
 
 
 def test_validators_never_import_inspect():

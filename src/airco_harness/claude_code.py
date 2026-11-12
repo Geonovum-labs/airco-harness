@@ -17,7 +17,7 @@ In a test set with a map question, show_on_map runs on the host and reaches
 Claude Code through the bridge as the MCP tool mcp__map__show_on_map. A
 variant's HTTP MCP server is configured in Claude Code itself, which reaches it
 from the sandbox and passes the server's instructions to the model as it does
-for a user.
+for a user. For a series question, plot_series is bridged as mcp__plot__plot_series.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from inspect_ai.tool import MCPServerConfigHTTP
 from inspect_ai.util import sandbox
 from inspect_swe import claude_code
 
-from .tools import show_on_map
+from .tools import plot_series, show_on_map
 
 # Pinned so that a run names the version it used; raise it on purpose, with a note in the log bundle.
 CLAUDE_CODE_VERSION = "2.1.304"
@@ -51,10 +51,14 @@ def claude_code_setup() -> Solver:
     return solve
 
 
-def claude_code_agent(map_tool: bool = False, mcp_url: str | None = None) -> Agent:
-    bridged = [BridgedToolsSpec(name="map", tools=[show_on_map()])] if map_tool else None
+def claude_code_agent(map_tool: bool = False, series_tool: bool = False, mcp_url: str | None = None) -> Agent:
+    bridged = []
+    if map_tool:
+        bridged.append(BridgedToolsSpec(name="map", tools=[show_on_map()]))
+    if series_tool:
+        bridged.append(BridgedToolsSpec(name="plot", tools=[plot_series()]))
     mcp = [MCPServerConfigHTTP(type="http", name=server_name(mcp_url), url=mcp_url)] if mcp_url else None
-    return claude_code(version=CLAUDE_CODE_VERSION, permission_mode="bypassPermissions", cwd=WORKDIR, bridged_tools=bridged, mcp_servers=mcp)
+    return claude_code(version=CLAUDE_CODE_VERSION, permission_mode="bypassPermissions", cwd=WORKDIR, bridged_tools=bridged or None, mcp_servers=mcp)
 
 
 def server_name(url: str) -> str:

@@ -4,7 +4,7 @@ Each rule fills four of the five score keys (`source` comes from the tool log, s
 airco_harness.scorers). A rule never raises on a malformed answer: it reports
 parseable 0 and correct 0 instead. Rules are selected by the "rule" key in a
 case's expected.json: `fields` for a JSON answer, `map` for what the agent
-showed on the map.
+showed on the map, and `series` for data passed to a plot.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from pathlib import Path
 
 from jsonschema import validators
 
-from . import answers, geo
+from . import answers, geo, series
 from .refmodel import ReferenceModel, normalize
 
 TESTSETS_DIR = Path(__file__).resolve().parent.parent / "testsets"
@@ -161,7 +161,48 @@ def rule_map(answer: str, case: Case) -> Assessment:
                       f"{len(must) - len(missing)} of {len(must)} required features shown; {len(unmatched)} places match no allowed feature", details)  # fmt: skip
 
 
-RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map}
+def rule_series(answer: str, case: Case) -> Assessment:
+    """Score the daily values and gaps passed to the plot, not its rendered image."""
+    if not answer.strip():
+        return unparseable("no plot shown")
+    try:
+        data = json.loads(answer)
+    except ValueError:
+        return unparseable("no JSON plot data")
+    error = series.validate(data)
+    if error:
+        return unparseable(error)
+    wanted = case.expected["points"]
+    tolerance = case.expected["tolerance"]
+    by_date = {}
+    extras = []
+    for point in data["points"]:
+        date, value = point["date"], point["value"]
+        if date in by_date or date not in wanted:
+            extras.append(date)
+        else:
+            by_date[date] = value
+    missing, wrong, filled_gaps = [], [], []
+    for date, value in wanted.items():
+        if date not in by_date:
+            missing.append(date)
+        elif value is None:
+            if by_date[date] is not None:
+                filled_gaps.append(date)
+        elif not _matches(by_date[date], {"value": value, "tolerance": tolerance}):
+            wrong.append(date)
+    dates = [point["date"] for point in data["points"]]
+    ordered = dates == sorted(dates)
+    metadata_wrong = [key for key in ("unit", "reference_plane", "connect_gaps") if not _same(data[key], case.expected[key])]
+    matched = len(wanted) - len(missing) - len(wrong) - len(filled_gaps)
+    invented = len(extras) + len(filled_gaps)
+    details = {"missing": missing, "wrong": wrong, "filled_gaps": filled_gaps, "extra": extras, "metadata_wrong": metadata_wrong, "ordered": ordered}
+    complete = matched / len(wanted) if wanted else 1.0
+    correct = not missing and not wrong and not invented and not metadata_wrong and ordered
+    return Assessment(correct, complete, invented, True, f"{matched} of {len(wanted)} days match; {invented} invented; metadata wrong: {metadata_wrong}; ordered: {ordered}", details)
+
+
+RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map, "series": rule_series}
 
 
 def assess(answer: str, case: Case) -> Assessment:

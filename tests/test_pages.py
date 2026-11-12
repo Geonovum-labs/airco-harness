@@ -139,6 +139,23 @@ def test_a_map_is_drawn_against_the_question_its_sample_id_meant_at_the_commit_o
     assert any(r["map"]["shown"] for r in drawn)
 
 
+def test_point_map_places_use_the_same_assignment_and_allowed_selection_as_scoring():
+    from inspect_ai.model import ChatMessageAssistant, ChatMessageTool
+    from inspect_ai.tool import ToolCall
+
+    expected = json.loads((report.rules.TESTSETS_DIR / "dsfl/samples/dsfl-07/expected.json").read_text(encoding="utf-8"))
+    wells = json.loads(sources.path(expected["reference"]).read_text(encoding="utf-8"))["features"]
+    chosen = {"GMW000000009391", "GMW000000046914", "GMW000000009371"}
+    collection = {"type": "FeatureCollection", "features": [f for f in wells if f["id"] in chosen]}
+    messages = [
+        ChatMessageAssistant(content="", tool_calls=[ToolCall(id="map", function="show_on_map", arguments={"geojson": collection})]),
+        ChatMessageTool(content="ok", tool_call_id="map", function="show_on_map"),
+    ]
+    config = {**expected, "commit": "", "allowed_optional": expected["optional"]}
+    places = sitedata.places(messages, config)
+    assert {p["pand"] for p in places} == {"GMW000000009391", "GMW000000046914", None}
+
+
 def test_a_question_loses_only_the_role_of_a_single_user_message():
     from airco_harness.sitedata import question
 

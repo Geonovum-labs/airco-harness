@@ -140,7 +140,27 @@ def test_dsfl_07_tolerance_keeps_required_wells_apart_from_the_rest():
     assert 1 < tolerance < gap / 2  # above five-decimal rounding, far below the distance to a well that is not required
 
 
-@pytest.mark.parametrize("sample_id", [f"dsfl-0{n}" for n in range(1, 8)])
+def test_dsfl_08_daily_means_and_gaps_are_from_the_same_tube():
+    rows = csv.DictReader(sources.path("dsfl/bro-gld000000025798.csv").read_text(encoding="utf-8").splitlines())
+    points = expected("dsfl-08")["points"]
+    levels = {date: [] for date in points}
+    for row in rows:
+        date = datetime.datetime.fromtimestamp(int(row["Tijdstip"]) / 1000, datetime.timezone.utc).astimezone(AMSTERDAM).date().isoformat()
+        if date in levels and row["Voorlopige Waarde [m]"]:
+            levels[date].append(float(row["Voorlopige Waarde [m]"]))
+    assert {date: len(values) for date, values in levels.items()} == dict(zip(points, [24, 24, 24, 21, 0, 0, 0, 0, 11, 24, 24]))
+    for date, values in levels.items():
+        if values:
+            assert points[date] == pytest.approx(statistics.mean(values))
+        else:
+            assert points[date] is None
+    data = expected("dsfl-08")
+    assert (data["unit"], data["reference_plane"], data["connect_gaps"], data["tolerance"]) == ("m", "NAP", False, 0.005)
+    relations = json.loads(sources.path("dsfl/bro-gmw000000009441-relations.json").read_text(encoding="utf-8"))
+    assert [(t["tubeNumber"], [g["broId"] for g in t["gldReferences"]]) for t in relations["monitoringTubeReferences"]] == [(1, ["GLD000000025798"])]
+
+
+@pytest.mark.parametrize("sample_id", [f"dsfl-0{n}" for n in range(1, 9)])
 def test_every_dsfl_sample_names_its_origin_and_its_source(sample_id):
     data = expected(sample_id)
     assert data["note"].startswith("Deck wording: " if sample_id < "dsfl-06" else "Origin: ") and "sources/dsfl/" in data["source"]

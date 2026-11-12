@@ -1,0 +1,13 @@
+{
+  "task": "lookup",
+  "standard": "dsfl",
+  "tags": ["bro"],
+  "input": "Maak een grafiek van de dagelijkse gemiddelde grondwaterstand in meetbuis 1 van peilbuis GMW000000009441 in Amersfoort van 10 tot en met 20 januari 2023. Gebruik per kalenderdag in Nederlandse tijd het gemiddelde van de beschikbare voorlopige metingen, in meter ten opzichte van NAP. Laat ontbrekende dagen als gaten in de lijn staan, zonder interpolatie. Gebruik plot_series met per dag een datum en waarde (null als er geen meting is), unit \"m\", reference_plane \"NAP\" en connect_gaps false.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The agent must select the GLD series for the requested tube, average provisional readings by Dutch local day, and preserve days without measurements as gaps instead of interpolating them.",
+    "expected_variant": 1,
+    "location": "BRO GLD000000025798, tube 1 of GMW000000009441",
+    "absence": false
+  }
+}

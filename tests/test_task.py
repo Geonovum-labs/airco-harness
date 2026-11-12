@@ -63,14 +63,14 @@ def test_unknown_variant_agent_sample_or_test_set():
     assert [s.id for s in airco(ids=" imgeo-G04-03 ,").dataset] == ["imgeo-G04-03"]
     with pytest.raises(ValueError, match="unknown sample ids: imgeo-G99-01"):
         airco(ids="imgeo-G04-03,imgeo-G99-01")
-    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-0{n}" for n in range(1, 8)]
+    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-0{n}" for n in range(1, 9)]
     with pytest.raises(ValueError, match="unknown test set 'nl-sbb'; choose from dsfl, imgeo"):
         airco(testset="nl-sbb")
 
 
 def test_tags_select_the_samples_with_one_of_them():
-    assert [s.id for s in airco(testset="dsfl", tags="bro").dataset] == ["dsfl-06", "dsfl-07"]
-    assert [s.id for s in airco(testset="dsfl", tags="bro,bag").dataset] == [f"dsfl-0{n}" for n in range(1, 8)]
+    assert [s.id for s in airco(testset="dsfl", tags="bro").dataset] == ["dsfl-06", "dsfl-07", "dsfl-08"]
+    assert [s.id for s in airco(testset="dsfl", tags="bro,bag").dataset] == [f"dsfl-0{n}" for n in range(1, 9)]
     assert [s.id for s in airco(testset="dsfl", tags="bro", ids="dsfl-01,dsfl-06").dataset] == ["dsfl-06"]
     assert airco(testset="dsfl", tags="bro").dataset[0].metadata["tags"] == ["bro"]
 
@@ -79,7 +79,7 @@ GROUNDWATER = "mcp-groundwater-monitoring"
 
 
 def test_a_variant_runs_the_samples_it_is_made_for_unless_ids_or_tags_choose_others():
-    assert [s.id for s in airco(testset="dsfl", variant=GROUNDWATER, agent="inspect").dataset] == ["dsfl-06", "dsfl-07"]
+    assert [s.id for s in airco(testset="dsfl", variant=GROUNDWATER, agent="inspect").dataset] == ["dsfl-06", "dsfl-07", "dsfl-08"]
     assert [s.id for s in airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-01").dataset] == ["dsfl-01"]
     assert len(airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", tags="bag").dataset) == 5
     with pytest.raises(ValueError, match="no samples of test set imgeo for variant mcp-groundwater-monitoring"):
@@ -106,7 +106,7 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
     outputs = [
         ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gld": "GLD000000025798", "date": "2026-09-21"}),
-        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps({"level_cm_nap": 213})}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps({"value": 2.13, "unit": "m", "reference_plane": "NAP"})}),
     ]
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
     [log] = eval(task, model=get_model("mockllm/model", custom_outputs=outputs), log_dir=str(tmp_path), display="none")
@@ -122,6 +122,35 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
 
 def test_a_server_without_instructions_leaves_the_prompt_of_variant_0():
     assert tasks.server_instructions("bag", None) is None and tasks.server_instructions("bag", "") is None
+
+
+def test_plot_tool_is_available_alongside_the_mcp_server(tmp_path, monkeypatch):
+    stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
+    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    expected = json.loads((tasks.dataset.TESTSETS_DIR / "dsfl/samples/dsfl-08/expected.json").read_text(encoding="utf-8"))
+    data = {"points": [{"date": date, "value": value} for date, value in expected["points"].items()],
+            "unit": "m", "reference_plane": "NAP", "connect_gaps": False}
+    outputs = [
+        ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gld": "GLD000000025798", "date": "2026-09-21"}),
+        ModelOutput.for_tool_call("mockllm/model", "plot_series", {"data": data}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de grafiek."}),
+    ]
+    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-08")
+    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=outputs), log_dir=str(tmp_path), display="none")
+    [sample] = log.samples
+    assert [m.function for m in sample.messages if m.role == "tool"] == ["groundwater-monitoring_series_get", "plot_series"]
+    assert sample.scores["quality"].value["correct"] == 1
+
+
+def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, monkeypatch):
+    stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
+    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    call = ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gld": "GLD000000025798", "date": "2026-09-21"})
+    submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
+    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06,dsfl-07")
+    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[call, call, submit, submit]), log_dir=str(tmp_path), display="none", max_samples=2)
+    assert log.status == "success"
+    assert [[m.text for m in s.messages if m.role == "tool"] for s in log.samples] == [["GLD000000025798 2026-09-21: 2.13 m NAP"]] * 2
 
 
 def test_the_groundwater_variant_runs_a_pinned_image():
