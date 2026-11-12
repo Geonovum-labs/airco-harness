@@ -3,8 +3,10 @@
 airco-pages writes it as data.json, and the pages filter, aggregate and compare
 it in the browser (assets/stats.js). It is read from the logs rather than from
 runs.csv, so a measurement made before a column existed still takes part, with
-what its logs record. Pand geometry for map questions goes into a file per
-reference extract, which a page fetches only when it draws a map.
+what its logs record. A map question is drawn against its expected outcome and
+reference extract at the commit its log records, since a sample id can mean
+another question at another commit. Pand geometry goes into a file per reference
+extract and commit, which a page fetches only when it draws a map.
 """
 
 from __future__ import annotations
@@ -116,7 +118,7 @@ def places(messages: list, expected: dict) -> list[dict]:
     except ValueError:
         return []
     features = collection.get("features") if isinstance(collection, dict) and collection.get("type") == "FeatureCollection" else [collection]
-    reference = geo.Reference.load(expected["reference"])
+    reference = geo.Reference.load(expected["reference"], expected["commit"])
     out = []
     for feature in features or []:
         if not isinstance(feature, dict):
@@ -134,8 +136,9 @@ def places(messages: list, expected: dict) -> list[dict]:
 def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str, str, int], dict[str, list[dict]]]:
     """Per run (log file, sample, epoch), what the conversation shows, read with the harness's current rules:
     "retrieved", the URLs that worked with their class for source; "errors", the ones that failed with their HTTP
-    status when known and the line that says why; and for a map question "places", what the agent put on the map.
-    A log scored under older rules therefore shows what they would find now; its scores are the ones in the log."""
+    status when known and the line that says why; and for a map question "places", what the agent put on the map,
+    matched to the reference extract at the commit of the log. A log scored under older retrieval rules therefore
+    shows what they would find now; its scores are the ones in the log."""
     out: dict[tuple[str, str, int], dict[str, list[dict]]] = {}
     for path in sorted(log_dir.glob("*.eval")):
         for sample in read_eval_log(str(path)).samples or []:
@@ -159,18 +162,18 @@ def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str
     return out
 
 
-def reference_file(reference: str) -> str:
-    """Where the site keeps the panden of a reference extract, relative to the site root."""
-    return f"data/panden/{reference.replace('/', '__')}"
+def reference_file(reference: str, commit: str) -> str:
+    """Where the site keeps the panden of a reference extract at a commit, relative to the site root."""
+    return f"data/panden/{commit or 'working-tree'}/{reference.replace('/', '__')}"
 
 
-def panden(reference: str) -> dict:
-    """The panden of an extract with their identificatie only, coordinates to 6 decimals (about 10 cm)."""
+def panden(reference: str, commit: str) -> dict:
+    """The panden of an extract at a commit with their identificatie only, coordinates to 6 decimals (about 10 cm)."""
 
     def rounded(coordinates: list) -> list:
         return [rounded(c) for c in coordinates] if isinstance(coordinates[0], list) else [round(c, 6) for c in coordinates]
 
-    features = json.loads(sources.path(reference).read_text(encoding="utf-8"))["features"]
+    features = json.loads(sources.read(sources.path(reference), commit))["features"]
     return {
         "type": "FeatureCollection",
         "features": [
@@ -185,7 +188,7 @@ def panden(reference: str) -> dict:
 
 
 def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
-    """One measurement: its facts, its runs, and the map questions among its samples."""
+    """One measurement: its facts, its runs, and the map questions among its samples, keyed "<measurement>/<sample>"."""
     table = report.runs(str(log_dir))
     shown = report.maps(str(log_dir)) or {"samples": {}, "runs": []}
     on_map = {(r["model"], r["agent"], r["variant"], r["sample"], r["epoch"]): r for r in shown["runs"]}
@@ -215,12 +218,13 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
         "questions": questions(log_dir),
     }
     maps = {
-        sample: {
+        f"{name}/{sample}": {
             "must": e["must"],
-            "optional": len(panden(e["reference"])["features"]) - len(e["must"]),
+            "optional": len(panden(e["reference"], e["commit"])["features"]) - len(e["must"]),
             "note": e["note"],
-            "panden": reference_file(e["reference"]),
+            "panden": reference_file(e["reference"], e["commit"]),
             "reference": e["reference"],
+            "commit": e["commit"],
         }  # fmt: skip
         for sample, e in shown["samples"].items()
     }
@@ -228,7 +232,7 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
 
 
 def dataset(measurement_dirs: list[Path]) -> dict:
-    """All measurements, newest first, with their runs and the map questions of all samples."""
+    """All measurements, newest first, with their runs and the map questions of each."""
     out = {"measurements": [], "runs": [], "maps": {}}
     for d in measurement_dirs:
         facts, runs, maps = measurement(d.name, d / "logs" / "logs")
@@ -243,4 +247,4 @@ def write(data: dict, out: Path) -> None:
     for entry in data["maps"].values():
         target = out / entry["panden"]
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(panden(entry["reference"]), separators=(",", ":")), encoding="utf-8")
+        target.write_text(json.dumps(panden(entry["reference"], entry["commit"]), separators=(",", ":")), encoding="utf-8")

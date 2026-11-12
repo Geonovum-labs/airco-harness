@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
 import time
 import urllib.error
@@ -155,6 +156,19 @@ def lock() -> dict[str, dict[str, object]]:
 
 def path(source: str) -> Path:
     return SOURCES_DIR / source
+
+
+def read(file: Path, commit: str) -> str:
+    """The text of a file of this repository as it was at `commit`, or as it is now when `commit` is empty."""
+    if not commit:
+        return file.read_text(encoding="utf-8")
+    root = SOURCES_DIR.parent
+    name = file.relative_to(root).as_posix()
+    shown = subprocess.run(["git", "-C", str(root), "show", f"{commit}:{name}"], capture_output=True)
+    if shown.returncode:
+        error = shown.stderr.decode("utf-8", "replace").strip()
+        raise FileNotFoundError(f"{name} at commit {commit}: {error}; a shallow clone lacks older commits, fetch the full history")
+    return shown.stdout.decode("utf-8")
 
 
 def url(source: str) -> str:

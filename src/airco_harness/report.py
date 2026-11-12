@@ -29,7 +29,7 @@ from pathlib import Path
 import pandas as pd
 from inspect_ai.analysis import EvalInfo, EvalModel, EvalTask, SampleColumn, SampleSummary, messages_df, samples_df
 
-from validators import rules
+from validators import rules, sources
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
 TRAJECTORY = ["tool_calls", "tokens", "total_time_s", "working_time_s"]
@@ -171,17 +171,21 @@ def runs(log_dir: str) -> pd.DataFrame:
 
 
 def maps(log_dir: str) -> dict | None:
-    """What every completed run of a map question showed, with the expected outcome of its sample, for the maps of the site; None without map questions."""
+    """What every completed run of a map question showed, with the expected outcome of its sample at the commit its log
+    records, for the maps of the site; None without map questions. A sample id can mean another question at another commit."""
     df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RULE, EXPLANATION, DETAILS], quiet=True)
     if "rule" not in df:
         return None
     done = df[df["rule"].eq("map") & df["error"].fillna("").astype(str).eq("")] if "error" in df else df[df["rule"].eq("map")]
     if not len(done):
         return None
+    done = done.assign(at_commit=_column(done, "git_commit").fillna("").astype(str))
     samples, runs = {}, []
     for r in done.sort_values(["model", "id", "epoch"]).itertuples():
-        expected = rules.Case.load(r.target).expected
-        samples[r.id] = {key: expected[key] for key in ("reference", "must", "tolerance_m")} | {"note": expected.get("note", "")}
+        expected = json.loads(sources.read(rules.TESTSETS_DIR / r.target, r.at_commit))
+        entry = {key: expected[key] for key in ("reference", "must", "tolerance_m")} | {"note": expected.get("note", ""), "commit": r.at_commit}
+        if samples.setdefault(r.id, entry) != entry:
+            raise ValueError(f"{log_dir}: the runs of {r.id} are from two commits, {samples[r.id]['commit']!r} and {r.at_commit!r}")
         details = json.loads(r.details) if isinstance(r.details, str) else r.details
         runs.append(
             {

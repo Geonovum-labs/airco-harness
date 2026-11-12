@@ -35,5 +35,13 @@ def test_a_feature_that_two_pages_both_return_is_an_error(monkeypatch):
         sources._get_paged(sources.Aggregate("https://example.org/items?limit=5000", len))
 
 
+def test_a_file_reads_as_it_was_at_a_commit_and_a_commit_that_is_not_there_is_an_error():
+    expected = sources.SOURCES_DIR.parent / "testsets/dsfl/samples/dsfl-02/expected.json"
+    assert json.loads(sources.read(expected, "2bb2843"))["reference"] == "dsfl/bag-arnhem-sport-panden.geojson"
+    assert sources.read(expected, "") == expected.read_text(encoding="utf-8")
+    with pytest.raises(FileNotFoundError, match="at commit 0000000"):
+        sources.read(expected, "0000000")
+
+
 def test_a_comma_in_the_properties_of_an_ldproxy_url_stays_literal():
     assert "properties=a,b&" in sources._ldproxy("collections/pand/items", properties="a,b", limit=1) + "&"

@@ -6,7 +6,7 @@ from pathlib import Path
 from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
 
-from airco_harness import pages, report
+from airco_harness import pages, report, sitedata
 from airco_harness.tasks import airco
 from validators import sources
 
@@ -112,11 +112,31 @@ def test_a_map_question_carries_its_map_and_only_its_dashboard_loads_the_map_lib
     places = run["map"]["places"]
     assert {p["pand"] for p in places if p["pand"]} == set(must)
     assert [p["details"] for p in places if not p["pand"]] == [{"name": "Roeivereniging", "sport": '{"type": "roeien"}'}]
-    entry = data["maps"]["dsfl-04"]
+    entry = data["maps"][f"{name}/dsfl-04"]
     assert entry["must"] == must and entry["optional"] == len(panden) - len(must) and entry["note"].startswith("Deck wording: Where are the sports halls")
     assert len(strict(site / entry["panden"])["features"]) == len(panden)
     assert "proj4leaflet" in (site / name / "report.html").read_text(encoding="utf-8")
     assert "leaflet" not in (site / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")
+
+
+def test_a_map_is_drawn_against_the_question_its_sample_id_meant_at_the_commit_of_the_log(tmp_path):
+    """dsfl-02 asked for the sports buildings in Arnhem at the commits of these two measurements, and means another question now."""
+    names = ["2026-11-12T12-37-01", "2026-10-29T12-39-59"]
+    arnhem = "dsfl/bag-arnhem-sport-panden.geojson"
+
+    data = sitedata.dataset([pages.ROOT / "reports" / name for name in names])
+    sitedata.write(data, tmp_path)
+
+    entries = {key: data["maps"][key] for key in (f"{name}/dsfl-02" for name in names)}
+    assert {key: (e["reference"], len(e["must"])) for key, e in entries.items()} == {key: (arnhem, 61) for key in entries}
+    assert {key: e["commit"] for key, e in entries.items()} == {f"{names[0]}/dsfl-02": "cc195ec", f"{names[1]}/dsfl-02": "2bb2843"}
+    for e in entries.values():
+        assert len(strict(tmp_path / e["panden"])["features"]) == len(e["must"]) + e["optional"]
+    # The site matches each place to a pand again; it has to find the panden the scorer found when it scored the run.
+    drawn = [r for r in data["runs"] if r.get("map")]
+    assert drawn and all(f"{r['m']}/{r['sample']}" in data["maps"] for r in drawn)
+    assert all({p["pand"] for p in r["map"]["places"] if p["pand"]} == set(r["map"]["shown"]) for r in drawn)
+    assert any(r["map"]["shown"] for r in drawn)
 
 
 def test_a_question_loses_only_the_role_of_a_single_user_message():

@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        # The site reads the expected outcome of a map question at the commit in its log.
+        with:
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
       - run: uv sync --all-extras
       # Nothing is published when a log holds a key, an e-mail address or a home directory.

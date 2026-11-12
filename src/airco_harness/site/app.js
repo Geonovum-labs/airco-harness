@@ -422,7 +422,9 @@ function swatch(kind) {
 function pairDetail(name, [model, agent], runs) {
   const ordered = [...runs].sort((a, b) => a.sample.localeCompare(b.sample) || a.epoch - b.epoch);
   const viewer = r => `viewer/#/logs/${encodeURIComponent(r.log)}/samples/sample/${encodeURIComponent(r.sample)}/${r.epoch}/`;
-  const onMap = ordered.filter(r => data.maps[r.sample]);
+  // A sample id can mean another question in another measurement, so a map question is looked up per measurement.
+  const mapOf = r => data.maps[`${r.m}/${r.sample}`];
+  const onMap = ordered.filter(mapOf);
   const section = h("section", {class: "card", id: "detail"},
     h("header", {}, h("h2", {text: `${model} · ${agent}`}),
       h("p", {text: ["complete", "correct", "source"].map(k => `${k} ${fmt(aggregate(runs, k).mean)}`).join(" · ")})));
@@ -433,7 +435,7 @@ function pairDetail(name, [model, agent], runs) {
     const element = h("div", {id: "map", role: "img", "aria-label": "Map of the chosen run"});
     // How the rule reads the map, per sample: which panden count, and why, from the note in its expected.json.
     const scoring = [...new Set(onMap.map(r => r.sample))].map(s => {
-      const entry = data.maps[s];
+      const entry = data.maps[`${name}/${s}`];
       return h("div", {class: "scoring"},
         h("p", {}, h("b", {text: "Required: "}), `the ${entry.must.length} panden the map has to show; each one missing lowers complete. `,
           h("b", {text: "Optional: "}), `the other ${entry.optional} panden of the BAG extract; the map may show them or leave them out, without effect on the score. `,
@@ -445,7 +447,7 @@ function pairDetail(name, [model, agent], runs) {
       ...scoring, result, element, counts);
     const draw = createMap(element);
     showOnMap = async run => {
-      const sample = data.maps[run.sample];
+      const sample = mapOf(run);
       const c = draw(run, sample.must, await panden(root, sample.panden));
       result.textContent = `${run.sample} · epoch ${run.epoch}: ${run.explanation}`;
       counts.replaceChildren(...Object.keys(KINDS).map(k => h("li", {}, swatch(k), `${KINDS[k].label}: `, h("b", {text: String(c[k])}))),
@@ -455,7 +457,7 @@ function pairDetail(name, [model, agent], runs) {
     };
   }
   const rows = ordered.map(r => h("tr", {id: `run-${r.sample}-${r.epoch}`},
-    h("td", {class: "nowrap"}, data.maps[r.sample] ? h("button", {class: "btn", text: "Show", onclick: () => { showOnMap(r); document.getElementById("map").scrollIntoView({behavior: "smooth", block: "center"}); }}) : null,
+    h("td", {class: "nowrap"}, mapOf(r) ? h("button", {class: "btn", text: "Show", onclick: () => { showOnMap(r); document.getElementById("map").scrollIntoView({behavior: "smooth", block: "center"}); }}) : null,
       h("a", {class: "btn", href: viewer(r), text: "Log"})),
     h("td", {class: "nowrap", text: r.sample}), h("td", {class: "num", text: String(r.epoch)}),
     ...["correct", "complete", "invented", "source"].map(k => h("td", {class: "num", text: r.failed ? "error" : fmt(r[k], k === "invented" ? 0 : 2)})),

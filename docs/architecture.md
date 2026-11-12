@@ -61,7 +61,7 @@ A run that hits a limit gave no answer, so it counts as a wrong answer, with the
 
 ## What a log records
 
-Inspect writes one `.eval` file per task and model, with the conversation, every event and the scores. It also records the git commit of the checkout and whether the checkout had uncommitted changes, under `eval.revision`. Everything a run depends on is in git: the test set, the reference model, the agent code, the scorers and the sources. So the commit identifies all of it, and a run has to be made from a committed checkout. `airco-rescore` warns when the checkout is not at the commit of the run, or when the run or the checkout has uncommitted changes.
+Inspect writes one `.eval` file per task and model, with the conversation, every event and the scores. It also records the git commit of the checkout and whether the checkout had uncommitted changes, under `eval.revision`. Everything a run depends on is in git: the test set, the reference model, the agent code, the scorers and the sources. So the commit identifies all of it, and a run has to be made from a committed checkout. `airco-rescore` warns when the checkout is not at the commit of the run, or when the run or the checkout has uncommitted changes. The site reads the commit too: it draws the map of a run against the expected outcome and the BAG extract at the commit in the log, because a sample id can mean another question at another commit.
 
 Besides that, `eval.metadata` holds the versions of `airco-harness` and `inspect-ai`, the setup (1 for the agents of the harness, 2 for Claude Code), the agent, the name and version of the test set, and the variant. For Claude Code, what it did outside the conversation, such as writing a file in its sandbox, is not in the log.
 

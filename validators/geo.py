@@ -38,9 +38,9 @@ class Reference:
 
     @classmethod
     @cache
-    def load(cls, source: str) -> Reference:
-        """`source` is a GeoJSON file under sources/ with a pand per feature, see pand_id."""
-        features = json.loads(sources.path(source).read_text(encoding="utf-8"))["features"]
+    def load(cls, source: str, commit: str = "") -> Reference:
+        """`source` is a GeoJSON file under sources/ with a pand per feature, see pand_id; as it was at `commit`, if given."""
+        features = json.loads(sources.read(sources.path(source), commit))["features"]
         polygons = {pand_id(f): shape(f["geometry"]) for f in features}
         lat0 = sum(p.centroid.y for p in polygons.values()) / len(polygons)
         return cls({i: _metric(p, lat0) for i, p in polygons.items()}, lat0)

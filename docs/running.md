@@ -123,7 +123,7 @@ The pages compute their numbers the way `airco-report` does: per sample over its
 uv run airco-pages && python3 -m http.server -d site
 ```
 
-The site is built from git and is not committed; `.gitignore` lists `site/`. The repository needs GitHub Pages switched on once, with "GitHub Actions" as the source, under Settings, Pages.
+The site is built from git and is not committed; `.gitignore` lists `site/`. It reads the expected outcome and the BAG extract of a map question with `git show` at the commit in the run's log, so the build needs the full history: the workflow checks out with `fetch-depth: 0`, and a shallow clone fails with the commit it lacks. The repository needs GitHub Pages switched on once, with "GitHub Actions" as the source, under Settings, Pages.
 
 ## Run a measurement from GitHub Actions
 
