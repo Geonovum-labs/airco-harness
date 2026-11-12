@@ -1,0 +1,140 @@
+{
+  "eval_set_id": "Nj2kzuMSLRXdnfbF4cXNAo",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "BNXXHtN9VPyvpE4g3MFsYX",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "model",
+        "ids": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "Gm3jMC47i4467oLdNLUx2C",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "model",
+        "ids": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "jHSLU3Nt42A2TpG7fCxeYa",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "model",
+        "ids": null,
+        "model": "anthropic/claude-opus-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "FAQi68bkrgRgYuv6ugB5je",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 3
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "SUYVfoUhiwfR3vwceF6xjq",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 4
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "oVsybui6iQrT46t9hDQ2xi",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "model": "anthropic/claude-opus-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 5
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "W6cZzXiKGu2ErQv8w2EiLK",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 6
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "nngzgCo6erDWALqbxYFLsb",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 7
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "SfxboU7Hqk6pnjn89M6YL3",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "model": "anthropic/claude-opus-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 8
+    }
+  ]
+}
