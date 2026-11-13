@@ -1,6 +1,9 @@
 {
   "task": "query",
   "standard": "dsfl",
+  "tags": [
+    "bag"
+  ],
   "input": "How has Amersfoort grown? In which decade were most of the buildings that stand in Amersfoort today built? Answer with only a JSON object with the key \"decade\": the first year of the decade, such as 1950.",
   "metadata": {
     "status": "draft",

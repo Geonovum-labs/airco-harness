@@ -1,4 +1,4 @@
-"""The tools the harness gives an agent: fetch, and show_on_map for a test set that asks for a map.
+"""The tools the harness gives an agent: fetch, show_on_map for a test set that asks for a map, and the tools of a variant's MCP server.
 
 fetch returns a web page as markdown, in pages of 40,000 characters. Inspect
 has web_search() but no plain fetch, and an agent that can search but not read
@@ -16,7 +16,7 @@ import re
 import urllib.parse
 
 import httpx
-from inspect_ai.tool import Tool, ToolError, tool
+from inspect_ai.tool import MCPServer, Tool, ToolDef, ToolError, ToolSource, tool
 from markdownify import markdownify
 
 from validators import geo
@@ -101,3 +101,18 @@ def show_on_map() -> Tool:
         return f"{len(places)} places shown on the map."
 
     return execute
+
+
+class ProviderNamedTools(ToolSource):
+    """The tools of an MCP server under names the model APIs accept.
+
+    Anthropic, OpenAI and Mistral take letters, digits, _ and - in a tool name; an
+    MCP server may use more, such as groundwater-monitoring.tubes.search, which
+    becomes groundwater-monitoring_tubes_search. The server still gets its own name.
+    """
+
+    def __init__(self, server: MCPServer) -> None:
+        self.server = server
+
+    async def tools(self) -> list[Tool]:
+        return [ToolDef(t, name=re.sub(r"[^A-Za-z0-9_-]", "_", ToolDef(t).name)).as_tool() for t in await self.server.tools()]

@@ -43,20 +43,23 @@ def standards(testset: str) -> list[str]:
     return sorted({r["standard"] for r in records(testset)})
 
 
-def load(testset: str = DEFAULT_TESTSET, ids: list[str] | None = None) -> MemoryDataset:
-    """Samples of a test set, or of the ids in it."""
+def load(testset: str = DEFAULT_TESTSET, ids: list[str] | None = None, tags: list[str] | None = None) -> MemoryDataset:
+    """Samples of a test set: all, or those with one of the ids or one of the tags."""
     rows = records(testset)
     if ids is not None:
         ids = [i.strip() for i in ids if i.strip()]
         unknown = sorted(set(ids) - {r["id"] for r in rows})
         if unknown:
             raise ValueError(f"unknown sample ids: {', '.join(unknown)}")
+    if tags is not None:
+        tags = [t.strip() for t in tags if t.strip()]
+        rows = [r for r in rows if set(tags) & set(r.get("tags", []))]
     samples = [
         Sample(
             id=r["id"],
             input=r["input"],
             target=f"{testset}/samples/{r['id']}/expected.json",
-            metadata={"defect": r.get("defect"), "task": r["task"], "standard": r["standard"], **r["metadata"]},
+            metadata={"defect": r.get("defect"), "task": r["task"], "standard": r["standard"], "tags": r.get("tags", []), **r["metadata"]},
         )
         for r in rows
         if ids is None or r["id"] in ids

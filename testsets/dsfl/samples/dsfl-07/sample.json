@@ -1,6 +1,9 @@
 {
   "task": "location",
   "standard": "dsfl",
+  "tags": [
+    "bro"
+  ],
   "input": "Which groundwater monitoring wells are within 500 meters of Stadhuisplein 1 in Amersfoort? Show them on the map.",
   "metadata": {
     "status": "draft",

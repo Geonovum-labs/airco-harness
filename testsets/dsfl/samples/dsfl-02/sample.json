@@ -1,6 +1,9 @@
 {
   "task": "query",
   "standard": "dsfl",
+  "tags": [
+    "bag"
+  ],
   "input": "In which part of the municipality of Amersfoort is the most construction currently taking place? Answer with only a JSON object with the key \"part\": the name of the area.",
   "metadata": {
     "status": "draft",

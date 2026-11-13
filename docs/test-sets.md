@@ -20,6 +20,7 @@ The sample id is `<name>-G<nn>-<nn>`, where `<name>` is the short name of the st
 | `defect` | Optional. `G1` to `G13`, a publication defect from the IMGeo test set note |
 | `task` | Task type, one of the values in `sample.schema.json`, such as `lookup` or `classify` |
 | `standard` | Standard with version, such as `imgeo-2.2`, or the name of a group of sources, such as `dsfl`. The allowlist for `source` uses the same name |
+| `tags` | Optional. What the question is about, such as `bag` or `bro`, in lowercase. `--tags` selects samples by them, and a variant names the tags of the samples it is made for |
 | `input` | The question to the agent, with the requested answer format. It may be in Dutch, and then so are the answer keys |
 | `metadata.status` | `draft`, `approved` or `withdrawn` |
 | `metadata.hypothesis` | Why the question may fail |

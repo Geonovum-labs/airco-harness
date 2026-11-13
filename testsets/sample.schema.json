@@ -9,6 +9,7 @@
     "defect": {"type": "string", "pattern": "^G\\d{1,2}$"},
     "task": {"enum": ["lookup", "error", "example", "fragment", "validate", "classify", "code", "impact", "mapping", "mutation", "coherence", "location", "query", "assess"]},
     "standard": {"type": "string"},
+    "tags": {"type": "array", "items": {"type": "string", "pattern": "^[a-z0-9-]+$"}, "uniqueItems": true},
     "input": {"type": "string", "minLength": 1},
     "metadata": {
       "type": "object",

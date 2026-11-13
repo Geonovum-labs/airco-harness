@@ -1,6 +1,9 @@
 {
   "task": "location",
   "standard": "dsfl",
+  "tags": [
+    "bag"
+  ],
   "input": "Show on the map which buildings in Amersfoort have been demolished in the last 10 years.",
   "metadata": {
     "status": "draft",

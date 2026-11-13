@@ -163,7 +163,7 @@ def test_matrix_refuses_paid_models_without_yes(monkeypatch, capsys):
         matrix.main()
     assert stop.value.code == 2
     out = capsys.readouterr()
-    assert "1 samples x 1 agent-model pairs x 3 epochs = 3 runs" in out.out
+    assert "variant 0: 1 samples x 1 agent-model pairs x 3 epochs = 3 runs" in out.out
     assert "at most 3 x 2.00 = 6.00 dollars" in out.out
     assert "rerun with --yes" in out.err
 
@@ -176,9 +176,36 @@ def test_matrix_plan_shows_runs_and_cost_for_paid_models_without_running(monkeyp
     monkeypatch.setattr(sys, "argv", ["airco-matrix", "--models", "anthropic/claude-haiku-5-5", "--ids", SAMPLE, "--epochs", "3", "--plan"])
     matrix.main()
     out = capsys.readouterr()
-    assert "1 samples x 1 agent-model pairs x 3 epochs = 3 runs" in out.out
+    assert "variant 0: 1 samples x 1 agent-model pairs x 3 epochs = 3 runs" in out.out
     assert "at most 3 x 2.00 = 6.00 dollars" in out.out
     assert "rerun with --yes" not in out.err
+
+
+def test_matrix_counts_the_runs_of_each_variant_on_its_own_samples(monkeypatch, capsys):
+    argv = ["airco-matrix", "--testset", "dsfl", "--models", "mockllm/model", "--agents", "model,inspect", "--epochs", "2", "--plan"]
+    monkeypatch.setattr(sys, "argv", [*argv, "--variants", "0,mcp-groundwater-monitoring"])
+    matrix.main()
+    out = capsys.readouterr().out
+    assert "variant 0: 7 samples x 2 agent-model pairs x 2 epochs = 28 runs" in out
+    assert "variant mcp-groundwater-monitoring: 2 samples x 1 agent-model pairs x 2 epochs = 4 runs" in out
+    assert "32 runs (2 variants, 2 agents, 1 models)" in out
+    assert "only the agent inspect takes so far; skipped for model" in out
+
+
+def test_matrix_tags_narrow_every_variant(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["airco-matrix", "--testset", "dsfl", "--models", "mockllm/model", "--tags", "bro", "--epochs", "1", "--plan"])
+    matrix.main()
+    assert "variant 0: 2 samples x 1 agent-model pairs x 1 epochs = 2 runs" in capsys.readouterr().out
+
+
+def test_matrix_stops_when_no_variant_has_samples(monkeypatch, capsys):
+    monkeypatch.setattr(sys, "argv", ["airco-matrix", "--models", "mockllm/model", "--agents", "inspect", "--variants", "mcp-groundwater-monitoring", "--plan"])
+    with pytest.raises(SystemExit) as stop:
+        matrix.main()
+    assert stop.value.code == 2
+    out = capsys.readouterr()
+    assert "variant mcp-groundwater-monitoring has no samples in test set imgeo; skipped" in out.out
+    assert "no runs left" in out.err
 
 
 KADASTER = "openai-api/kadaster/qwen3.5-27b"
@@ -190,7 +217,7 @@ def test_matrix_skips_a_kadaster_model_without_base_url(monkeypatch, capsys):
     matrix.main()
     out = capsys.readouterr().out
     assert f"no base URL set; skipped {KADASTER}" in out
-    assert "1 samples x 1 agent-model pairs x 1 epochs = 1 runs" in out
+    assert "variant 0: 1 samples x 1 agent-model pairs x 1 epochs = 1 runs" in out
 
 
 def test_matrix_keeps_a_kadaster_model_with_base_url(monkeypatch, capsys):
@@ -199,7 +226,7 @@ def test_matrix_keeps_a_kadaster_model_with_base_url(monkeypatch, capsys):
     matrix.main()
     out = capsys.readouterr().out
     assert "skipped" not in out
-    assert "1 samples x 2 agent-model pairs x 1 epochs = 2 runs" in out
+    assert "variant 0: 1 samples x 2 agent-model pairs x 1 epochs = 2 runs" in out
 
 
 def test_matrix_stops_when_every_model_is_skipped(monkeypatch, capsys):

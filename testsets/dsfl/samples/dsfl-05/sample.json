@@ -1,6 +1,9 @@
 {
   "task": "location",
   "standard": "dsfl",
+  "tags": [
+    "bag"
+  ],
   "input": "Which houses were built before 1800 in Amersfoort? Show them on the map.",
   "metadata": {
     "status": "draft",

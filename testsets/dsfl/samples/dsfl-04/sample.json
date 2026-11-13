@@ -1,6 +1,9 @@
 {
   "task": "location",
   "standard": "dsfl",
+  "tags": [
+    "bag"
+  ],
   "input": "Where are the sports halls in Amersfoort? Show them on the map.",
   "metadata": {
     "status": "draft",

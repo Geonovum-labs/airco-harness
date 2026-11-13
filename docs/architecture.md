@@ -21,7 +21,7 @@ The split comes from the tooling note. Inspect depends on one maintainer and cha
 
 ## The variants and the agents
 
-A variant is a form in which the standard is published. Which forms there will be, and how many, is for the assessment framework to define. For now there is one variant, 0: the standard as it is published today, and the agent finds it or not.
+A variant is a form in which the standard is published. Which forms there will be, and how many, is for the assessment framework to define. Variant 0 is the standard as it is published today, and the agent finds it or not. Variant `mcp-groundwater-monitoring` adds an MCP server on BRO groundwater data to the tools of variant 0, so that the server is the one difference; it is made for the samples tagged `bro`. The variants are entries of `VARIANTS` in `tasks.py`, and `eval.metadata` holds the entry a run used, with the pinned image of its server.
 
 What differs is the agent, because the baseline is what a user gets from the agent the user has:
 
@@ -63,12 +63,12 @@ A run that hits a limit gave no answer, so it counts as a wrong answer, with the
 
 Inspect writes one `.eval` file per task and model, with the conversation, every event and the scores. It also records the git commit of the checkout and whether the checkout had uncommitted changes, under `eval.revision`. Everything a run depends on is in git: the test set, the reference model, the agent code, the scorers and the sources. So the commit identifies all of it, and a run has to be made from a committed checkout. `airco-rescore` warns when the checkout is not at the commit of the run, or when the run or the checkout has uncommitted changes. The site reads the commit too: it draws the map of a run against the expected outcome and the BAG extract at the commit in the log, because a sample id can mean another question at another commit.
 
-Besides that, `eval.metadata` holds the versions of `airco-harness` and `inspect-ai`, the setup (1 for the agents of the harness, 2 for Claude Code), the agent, the name and version of the test set, and the variant. For Claude Code, what it did outside the conversation, such as writing a file in its sandbox, is not in the log.
+Besides that, `eval.metadata` holds the versions of `airco-harness` and `inspect-ai`, the setup (1 for the agents of the harness, 2 for Claude Code), the agent, the name and version of the test set, and the variant with its definition. For Claude Code, what it did outside the conversation, such as writing a file in its sandbox, is not in the log.
 
 ## What the harness does not do yet
 
 The harness covers one standard. A second standard needs its sources in `SOURCES` in `validators/sources.py`, a section in `testsets/sources-allowlist.json`, a reference model, and changes where the code assumes IMGeo: `validators/refmodel.py` reads the IMGeo MIM model and the BGT and IMGeo catalogs, and `rules.refmodel()` loads the IMGeo reference model. A standard without a MIM model, such as NL-SBB, needs another source of known terms.
 
-Other variants come once the assessment framework defines them. A new variant is a name in `VARIANTS` in `tasks.py`, a publication form the agent can reach, and tests. Inspect's `skill()` writes to a sandbox and crashes without one; an MCP server can be passed to an agent as a tool.
+Other variants come once the assessment framework defines them. A new variant is an entry in `VARIANTS` in `tasks.py`, a publication form the agent can reach, and tests. An MCP server reaches the agent `inspect` only so far; Claude Code would need the server in its sandbox or over HTTP. Inspect's `skill()` writes to a sandbox and crashes without one.
 
 No model grader is enabled yet. Setup 3 (IDE and chat assistants) is not in the harness; other CLI agents than Claude Code are not either, although Inspect SWE offers Codex CLI and Gemini CLI the same way.

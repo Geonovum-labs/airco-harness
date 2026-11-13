@@ -47,6 +47,19 @@ The harness measures the baseline: the question as a user asks it, to the agent 
 
 `claude-code` needs Docker running on the machine. Inspect starts one container per sample from `src/airco_harness/sandbox/compose.yaml`, Inspect SWE installs Claude Code in it, and every model call Claude Code makes goes through Inspect, so the log holds the whole conversation including the pages Claude Code read, the limits apply, and the cost is logged. Two things in that setup are deliberate. The container has the network on, where Inspect's default sandbox has none, because Claude Code has to reach the web. And Claude Code's WebFetch preflight, a call to Anthropic that asks whether a domain is safe, is switched off in the sandbox's project settings, because behind the bridge that call cannot reach Anthropic and every WebFetch would fail; a user behind a proxy switches it off the same way. What Claude Code does outside the conversation, such as writing a file, is not in the log. The model under test is the eval model: Claude Code's requests for any Claude model are routed to it.
 
+## Choose the variant
+
+A variant is what the agent gets besides the question, chosen with `-T variant=` for a task or `--variants` for the matrix. The matrix runs variant 0 unless you name others.
+
+| Variant | What the agent gets | Samples by default |
+| --- | --- | --- |
+| `0` (default) | The question alone | All |
+| `mcp-groundwater-monitoring` | Variant 0 plus the groundwater monitoring MCP server on BRO data, for the agent `inspect` only | Those tagged `bro` |
+
+A variant with an MCP server runs it with `docker run` from an image pinned by digest in `tasks.py`, one container per sample. The image of `mcp-groundwater-monitoring` is private: log in once with a token that has `read:packages` and access to the package, with `docker login ghcr.io -u <user> --password-stdin`. It is built for linux/amd64 only, so on an Apple silicon Mac Docker emulates it, and it takes some seconds to start. The server names its tools like `groundwater-monitoring.tubes.search`; the model APIs accept no dot in a tool name, so the agent sees `groundwater-monitoring_tubes_search`. With the pinned image every tool call still fails: the server returns `structuredContent` without the `content` that MCP requires, and the MCP client refuses that result (13 November 2026; asked of the server's maintainer).
+
+`--ids` or `--tags` choose other samples than a variant's default, also for a variant with an MCP server. `--tags bro` runs only the samples tagged `bro`, on every variant.
+
 Claude Code sends a system prompt of tens of thousands of tokens per call, so a run costs more than with the agent `model`, and `message_limit` counts two messages per tool call. The defaults of 60 messages, 600,000 tokens, 900 seconds and $2 are a starting point; the report shows which limits a measurement hit. The cost limit was $0.50 until a map question in the dsfl test set stopped every Opus run before it showed the map: reading the BAG costs 200,000 to 400,000 tokens.
 
 ## Run the matrix
@@ -59,15 +72,16 @@ The matrix runs a test set across variants, models and epochs with one agent, as
 	uv run airco-matrix --models anthropic/claude-haiku-5-5,mistral/mistral-small-2603 --epochs 3
 	```
 
-	With paid models, the command stops after these lines; add `--plan` to stop after the first two lines whatever the models, with exit code 0:
+	With paid models, the command stops after these lines; add `--plan` to stop after these lines without the last, whatever the models, with exit code 0:
 
 	```text
-	1 samples x 2 agent-model pairs x 3 epochs = 6 runs (1 variants, 1 agents, 2 models)
+	variant 0: 1 samples x 2 agent-model pairs x 3 epochs = 6 runs
+	6 runs (1 variants, 1 agents, 2 models)
 	at most 6 x 0.50 = 3.00 dollars for paid models
 	paid models anthropic/claude-haiku-5-5, mistral/mistral-small-2603: rerun with --yes to start
 	```
 
-	The matrix runs the test set `imgeo` unless you add `--testset <name>`. `--agents model,inspect,claude-code` runs all agents in one matrix, so that one bundle holds the whole measurement; `--variants`, `--ids` and `--cost-limit` narrow it down; `--help` lists all options.
+	The matrix runs the test set `imgeo` unless you add `--testset <name>`. `--agents model,inspect,claude-code` runs all agents in one matrix, so that one bundle holds the whole measurement; `--variants`, `--ids`, `--tags` and `--cost-limit` narrow it down; `--help` lists all options.
 
 2. Commit first, so that the log records a commit that holds everything the run used. Then start the matrix with the same command plus `--yes`. The matrix is named after its start time, such as `2026-10-19T21-06-14`, so that bundles sort by time; `--name` overrides that. The logs go to `logs/<name>/` and the log bundle to `reports/<name>/logs/`.
 
