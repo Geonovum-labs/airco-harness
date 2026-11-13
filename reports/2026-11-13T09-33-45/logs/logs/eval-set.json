@@ -1,0 +1,101 @@
+{
+  "eval_set_id": "YATVgBkczGk4PMMLn7kfSj",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "B9YYDs747gFzGZQGGq9uor",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bag-ldproxy",
+        "agent": "inspect",
+        "ids": null,
+        "tags": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "Werv2wVgk4J5Rx73iVwaLq",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bag-ldproxy",
+        "agent": "inspect",
+        "ids": null,
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "XCPTRqtAZEA9yhnH5gvTkh",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bag-ldproxy",
+        "agent": "inspect",
+        "ids": null,
+        "tags": null,
+        "model": "anthropic/claude-opus-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "cUytFj6iZZvBpcSuUuhvBg",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bag-ldproxy",
+        "agent": "inspect",
+        "ids": null,
+        "tags": null,
+        "model": "mistral/mistral-small-2603",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-small-2603",
+      "model_args": {},
+      "sequence": 3
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "S8MNzMziSykwWyNJqseT5U",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bag-ldproxy",
+        "agent": "inspect",
+        "ids": null,
+        "tags": null,
+        "model": "mistral/mistral-medium-2604",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-medium-2604",
+      "model_args": {},
+      "sequence": 4
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "H4tHQHUhFaUeNujK7hgpVm",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bag-ldproxy",
+        "agent": "inspect",
+        "ids": null,
+        "tags": null,
+        "model": "mistral/mistral-large-4",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-large-4",
+      "model_args": {},
+      "sequence": 5
+    }
+  ]
+}
