@@ -104,8 +104,7 @@ def _accepted(want: object) -> list[object]:
 
 def _matches(answer: object, want: object) -> bool:
     if isinstance(want, dict) and "tolerance" in want:
-        return (isinstance(answer, (int, float)) and not isinstance(answer, bool)
-                and abs(answer - want["value"]) <= want["tolerance"])
+        return isinstance(answer, (int, float)) and not isinstance(answer, bool) and abs(answer - want["value"]) <= want["tolerance"]
     return _same(answer, want)
 
 
@@ -202,7 +201,14 @@ def rule_series(answer: str, case: Case) -> Assessment:
     details = {"missing": missing, "wrong": wrong, "filled_gaps": filled_gaps, "extra": extras, "metadata_wrong": metadata_wrong, "ordered": ordered}
     complete = matched / len(wanted) if wanted else 1.0
     correct = not missing and not wrong and not invented and not metadata_wrong and ordered
-    return Assessment(correct, complete, invented, True, f"{matched} of {len(wanted)} days match; {invented} invented; metadata wrong: {metadata_wrong}; ordered: {ordered}", details)
+    return Assessment(
+        correct,
+        complete,
+        invented,
+        True,
+        f"{matched} of {len(wanted)} days match; {invented} invented; metadata wrong: {metadata_wrong}; ordered: {ordered}",
+        details,
+    )
 
 
 def _tool_payload(answer: str) -> tuple[dict | None, Assessment | None]:
@@ -228,15 +234,22 @@ def rule_section(answer: str, case: Case) -> Assessment:
     plot, path = result.get("plot"), result.get("path")
     if not isinstance(plot, dict) or not isinstance(path, list) or not isinstance(args.get("points"), list):
         return unparseable("malformed section plot")
+
     def valid_path(points: list) -> bool:
         return len(points) >= 2 and all(isinstance(p, dict) and _number(p.get("x")) and _number(p.get("y")) for p in points)
+
     if not valid_path(path) or not valid_path(args["points"]) or not _number(plot.get("pathLengthMetres")):
         return unparseable("malformed section path or length")
     want = case.expected
+
     def matches_path(points: list) -> bool:
-        return (points[0] == want["path"][0] and points[-1] == want["path"][-1]
-                and all(p["y"] == want["path"][0]["y"] for p in points)
-                and all(a["x"] <= b["x"] for a, b in zip(points, points[1:])))
+        return (
+            points[0] == want["path"][0]
+            and points[-1] == want["path"][-1]
+            and all(p["y"] == want["path"][0]["y"] for p in points)
+            and all(a["x"] <= b["x"] for a, b in zip(points, points[1:]))
+        )
+
     formations = plot.get("formations")
     checks = {
         "path": matches_path(args["points"]) and matches_path(path) and args["points"] == path,
@@ -244,9 +257,8 @@ def rule_section(answer: str, case: Case) -> Assessment:
         "color": args.get("colorBy", "unit") == plot.get("colorBy") == want["color_by"],
         "length": abs(plot["pathLengthMetres"] - want["length_m"]) <= 0.01,
         "image": data.get("image") is True,
-        "geometry": isinstance(formations, list) and any(
-            isinstance(f, dict) and _number(f.get("rectangleCount")) and f["rectangleCount"] > 0 for f in formations
-        ),
+        "geometry": isinstance(formations, list)
+        and any(isinstance(f, dict) and _number(f.get("rectangleCount")) and f["rectangleCount"] > 0 for f in formations),
     }
     wrong = [key for key, ok in checks.items() if not ok]
     return Assessment(not wrong, (len(checks) - len(wrong)) / len(checks), 0, True, f"section checks failed: {wrong}", {"wrong": wrong})
@@ -262,10 +274,12 @@ def rule_trace(answer: str, case: Case) -> Assessment:
     if not isinstance(column, dict) or not isinstance(column.get("layers"), list):
         return unparseable("malformed trace")
     layers = column["layers"]
-    if not layers or any(not isinstance(layer, dict) or not isinstance(layer.get("unitCode"), str)
-                         or not _number(layer.get("top")) or not _number(layer.get("base")) for layer in layers):
+    if not layers or any(
+        not isinstance(layer, dict) or not isinstance(layer.get("unitCode"), str) or not _number(layer.get("top")) or not _number(layer.get("base"))
+        for layer in layers
+    ):
         return unparseable("malformed trace layers")
-    distinct = [layer["unitCode"] for i, layer in enumerate(layers) if i == 0 or layer["unitCode"] != layers[i-1]["unitCode"]]
+    distinct = [layer["unitCode"] for i, layer in enumerate(layers) if i == 0 or layer["unitCode"] != layers[i - 1]["unitCode"]]
     want = case.expected
     location = want["location"]
     checks = {
@@ -273,16 +287,21 @@ def rule_trace(answer: str, case: Case) -> Assessment:
         "model": args.get("modelId") == column.get("modelId") == want["model_id"],
         "surface": _matches(column.get("surfaceElevationNap"), {"value": want["surface"], "tolerance": want["surface_tolerance"]}),
         "datum": column.get("verticalDatum") == "NAP",
-        "units": distinct[:len(want["top_units"])] == want["top_units"],
-        "extent": len(layers) == want["layer_count"] and layers[-1]["base"] == want["bottom"]
-                  and all(a["base"] == b["top"] for a, b in zip(layers, layers[1:])),
+        "units": distinct[: len(want["top_units"])] == want["top_units"],
+        "extent": len(layers) == want["layer_count"]
+        and layers[-1]["base"] == want["bottom"]
+        and all(a["base"] == b["top"] for a, b in zip(layers, layers[1:])),
     }
     wrong = [key for key, ok in checks.items() if not ok]
     return Assessment(not wrong, (len(checks) - len(wrong)) / len(checks), 0, True, f"trace checks failed: {wrong}", {"wrong": wrong})
 
 
 RULES: dict[str, Callable[[str, Case], Assessment]] = {
-    "fields": rule_fields, "map": rule_map, "series": rule_series, "section": rule_section, "trace": rule_trace,
+    "fields": rule_fields,
+    "map": rule_map,
+    "series": rule_series,
+    "section": rule_section,
+    "trace": rule_trace,
 }
 
 

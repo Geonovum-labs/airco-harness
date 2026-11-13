@@ -56,8 +56,7 @@ class Reference:
         candidates = []
         for place in places:
             here = _metric(place, self.lat0)
-            candidates.append([i for d, i in sorted((p.distance(here), i) for i, p in self.features.items() if i in allowed)
-                               if d <= tolerance_m])
+            candidates.append([i for d, i in sorted((p.distance(here), i) for i, p in self.features.items() if i in allowed) if d <= tolerance_m])
         owners: dict[str, int] = {}
 
         def assign(index: int, seen: set[str]) -> bool:

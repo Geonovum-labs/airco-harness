@@ -80,8 +80,12 @@ def subsurface_result(messages: list[ChatMessage], tool: str) -> str:
     """The last successful matching tool call and its returned JSON and image, if present."""
     results = {m.tool_call_id: m for m in messages if m.role == "tool"}
     found = ""
-    names = {f"subsurface-models.{tool}", f"subsurface-models_{tool}", f"mcp__subsurface-models__subsurface-models.{tool}",
-             f"mcp__subsurface-models__subsurface-models_{tool}"}
+    names = {
+        f"subsurface-models.{tool}",
+        f"subsurface-models_{tool}",
+        f"mcp__subsurface-models__subsurface-models.{tool}",
+        f"mcp__subsurface-models__subsurface-models_{tool}",
+    }
     for message in messages:
         if message.role != "assistant":
             continue

@@ -156,8 +156,9 @@ def test_subsurface_result_uses_real_result_and_png():
         name = "subsurface-models_section-plot"
         return [
             ChatMessageAssistant(content="", tool_calls=[ToolCall(id=str(i), function=name, arguments={"points": []})]),
-            ChatMessageTool(content=content or json.dumps(payload), tool_call_id=str(i), function=name,
-                            error=ToolCallError("unknown", error) if error else None),
+            ChatMessageTool(
+                content=content or json.dumps(payload), tool_call_id=str(i), function=name, error=ToolCallError("unknown", error) if error else None
+            ),
         ]
 
     content = [ContentText(text='{"plot": {}, "path": []}'), ContentImage(image="data:image/png;base64,AA==")]

@@ -73,7 +73,9 @@ TRACE = {
     "result": {
         "location": {"x": 155000, "y": 463000},
         "column": {
-            "modelId": "GEOTOP-v01r6s1-001", "verticalDatum": "NAP", "surfaceElevationNap": 4.369999885559082,
+            "modelId": "GEOTOP-v01r6s1-001",
+            "verticalDatum": "NAP",
+            "surfaceElevationNap": 4.369999885559082,
             "layers": [{"unitCode": "NUAAOP" if i < 4 else "NUBX", "top": 4.5 - i * 0.5, "base": 4 - i * 0.5} for i in range(109)],
         },
     },
