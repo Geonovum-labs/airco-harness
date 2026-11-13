@@ -6,6 +6,8 @@
   --card: #fcfcfb; --grid: #e1e0d9; --good: #006300; --bad: #b42318; --warn-bg: #fff8e5; --warn-line: #eda100;
   --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
   --series-5: #e87ba4; --series-6: #008300; --series-7: #6250d6; --series-8: #e34948;
+  /* Variants of the measurement page: the baseline orange, then blue and aqua; validated all-pairs in both modes. */
+  --v-base: var(--series-2); --v-1: var(--series-1); --v-2: var(--series-3);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -184,4 +186,137 @@ p.result { font-weight: 600; margin: 0.25rem 0; }
 .scoring p { margin: 0; }
 .scoring details { margin: 0.3rem 0 0; }
 .scoring details summary { font-weight: 400; color: var(--accent); }
+/* Measurement page: the finding, the charts per setup and per question, and a card per question with every run. */
+.small { font-size: 0.85rem; }
+.answer { margin: 1rem 0 0.75rem; padding: 0.85rem 1rem; border-left: 3px solid var(--accent); background: var(--card); border-radius: 0 10px 10px 0; }
+.answer p { margin: 0; max-width: 62rem; }
+.answer .verdict { font-size: 1.25rem; font-weight: 650; line-height: 1.35; }
+.answer .lines { margin-top: 0.35rem; }
+.cardhead { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+.cardhead h2 { margin: 0; }
+.cardnote { color: var(--muted); font-size: 0.9rem; margin: 0.25rem 0 0.5rem; max-width: 62rem; }
+.btn[aria-pressed="true"] { background: var(--chip); }
+p.noise { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 0; }
+h2.section { font-size: 1.3rem; margin: 2rem 0 0.5rem; }
+.legend li { display: inline-flex; align-items: center; gap: 0.4rem; }
+ul.legend { color: var(--muted); font-size: 0.85rem; }
+.bandkey { display: inline-block; width: 22px; height: 8px; border-radius: 4px; background: color-mix(in oklab, var(--muted) 30%, transparent); }
+
+/* Dot marks on a 0 to 100% track: a dot per variant, a ring for the model alone, a faint band of one standard error. */
+.dot { position: absolute; top: 50%; width: 12px; height: 12px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--c); box-shadow: 0 0 0 2px var(--card); }
+.dot.ring { width: 12px; height: 12px; background: var(--card); border: 2px solid var(--fg); box-shadow: none; }
+.dot.key { position: static; display: inline-block; transform: none; flex: none; vertical-align: -1px; margin-right: 0.3rem; box-shadow: none; }
+.dot.key.ring { width: 10px; height: 10px; }
+.band { position: absolute; top: 50%; height: 12px; margin-top: -6px; border-radius: 6px; background: color-mix(in oklab, var(--c) 22%, transparent); }
+.stem { position: absolute; top: 50%; height: 2px; margin-top: -1px; background: var(--grid); }
+.track { position: relative; height: 2.35rem; }
+.plot { position: absolute; inset: 0 8px; }
+.grid { position: absolute; top: 4px; bottom: 4px; width: 1px; background: var(--grid); }
+.tick { position: absolute; top: 0.15rem; transform: translateX(-50%); font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dumbbell { --label: 15rem; --agent: 7rem; --gain: 5rem; }
+.dgroup { display: grid; grid-template-columns: var(--label) minmax(0, 1fr); border-top: 1px solid var(--grid); }
+.dgroup:first-of-type { border-top: 0; }
+.dmodel { font-weight: 600; font-size: 0.92rem; padding: 0.55rem 0.5rem 0 0; overflow-wrap: anywhere; }
+.drow { display: grid; grid-template-columns: var(--agent) minmax(0, 1fr) var(--gain); align-items: center; gap: 0 0.75rem; min-height: 2.35rem; border-radius: 6px; outline-offset: -2px; }
+.setups > .drow { margin-left: var(--label); }
+.drow[tabindex]:hover, .drow[tabindex]:focus-visible { background: var(--chip); }
+.drow.axis, .drow.dhead { min-height: 1.4rem; }
+.drow.axis .track { height: 1.4rem; }
+.dagent { font-size: 0.9rem; overflow-wrap: anywhere; }
+.dgain { text-align: right; font-variant-numeric: tabular-nums; line-height: 1.2; padding-right: 0.25rem; }
+.dgain > div { white-space: nowrap; }
+.dgain b { font-weight: 650; }
+.dgain small { display: block; color: var(--muted); font-size: 0.75rem; }
+.dgain .muted b { font-weight: 500; }
+.dhead { font-size: 0.78rem; color: var(--muted); }
+.dhead .dgain { font-weight: 600; }
+.plotlabel { font-size: 0.78rem; color: var(--muted); padding-left: 8px; }
+.dumbbell.questions { --agent: 22rem; --gain: 5.5rem; }
+.drow.question { border-top: 1px solid var(--grid); padding: 0.2rem 0; }
+.drow.question.dhead, .drow.question.axis { border-top: 0; }
+.qlabel { font-size: 0.88rem; line-height: 1.3; color: var(--fg); text-decoration: none; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.qlabel span { color: var(--muted); }
+.qlabel:hover span { text-decoration: underline; }
+
+/* Question cards: a lane of marks per variant, a mark per run; its shape tells answered, unusable, limit and error apart. */
+.marklegend { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.6rem 1rem; }
+.marklegend p { margin: 0 0 0.25rem; font-size: 0.88rem; max-width: none; }
+.card.question { scroll-margin-top: 1rem; }
+.qnum { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.qnum .chip { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.card.question h3 { font-size: 1.2rem; line-height: 1.35; margin: 0.2rem 0; }
+.format { margin: 0; font-size: 0.85rem; color: var(--muted); }
+ul.why { list-style: none; padding: 0; margin: 0.6rem 0 0.75rem; font-size: 0.86rem; color: var(--muted); }
+ul.why li { margin: 0.15rem 0; }
+ul.why b { color: var(--fg); font-weight: 600; }
+.qgroup { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 0 0.75rem; border-top: 1px solid var(--line); padding: 0.2rem 0; }
+.mname { font-weight: 600; font-size: 0.9rem; padding-top: 0.35rem; overflow-wrap: anywhere; }
+.qrow { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 7.5rem; gap: 0 1rem; align-items: center; padding: 0.1rem 0; min-height: 28px; }
+.qplot > .axisrow { margin-left: 13.75rem; padding: 0; min-height: 18px; }
+.aname { font-size: 0.85rem; color: var(--muted); overflow-wrap: anywhere; }
+.qaxis { position: relative; height: 18px; margin: 0 8px; font-size: 0.72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.qaxis span { position: absolute; transform: translateX(-50%); }
+.qaxis span:first-child { transform: none; }
+.qaxis span:last-child { transform: translateX(-100%); }
+.strip { position: relative; margin: 0 8px; padding: 3px 0; }
+.strip > .grid { top: 0; bottom: 0; }
+.lane { position: relative; height: 15px; }
+.rvals { font-size: 0.85rem; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rvals .to { color: var(--muted); }
+.mark { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; padding: 0; border: 0; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2px var(--card); cursor: pointer; }
+.mark::before { content: ""; position: absolute; inset: -6px; }
+.mark.hollow { background: var(--card); border: 2px solid var(--c); }
+.mark.limit { border-radius: 1px; transform: rotate(45deg) scale(0.92); }
+.mark.error { border-radius: 1px; background: var(--card); border: 2px dashed var(--c); }
+.mark:hover { filter: brightness(1.15); z-index: 1; }
+.mark:focus-visible, .mark.selected { outline: 2px solid var(--fg); outline-offset: 2px; z-index: 1; }
+ul.legend .mark.key { position: static; display: inline-block; width: 10px; height: 10px; margin: 0 0.2rem 0 0; --c: var(--muted); cursor: default; box-shadow: none; }
+ul.legend .mark.key::before { content: none; }
+ul.legend .mark.key.limit, ul.legend .mark.key.error { border-radius: 1px; }
+ul.legend .mark.key.hollow { background: var(--card); }
+td small.change { display: block; color: var(--muted); font-size: 0.78rem; white-space: normal; }
+.tableview { margin: 0.6rem 0 0.2rem; }
+.tableview > summary { font-weight: 500; font-size: 0.85rem; color: var(--accent); }
+
+/* The detail of one run, under the marks of its question */
+.detail { margin: 0.75rem 0 0.25rem; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px; padding: 0.7rem 0.9rem; background: var(--bg); scroll-margin-top: 1rem; }
+.detailhead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; align-items: baseline; }
+.detailhead strong { overflow-wrap: anywhere; }
+.detail .outcome { margin: 0.35rem 0 0.5rem; font-weight: 600; }
+dl.scores { display: flex; flex-wrap: wrap; gap: 0.3rem 1.5rem; margin: 0 0 0.25rem; }
+dl.scores dt { font-size: 0.75rem; color: var(--muted); }
+dl.scores dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+dl.scores dd.bad { color: var(--bad); }
+dl.scores dd.ok { color: var(--good); }
+.detail p.small { margin: 0.2rem 0; }
+.effort { font-size: 0.85rem; color: var(--muted); margin: 0.3rem 0; }
+.sources { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: baseline; font-size: 0.88rem; margin: 0.3rem 0; }
+.sources .k { color: var(--muted); font-size: 0.8rem; min-width: 6.5rem; }
+.sources .hosts { display: flex; flex-wrap: wrap; gap: 0.15rem 0.9rem; align-items: center; min-width: 0; }
+.sources .hostline + .hostline { margin-top: 0; }
+
+@media (max-width: 760px) {
+  .answer .verdict { font-size: 1.1rem; }
+  .card { padding: 0.8rem 0.75rem; }
+  .dumbbell { --agent: 5.5rem; --gain: 3.8rem; }
+  .dgroup { grid-template-columns: minmax(0, 1fr); }
+  .dmodel { padding-top: 0.45rem; }
+  .setups > .drow { margin-left: 0; }
+  .drow { gap: 0 0.4rem; }
+  .dagent { font-size: 0.82rem; }
+  .dgain b { font-size: 0.88rem; }
+  .dumbbell.questions { --gain: 4.2rem; }
+  .drow.question { grid-template-columns: minmax(0, 1fr) var(--gain); }
+  .drow.question .qlabel { grid-column: 1 / -1; padding-top: 0.35rem; }
+  .drow.question.dhead > :first-child, .drow.question.axis > :first-child { display: none; }
+  .qgroup { grid-template-columns: minmax(0, 1fr); }
+  .qrow { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label vals" "strip strip"; padding: 0.1rem 0 0.35rem; }
+  .qrow .aname { grid-area: label; }
+  .qrow .strip, .qrow .qaxis { grid-area: strip; }
+  .qrow .rvals { grid-area: vals; }
+  .qplot > .axisrow { margin-left: 0; }
+  .qplot > .axisrow .aname, .qplot > .axisrow .rvals { display: none; }
+  .sources .k { min-width: 100%; }
+  td.who span { display: block; }
+}
 @media (max-width: 40rem) { header .tagline { display: none; } .kpi .value { font-size: 1.3rem; } }
