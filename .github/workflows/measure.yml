@@ -161,17 +161,19 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
       - run: uv sync --locked --all-extras
-      # A variant with an MCP server runs a private image from GHCR. Without the token the step does nothing, and only such a variant fails.
+      # A variant with an MCP server runs a private image from GHCR. A missing or failed login only warns, so that it fails
+      # just such a variant and never a measurement that does not need the image.
       - name: Log in to GHCR
         env:
           GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
-          if [ -z "$GHCR_TOKEN" ]; then
-            echo "no GHCR_TOKEN; a variant with a private image will fail"
+          if [ -z "$GHCR_TOKEN" ] || [ -z "$GHCR_USERNAME" ]; then
+            echo "::warning::GHCR_TOKEN or GHCR_USERNAME is not set; a variant with a private image will fail"
             exit 0
           fi
-          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin \
+            || echo "::warning::GHCR login failed; a variant with a private image will fail"
       - id: matrix
         env:
           TESTSET: ${{ inputs.testset }}
