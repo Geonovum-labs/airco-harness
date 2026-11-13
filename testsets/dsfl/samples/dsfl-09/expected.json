@@ -1,0 +1,1 @@
+{"rule":"fields","answer_schema":"answer.schema.json","expected":{"surface":{"value":4.37,"tolerance":0.005},"unit":"m","reference_plane":"NAP","top_unit":"NUAAOP","next_unit":"NUBX"},"source":"Bundle 2026-11, GEOTOP-v01r6s1-001 trace at RD (155000, 463000)."}

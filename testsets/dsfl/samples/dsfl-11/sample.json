@@ -1,0 +1,5 @@
+{
+  "task": "lookup", "standard": "dsfl", "tags": ["subsurface", "regis", "bro"],
+  "input": "Komt de Formatie van Eem volgens REGIS voor op RD (155000, 463000)? Geef alleen JSON met de booleaanse sleutel present.",
+  "metadata": {"status": "draft", "hypothesis": "The answer identifies Eem units without confusing a modelled presence with a borehole observation.", "expected_variant": 1, "location": "REGIS-v02r2s3-001, RD (155000, 463000)", "absence": false}
+}

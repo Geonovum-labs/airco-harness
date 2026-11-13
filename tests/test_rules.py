@@ -60,6 +60,24 @@ SERIES = {
     "reference_plane": "NAP",
     "connect_gaps": False,
 }
+SECTION = {
+    "arguments": {"modelId": "GEOTOP-v01r6s1-001", "points": [{"x": 153000, "y": 463000}, {"x": 157000, "y": 463000}]},
+    "result": {
+        "path": [{"x": 153000, "y": 463000}, {"x": 157000, "y": 463000}],
+        "plot": {"modelId": "GEOTOP-v01r6s1-001", "colorBy": "unit", "pathLengthMetres": 4000, "formations": [{"rectangleCount": 211}]},
+    },
+    "image": True,
+}
+TRACE = {
+    "arguments": {"modelId": "GEOTOP-v01r6s1-001", "x": 155000, "y": 463000},
+    "result": {
+        "location": {"x": 155000, "y": 463000},
+        "column": {
+            "modelId": "GEOTOP-v01r6s1-001", "verticalDatum": "NAP", "surfaceElevationNap": 4.369999885559082,
+            "layers": [{"unitCode": "NUAAOP" if i < 4 else "NUBX", "top": 4.5 - i * 0.5, "base": 4 - i * 0.5} for i in range(109)],
+        },
+    },
+}
 STADHUISPLEIN = (5.38416472, 52.15671963)
 METERS_PER_DEGREE_LON = 111_320 * 0.6097  # cos(52.157 degrees)
 RIVER = (5.3792, 52.164)  # north of the center, on no pand: a place from another source
@@ -146,6 +164,17 @@ CASES = [
     ("dsfl-07", shown([point(*(round(c, 5) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
     ("dsfl-07", shown([]), full(0, 0.0, 0)),
     ("dsfl-08", json.dumps(SERIES), full()),
+    ("dsfl-09", as_json({"surface": 4.37, "unit": "m", "reference_plane": "NAP", "top_unit": "NUAAOP", "next_unit": "NUBX"}), full()),
+    ("dsfl-10", as_json({"lithoclass": "ZM", "probability": 0.62}), full()),
+    ("dsfl-11", as_json({"present": True}), full()),
+    ("dsfl-12", as_json({"available": False, "probability": None}), full()),
+    ("dsfl-13", json.dumps(SECTION), full()),
+    ("dsfl-14", json.dumps(TRACE), full()),
+    ("dsfl-15", as_json({"line_of_sight_only": True, "proves_no_connection": False}), full()),
+    ("dsfl-10", as_json({"lithoclass": "ZM", "probability": 0.78}), full(0, 0.5, 0)),
+    ("dsfl-11", as_json({"present": False}), full(0, 0, 0)),
+    ("dsfl-12", as_json({"available": True, "probability": 0.62}), full(0, 0, 1)),
+    ("dsfl-15", as_json({"line_of_sight_only": True, "proves_no_connection": True}), full(0, 0.5, 0)),
 ]
 
 
@@ -182,6 +211,34 @@ def test_series_scores_dates_values_gaps_and_metadata():
     assert assess(points=[{"date": "2023-02-30", "value": 2}]).score_value() == full(0, 0, 0, 0)
     assert assess(points=[{"date": "2023-01-10", "value": float("nan")}]).score_value() == full(0, 0, 0, 0)
     assert rules.assess("", Case.load(TARGETS["dsfl-08"])).score_value() == full(0, 0, 0, 0)
+
+
+def test_subsurface_plot_and_trace_check_result_not_just_call():
+    from copy import deepcopy
+
+    section = Case.load(TARGETS["dsfl-13"])
+    assert not rules.assess("", section).parseable
+    for edit in (
+        lambda d: d.update(image=False),
+        lambda d: d["arguments"].update(modelId="REGIS-v02r2s3-001"),
+        lambda d: d["result"]["plot"].update(pathLengthMetres=3999),
+        lambda d: d["result"]["plot"].update(colorBy="lithoClass"),
+        lambda d: d["result"]["plot"].update(formations=[]),
+        lambda d: d["result"]["path"][0].update(y=463100),
+    ):
+        data = deepcopy(SECTION)
+        edit(data)
+        assert not rules.assess(json.dumps(data), section).correct
+    trace = Case.load(TARGETS["dsfl-14"])
+    for edit in (
+        lambda d: d["arguments"].update(x=155001),
+        lambda d: d["result"]["column"].update(verticalDatum="maaiveld"),
+        lambda d: d["result"]["column"]["layers"].pop(),
+        lambda d: d["result"]["column"]["layers"][3].update(base=1),
+    ):
+        data = deepcopy(TRACE)
+        edit(data)
+        assert not rules.assess(json.dumps(data), trace).correct
 
 
 def test_point_map_can_score_a_zero_result_selection():

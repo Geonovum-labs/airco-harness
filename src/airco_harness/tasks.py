@@ -48,7 +48,7 @@ VARIANTS = {
     "mcp-groundwater-monitoring": Variant(
         "Variant 0 plus the groundwater monitoring MCP server on BRO data (github.com/sjaakd/mcp-groundwater-monitoring).",
         mcp=("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod", GROUNDWATER_MONITORING_IMAGE),
-        tags=("bro",),
+        tags=("groundwater",),
     ),
     "mcp-bag-ldproxy": Variant(
         "Variant 0 plus the MCP server of the BAG API on bag.ldproxy.net, which holds Amersfoort only (BAG extract of 8 October 2026).",

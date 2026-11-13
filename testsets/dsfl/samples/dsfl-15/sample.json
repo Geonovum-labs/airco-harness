@@ -1,0 +1,5 @@
+{
+  "task": "assess", "standard": "dsfl", "tags": ["subsurface", "geotop", "bro"],
+  "input": "Een GeoTOP-controle langs één lijn op RD (155000, 463000) vindt een aaneengesloten kleiband. Bewijst dit dat geen hydraulische verbinding bestaat buiten die lijn? Geef alleen JSON met line_of_sight_only en proves_no_connection als booleans.",
+  "metadata": {"status": "draft", "hypothesis": "Line-of-sight continuity is not proof of hydraulic separation away from the sampled line.", "expected_variant": 1, "location": "subsurface-models.band-confinement interpretation", "absence": false}
+}

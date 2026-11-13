@@ -1,0 +1,5 @@
+{
+  "task": "lookup", "standard": "dsfl", "tags": ["subsurface", "geotop", "bro"],
+  "input": "Welke lithoklasse is volgens GeoTOP het meest waarschijnlijk op RD (155000, 463000), op -12,25 m NAP, en wat is de opgeslagen kans? Geef de kans als getal tussen 0 en 1, zonder herberekening. Geef alleen JSON met de sleutels lithoclass en probability.",
+  "metadata": {"status": "draft", "hypothesis": "The answer uses the stored probability of the voxel containing the requested elevation.", "expected_variant": 1, "location": "GEOTOP-v01r6s1-001, voxel -12.0 to -12.5 m NAP", "absence": false}
+}

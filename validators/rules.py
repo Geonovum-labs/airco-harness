@@ -4,12 +4,14 @@ Each rule fills four of the five score keys (`source` comes from the tool log, s
 airco_harness.scorers). A rule never raises on a malformed answer: it reports
 parseable 0 and correct 0 instead. Rules are selected by the "rule" key in a
 case's expected.json: `fields` for a JSON answer, `map` for what the agent
-showed on the map, and `series` for data passed to a plot.
+showed on the map, `series` for data passed to a plot, and `section` and
+`trace` for selected properties of subsurface tool results.
 """
 
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cache
@@ -118,7 +120,7 @@ def _invented_terms(values: list) -> list[str]:
 
 
 def rule_fields(answer: str, case: Case) -> Assessment:
-    """Named fields, each with an expected value or alternatives; a wrong value in a term field that the reference model does not know is invented."""
+    """Named fields, with optional known-term and explicitly invented-value checks."""
     data, failure, details = _json_answer(answer, case)
     if failure:
         return failure
@@ -126,10 +128,11 @@ def rule_fields(answer: str, case: Case) -> Assessment:
     wrong = {key: {"expected": want, "given": data.get(key)} for key, want in fields.items() if not any(_matches(data.get(key), a) for a in _accepted(want))}
     term_values = [data.get(k) for k in case.expected.get("term_fields", []) if k in wrong]
     invented = _invented_terms(term_values)
-    details |= {"wrong": wrong, "invented_terms": invented}
+    invented_fields = [key for key in case.expected.get("invented_fields", []) if key in wrong]
+    details |= {"wrong": wrong, "invented_terms": invented, "invented_fields": invented_fields}
     complete = 1 - len(wrong) / len(fields)
-    return Assessment(not wrong and not invented, complete, len(invented), True,
-                      f"wrong: {sorted(wrong)}; invented: {invented}", details)  # fmt: skip
+    return Assessment(not wrong and not invented and not invented_fields, complete, len(invented) + len(invented_fields), True,
+                      f"wrong: {sorted(wrong)}; invented: {invented}; invented fields: {invented_fields}", details)  # fmt: skip
 
 
 def rule_map(answer: str, case: Case) -> Assessment:
@@ -202,7 +205,85 @@ def rule_series(answer: str, case: Case) -> Assessment:
     return Assessment(correct, complete, invented, True, f"{matched} of {len(wanted)} days match; {invented} invented; metadata wrong: {metadata_wrong}; ordered: {ordered}", details)
 
 
-RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map, "series": rule_series}
+def _tool_payload(answer: str) -> tuple[dict | None, Assessment | None]:
+    try:
+        data = json.loads(answer)
+    except ValueError:
+        return None, unparseable("no successful tool result")
+    if not isinstance(data, dict) or not isinstance(data.get("arguments"), dict) or not isinstance(data.get("result"), dict):
+        return None, unparseable("malformed tool result")
+    return data, None
+
+
+def _number(value: object) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def rule_section(answer: str, case: Case) -> Assessment:
+    """Assess the requested plot call and its metadata; the plot is not a paged section."""
+    data, failure = _tool_payload(answer)
+    if failure:
+        return failure
+    args, result = data["arguments"], data["result"]
+    plot, path = result.get("plot"), result.get("path")
+    if not isinstance(plot, dict) or not isinstance(path, list) or not isinstance(args.get("points"), list):
+        return unparseable("malformed section plot")
+    def valid_path(points: list) -> bool:
+        return len(points) >= 2 and all(isinstance(p, dict) and _number(p.get("x")) and _number(p.get("y")) for p in points)
+    if not valid_path(path) or not valid_path(args["points"]) or not _number(plot.get("pathLengthMetres")):
+        return unparseable("malformed section path or length")
+    want = case.expected
+    def matches_path(points: list) -> bool:
+        return (points[0] == want["path"][0] and points[-1] == want["path"][-1]
+                and all(p["y"] == want["path"][0]["y"] for p in points)
+                and all(a["x"] <= b["x"] for a, b in zip(points, points[1:])))
+    formations = plot.get("formations")
+    checks = {
+        "path": matches_path(args["points"]) and matches_path(path) and args["points"] == path,
+        "model": args.get("modelId") == plot.get("modelId") == want["model_id"],
+        "color": args.get("colorBy", "unit") == plot.get("colorBy") == want["color_by"],
+        "length": abs(plot["pathLengthMetres"] - want["length_m"]) <= 0.01,
+        "image": data.get("image") is True,
+        "geometry": isinstance(formations, list) and any(
+            isinstance(f, dict) and _number(f.get("rectangleCount")) and f["rectangleCount"] > 0 for f in formations
+        ),
+    }
+    wrong = [key for key, ok in checks.items() if not ok]
+    return Assessment(not wrong, (len(checks) - len(wrong)) / len(checks), 0, True, f"section checks failed: {wrong}", {"wrong": wrong})
+
+
+def rule_trace(answer: str, case: Case) -> Assessment:
+    """Assess the returned column's location, upper units and extent, not a rendered Appelboor."""
+    data, failure = _tool_payload(answer)
+    if failure:
+        return failure
+    args, result = data["arguments"], data["result"]
+    column = result.get("column")
+    if not isinstance(column, dict) or not isinstance(column.get("layers"), list):
+        return unparseable("malformed trace")
+    layers = column["layers"]
+    if not layers or any(not isinstance(layer, dict) or not isinstance(layer.get("unitCode"), str)
+                         or not _number(layer.get("top")) or not _number(layer.get("base")) for layer in layers):
+        return unparseable("malformed trace layers")
+    distinct = [layer["unitCode"] for i, layer in enumerate(layers) if i == 0 or layer["unitCode"] != layers[i-1]["unitCode"]]
+    want = case.expected
+    location = want["location"]
+    checks = {
+        "location": result.get("location") == location and all(args.get(k) == v for k, v in location.items()),
+        "model": args.get("modelId") == column.get("modelId") == want["model_id"],
+        "surface": _matches(column.get("surfaceElevationNap"), {"value": want["surface"], "tolerance": want["surface_tolerance"]}),
+        "datum": column.get("verticalDatum") == "NAP",
+        "units": distinct[:len(want["top_units"])] == want["top_units"],
+        "extent": len(layers) == want["layer_count"] and layers[-1]["base"] == want["bottom"]
+                  and all(a["base"] == b["top"] for a, b in zip(layers, layers[1:])),
+    }
+    wrong = [key for key, ok in checks.items() if not ok]
+    return Assessment(not wrong, (len(checks) - len(wrong)) / len(checks), 0, True, f"trace checks failed: {wrong}", {"wrong": wrong})
+
+
+RULES: dict[str, Callable[[str, Case], Assessment]] = {
+    "fields": rule_fields, "map": rule_map, "series": rule_series, "section": rule_section, "trace": rule_trace,
+}
 
 
 def assess(answer: str, case: Case) -> Assessment:

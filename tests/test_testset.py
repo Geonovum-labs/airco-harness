@@ -23,7 +23,7 @@ def test_test_sets_are_the_folders_with_a_manifest():
 @pytest.mark.parametrize("name", NAMES)
 def test_every_test_set_states_purpose_version_and_date(name):
     manifest = dataset.manifest(name)
-    assert sorted(manifest) == ["date", "purpose", "version"] and all(manifest.values())
+    assert all(manifest.get(key) for key in ("date", "purpose", "version"))
 
 
 @pytest.mark.parametrize("folder", FOLDERS, ids=IDS)

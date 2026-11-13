@@ -2,7 +2,8 @@
   "task": "lookup",
   "standard": "dsfl",
   "tags": [
-    "bro"
+    "bro",
+    "groundwater"
   ],
   "input": "Wat was de gemiddelde grondwaterstand op 21 september 2026 in meetbuis 1 van peilbuis GMW000000009441 in Amersfoort? Bereken het daggemiddelde van de beschikbare voorlopige metingen op die kalenderdag in Nederlandse tijd. Geef de stijghoogte in meter ten opzichte van NAP. Antwoord met alleen een JSON-object met de sleutels \"value\" (getal), \"unit\" (\"m\") en \"reference_plane\" (\"NAP\").",
   "metadata": {

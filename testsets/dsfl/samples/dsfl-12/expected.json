@@ -1,0 +1,1 @@
+{"rule":"fields","answer_schema":"answer.schema.json","expected":{"available":false,"probability":null},"invented_fields":["probability"],"source":"REGIS model contract: lithoclass probabilities are GeoTOP data, not REGIS data."}

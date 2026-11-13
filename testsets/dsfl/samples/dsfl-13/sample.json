@@ -1,0 +1,5 @@
+{
+  "task": "lookup", "standard": "dsfl", "tags": ["subsurface", "geotop", "bro"],
+  "input": "Maak met GeoTOP een west-oostdoorsnede van RD (153000, 463000) naar RD (157000, 463000), ingekleurd naar eenheid. Toon de afbeelding met subsurface-models.section-plot.",
+  "metadata": {"status": "draft", "hypothesis": "A plot must use the requested path and model, and return a picture rather than a truncated data page.", "expected_variant": 1, "location": "GEOTOP-v01r6s1-001 section-plot", "absence": false}
+}

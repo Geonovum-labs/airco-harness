@@ -10,7 +10,7 @@ import json
 import re
 import urllib.parse
 
-from inspect_ai.model import ChatMessage, ContentToolUse
+from inspect_ai.model import ChatMessage, ContentImage, ContentToolUse
 from inspect_ai.scorer import Score, Target, mean, scorer, stderr
 from inspect_ai.solver import TaskState
 
@@ -74,6 +74,32 @@ def series_shown(messages: list[ChatMessage]) -> str:
     if not shown:
         return ""
     return shown[-1] if isinstance(shown[-1], str) else json.dumps(shown[-1], ensure_ascii=False)
+
+
+def subsurface_result(messages: list[ChatMessage], tool: str) -> str:
+    """The last successful matching tool call and its returned JSON and image, if present."""
+    results = {m.tool_call_id: m for m in messages if m.role == "tool"}
+    found = ""
+    names = {f"subsurface-models.{tool}", f"subsurface-models_{tool}", f"mcp__subsurface-models__subsurface-models.{tool}",
+             f"mcp__subsurface-models__subsurface-models_{tool}"}
+    for message in messages:
+        if message.role != "assistant":
+            continue
+        for call in message.tool_calls or []:
+            result = results.get(call.id)
+            if call.function not in names or result is None or result.error is not None:
+                continue
+            try:
+                payload = json.loads(result.text)
+            except ValueError:
+                found = ""
+                continue
+            if not isinstance(payload, dict) or "code" in payload:
+                found = ""
+                continue
+            image = isinstance(result.content, list) and any(isinstance(c, ContentImage) for c in result.content)
+            found = json.dumps({"arguments": call.arguments or {}, "result": payload, "image": image}, ensure_ascii=False)
+    return found
 
 
 URL_IN_CODE = re.compile(r"https?://[^\s'\"<>`|\\]+")
@@ -152,11 +178,18 @@ def retrievals(messages: list[ChatMessage]) -> list[dict]:
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})
 def quality():
     """correct, complete, invented and parseable from the rule named in the sample's expected.json.
-    The answer is the last message, or the data passed to the map or series tool."""
+    The answer is the last message, map or series data, or a subsurface tool call and result."""
 
     async def score(state: TaskState, target: Target) -> Score:
         case = rules.Case.load(target.text)
-        answer = map_shown(state.messages) if case.rule == "map" else series_shown(state.messages) if case.rule == "series" else state.output.completion
+        if case.rule == "map":
+            answer = map_shown(state.messages)
+        elif case.rule == "series":
+            answer = series_shown(state.messages)
+        elif case.rule in ("section", "trace"):
+            answer = subsurface_result(state.messages, "section-plot" if case.rule == "section" else "trace")
+        else:
+            answer = state.output.completion
         result = await asyncio.to_thread(rules.assess, answer, case)
         return Score(value=result.score_value(), answer=answer, explanation=result.explanation, metadata={"rule": case.rule, **result.details})
 

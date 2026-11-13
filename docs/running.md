@@ -54,7 +54,7 @@ A variant is what the agent gets besides the question, chosen with `-T variant=`
 | Variant | What the agent gets | Samples by default |
 | --- | --- | --- |
 | `0` (default) | The question alone | All |
-| `mcp-groundwater-monitoring` | Variant 0 plus the groundwater monitoring MCP server on BRO data, for the agent `inspect` only | Those tagged `bro` |
+| `mcp-groundwater-monitoring` | Variant 0 plus the groundwater monitoring MCP server on BRO data, for the agent `inspect` only | Those tagged `groundwater` |
 | `mcp-bag-ldproxy` | Variant 0 plus the MCP server of the BAG API on bag.ldproxy.net, for the agents `inspect` and `claude-code` | Those tagged `bag` |
 
 `mcp-bag-ldproxy` reaches a public server over Streamable HTTP, without a key. Claude Code gets it as the MCP server `bag` in its own configuration, reaches it from the sandbox, and passes the server's instructions to the model itself. The agent `model` has no tools, so the matrix skips it for every variant with an MCP server. That server is not pinned: the log records the tools it offered, but if it changes its data or tools, a later measurement measures another server. It offers 18 tools whose definitions take about 91,000 tokens, and the token limit of a run counts them with every model call, cached or not (13 November 2026).
@@ -73,7 +73,7 @@ The updated server sends the same JSON in MCP `content` and `structuredContent`;
 
 The server's `series.daily` chooses an eligible reading closest to noon by its priority rule; it does **not** calculate a daily mean. The `dsfl-06` and `dsfl-08` questions ask for means of provisional readings, so an agent must use bounded `series.get` calls for the appropriate GLD, check truncation, and calculate the mean itself. Missing days remain gaps. Server-side full-range access and moving `unit` and `referencePlane` to the series level remain open.
 
-`--ids` or `--tags` choose other samples than a variant's default, also for a variant with an MCP server. `--tags bro` runs only the samples tagged `bro`, on every variant.
+`--ids` or `--tags` choose other samples than a variant's default, also for a variant with an MCP server. In `dsfl`, `--tags groundwater` selects the three groundwater questions; `--tags bag,groundwater` selects the original eight questions without the subsurface drafts. `--tags subsurface` selects the seven subsurface questions, whose MCP integration is not configured yet. `--tags bro` includes both groundwater and subsurface questions, on every variant.
 
 Claude Code sends a system prompt of tens of thousands of tokens per call, so a run costs more than with the agent `model`, and `message_limit` counts two messages per tool call. The defaults of 60 messages, 600,000 tokens, 900 seconds and $2 are a starting point; the report shows which limits a measurement hit. The cost limit was $0.50 until a map question in the dsfl test set stopped every Opus run before it showed the map: reading the BAG costs 200,000 to 400,000 tokens.
 

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"surface":{"type":"number"},"unit":{"type":"string"},"reference_plane":{"type":"string"},"top_unit":{"type":"string"},"next_unit":{"type":"string"}},"required":["surface","unit","reference_plane","top_unit","next_unit"]}

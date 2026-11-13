@@ -1,0 +1,5 @@
+{
+  "task": "lookup", "standard": "dsfl", "tags": ["subsurface", "regis", "bro"],
+  "input": "Geeft het REGIS-model op RD (155000, 463000) lithoklassekansen zoals GeoTOP die geeft? Geef alleen JSON met available (boolean) en probability (getal of null); gebruik null als deze informatie niet beschikbaar is.",
+  "metadata": {"status": "draft", "hypothesis": "The answer does not invent a probability from a model that does not supply lithoclass probabilities.", "expected_variant": 1, "location": "REGIS-v02r2s3-001", "absence": true}
+}

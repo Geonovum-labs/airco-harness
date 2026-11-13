@@ -63,16 +63,19 @@ def test_unknown_variant_agent_sample_or_test_set():
     assert [s.id for s in airco(ids=" imgeo-G04-03 ,").dataset] == ["imgeo-G04-03"]
     with pytest.raises(ValueError, match="unknown sample ids: imgeo-G99-01"):
         airco(ids="imgeo-G04-03,imgeo-G99-01")
-    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-0{n}" for n in range(1, 9)]
+    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-{n:02}" for n in range(1, 16)]
     with pytest.raises(ValueError, match="unknown test set 'nl-sbb'; choose from dsfl, imgeo"):
         airco(testset="nl-sbb")
 
 
 def test_tags_select_the_samples_with_one_of_them():
-    assert [s.id for s in airco(testset="dsfl", tags="bro").dataset] == ["dsfl-06", "dsfl-07", "dsfl-08"]
-    assert [s.id for s in airco(testset="dsfl", tags="bro,bag").dataset] == [f"dsfl-0{n}" for n in range(1, 9)]
+    assert [s.id for s in airco(testset="dsfl", tags="bro").dataset] == [f"dsfl-{n:02}" for n in range(6, 16)]
+    assert [s.id for s in airco(testset="dsfl", tags="bro,bag").dataset] == [f"dsfl-{n:02}" for n in range(1, 16)]
     assert [s.id for s in airco(testset="dsfl", tags="bro", ids="dsfl-01,dsfl-06").dataset] == ["dsfl-06"]
-    assert airco(testset="dsfl", tags="bro").dataset[0].metadata["tags"] == ["bro"]
+    assert airco(testset="dsfl", tags="bro").dataset[0].metadata["tags"] == ["bro", "groundwater"]
+    assert [s.id for s in airco(testset="dsfl", tags="subsurface").dataset] == [f"dsfl-{n:02}" for n in range(9, 16)]
+    assert [s.id for s in airco(testset="dsfl", tags="groundwater").dataset] == ["dsfl-06", "dsfl-07", "dsfl-08"]
+    assert [s.id for s in airco(testset="dsfl", tags="bag,groundwater").dataset] == [f"dsfl-{n:02}" for n in range(1, 9)]
 
 
 GROUNDWATER = "mcp-groundwater-monitoring"

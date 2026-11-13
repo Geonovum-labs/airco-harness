@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"line_of_sight_only":{"type":"boolean"},"proves_no_connection":{"type":"boolean"}},"required":["line_of_sight_only","proves_no_connection"]}

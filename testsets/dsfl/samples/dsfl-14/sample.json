@@ -1,0 +1,5 @@
+{
+  "task": "lookup", "standard": "dsfl", "tags": ["subsurface", "geotop", "bro"],
+  "input": "Haal voor een Appelboor de volledige verticale GeoTOP-kolom op voor RD (155000, 463000) met subsurface-models.trace. Geef aan dat dit kolomdata zijn en geen getekende Appelboor.",
+  "metadata": {"status": "draft", "hypothesis": "The trace supplies the vertical column at the requested point, without presenting the data as a rendered Appelboor.", "expected_variant": 1, "location": "GEOTOP-v01r6s1-001 trace", "absence": false}
+}
