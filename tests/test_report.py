@@ -186,16 +186,16 @@ def test_matrix_counts_the_runs_of_each_variant_on_its_own_samples(monkeypatch, 
     monkeypatch.setattr(sys, "argv", [*argv, "--variants", "0,mcp-groundwater-monitoring"])
     matrix.main()
     out = capsys.readouterr().out
-    assert "variant 0: 7 samples x 2 agent-model pairs x 2 epochs = 28 runs" in out
-    assert "variant mcp-groundwater-monitoring: 2 samples x 1 agent-model pairs x 2 epochs = 4 runs" in out
-    assert "32 runs (2 variants, 2 agents, 1 models)" in out
+    assert "variant 0: 8 samples x 2 agent-model pairs x 2 epochs = 32 runs" in out
+    assert "variant mcp-groundwater-monitoring: 3 samples x 1 agent-model pairs x 2 epochs = 6 runs" in out
+    assert "38 runs (2 variants, 2 agents, 1 models)" in out
     assert "variant mcp-groundwater-monitoring has an MCP server that the agent model does not take; skipped" in out
 
 
 def test_matrix_tags_narrow_every_variant(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["airco-matrix", "--testset", "dsfl", "--models", "mockllm/model", "--tags", "bro", "--epochs", "1", "--plan"])
     matrix.main()
-    assert "variant 0: 2 samples x 1 agent-model pairs x 1 epochs = 2 runs" in capsys.readouterr().out
+    assert "variant 0: 3 samples x 1 agent-model pairs x 1 epochs = 3 runs" in capsys.readouterr().out
 
 
 def test_matrix_stops_when_no_variant_has_samples(monkeypatch, capsys):
