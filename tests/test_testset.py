@@ -17,7 +17,7 @@ RULES = set(rules.RULES)
 
 
 def test_test_sets_are_the_folders_with_a_manifest():
-    assert NAMES == ["dsfl", "imgeo", "subsurface"]
+    assert NAMES == ["dsfl", "imgeo"]
 
 
 @pytest.mark.parametrize("name", NAMES)

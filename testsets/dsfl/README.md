@@ -12,6 +12,13 @@ Questions for the Dataspace Fysieke Leefomgeving, as a citizen asks them about t
 | `dsfl-06` | Wat was de gemiddelde grondwaterstand op 21 september 2026 in meetbuis 1 van peilbuis GMW000000009441? | `fields` |
 | `dsfl-07` | Which groundwater monitoring wells are within 500 meters of Stadhuisplein 1, on the map | `map` |
 | `dsfl-08` | Maak een grafiek van de dagelijkse gemiddelde grondwaterstand in meetbuis 1 van GMW000000009441 van 10 tot en met 20 januari 2023 | `series` |
+| `dsfl-09` | Surface elevation and upper GeoTOP units | `fields` |
+| `dsfl-10` | Most probable lithoclass in a GeoTOP voxel | `fields` |
+| `dsfl-11` | Eem formation in REGIS | `fields` |
+| `dsfl-12` | Lithoclass probabilities absent from REGIS | `fields` |
+| `dsfl-13` | GeoTOP cross-section picture | `section` |
+| `dsfl-14` | GeoTOP vertical column for an Appelboor | `trace` |
+| `dsfl-15` | Limits of line-of-sight evidence for confinement | `fields` |
 
 The deck leaves the place open ("the city I live in", "the municipality") or names Vlaardingen. Every sample uses Amersfoort. The deck wording of each BAG question is in the `note` of its `expected.json`, with the choices the sample makes where the question is open: a definition of "building", "construction" or "house", and a time window fixed at 12 November 2026.
 
@@ -20,3 +27,17 @@ The samples have `status: draft`; the working group has to approve each definiti
 The BRO questions are a first check that the mechanism works, using the public BRO services at publiek.broservices.nl. Their `note` carries an "Origin" line instead of the deck wording. The BRO files in `sources/dsfl/` include the characteristics search of the wells within 1 km of Stadhuisplein 1, the wells of that search as a GeoJSON derived from it (the lock records it as `derived`), and the series of one tube. The values of `dsfl-06` and `dsfl-08` are provisional and have to be checked again before approval.
 
 `dsfl-03`, `dsfl-04` and `dsfl-05` are scored with the rule `map` against a BAG extract in `sources/dsfl/`, and `dsfl-07` against the wells as points. The samples name no defect, because the defects G1 to G13 belong to the IMGeo test set note. The version is in `testset.json`.
+
+## Subsurface models
+
+`dsfl-09` to `dsfl-15` are seven draft questions about GeoTOP and REGIS at RD (155000, 463000). Their local reference bundle is version `2026-11`; its manifest SHA-256 and model identifiers are in `testset.json`. The bundle is distributed separately and is not included in this repository. A manifest hash identifies the manifest; verifying the files themselves requires checking their checksums against it.
+
+The cross-section is scored from the successful `section-plot` call and its JSON and PNG result, not by inspecting the picture. That tool produces a complete plot and has no pagination; `section` is a different, paginated data tool. The vertical-column question scores a `trace` result, not an Appelboor drawing, because the server does not draw one. The scores check selected properties, not all cells or the geological interpretation.
+
+The harness does not yet start the subsurface server, connect Claude Code to it, attribute its calls as an authoritative source, or report response-size metrics. The reference values and the server's behavior need review before approving the samples.
+
+### Selecting questions with tags
+
+Use `--testset dsfl --tags bag,groundwater` with `airco-matrix` to run the existing eight questions without the subsurface drafts. Use `--tags subsurface` to select the seven new questions when their integration is ready. Tags select any matching sample: `bro` includes both groundwater and subsurface questions. A DSFL run without a tag or id filter includes all fifteen samples.
+
+The groundwater MCP variant defaults to the `groundwater` tag, so it still selects only `dsfl-06` to `dsfl-08`. No subsurface MCP variant is configured yet. Tags select questions; they do not launch a server. The tool-dependent subsurface samples cannot pass without their server; the `fields` samples can still be parseable without tools.

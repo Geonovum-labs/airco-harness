@@ -88,9 +88,9 @@ The expected `points` map contains every day of the requested period, with null 
 
 ### The rules `section` and `trace`
 
-The `subsurface` draft set scores selected properties of the last successful subsurface MCP tool result. `section` checks the `section-plot` call and returned path, model, coloring, path length, nonempty geometry and presence of an image. It does not interpret the image. `trace` checks the requested point, model, datum, surface, upper units and column extent; it does not score a rendered Appelboor or every voxel. Neither rule claims that the data prove a geological interpretation. The section plot is not paginated; `subsurface-models.section` is a separate paginated tool.
+The subsurface draft questions in `dsfl` score selected properties of the last successful subsurface MCP tool result. `section` checks the `section-plot` call and returned path, model, coloring, path length, nonempty geometry and presence of an image. It does not interpret the image. `trace` checks the requested point, model, datum, surface, upper units and column extent; it does not score a rendered Appelboor or every voxel. Neither rule claims that the data prove a geological interpretation. The section plot is not paginated; `subsurface-models.section` is a separate paginated tool.
 
-The subsurface server is not yet attached to either agent, and MCP calls do not yet count as a `source`. See the [subsurface test set](../testsets/subsurface/README.md) for the reference bundle and the remaining integration work.
+The subsurface server is not yet attached to either agent, and MCP calls do not yet count as a `source`. See the [DSFL test set](../testsets/dsfl/README.md#subsurface-models) for the reference bundle, tag selection and the remaining integration work.
 
 ### The scorer `source`
 

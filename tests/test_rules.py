@@ -164,17 +164,17 @@ CASES = [
     ("dsfl-07", shown([point(*(round(c, 5) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
     ("dsfl-07", shown([]), full(0, 0.0, 0)),
     ("dsfl-08", json.dumps(SERIES), full()),
-    ("subsurface-01", as_json({"surface": 4.37, "unit": "m", "reference_plane": "NAP", "top_unit": "NUAAOP", "next_unit": "NUBX"}), full()),
-    ("subsurface-02", as_json({"lithoclass": "ZM", "probability": 0.62}), full()),
-    ("subsurface-03", as_json({"present": True}), full()),
-    ("subsurface-04", as_json({"available": False, "probability": None}), full()),
-    ("subsurface-05", json.dumps(SECTION), full()),
-    ("subsurface-06", json.dumps(TRACE), full()),
-    ("subsurface-07", as_json({"line_of_sight_only": True, "proves_no_connection": False}), full()),
-    ("subsurface-02", as_json({"lithoclass": "ZM", "probability": 0.78}), full(0, 0.5, 0)),
-    ("subsurface-03", as_json({"present": False}), full(0, 0, 0)),
-    ("subsurface-04", as_json({"available": True, "probability": 0.62}), full(0, 0, 1)),
-    ("subsurface-07", as_json({"line_of_sight_only": True, "proves_no_connection": True}), full(0, 0.5, 0)),
+    ("dsfl-09", as_json({"surface": 4.37, "unit": "m", "reference_plane": "NAP", "top_unit": "NUAAOP", "next_unit": "NUBX"}), full()),
+    ("dsfl-10", as_json({"lithoclass": "ZM", "probability": 0.62}), full()),
+    ("dsfl-11", as_json({"present": True}), full()),
+    ("dsfl-12", as_json({"available": False, "probability": None}), full()),
+    ("dsfl-13", json.dumps(SECTION), full()),
+    ("dsfl-14", json.dumps(TRACE), full()),
+    ("dsfl-15", as_json({"line_of_sight_only": True, "proves_no_connection": False}), full()),
+    ("dsfl-10", as_json({"lithoclass": "ZM", "probability": 0.78}), full(0, 0.5, 0)),
+    ("dsfl-11", as_json({"present": False}), full(0, 0, 0)),
+    ("dsfl-12", as_json({"available": True, "probability": 0.62}), full(0, 0, 1)),
+    ("dsfl-15", as_json({"line_of_sight_only": True, "proves_no_connection": True}), full(0, 0.5, 0)),
 ]
 
 
@@ -216,7 +216,7 @@ def test_series_scores_dates_values_gaps_and_metadata():
 def test_subsurface_plot_and_trace_check_result_not_just_call():
     from copy import deepcopy
 
-    section = Case.load(TARGETS["subsurface-05"])
+    section = Case.load(TARGETS["dsfl-13"])
     assert not rules.assess("", section).parseable
     for edit in (
         lambda d: d.update(image=False),
@@ -229,7 +229,7 @@ def test_subsurface_plot_and_trace_check_result_not_just_call():
         data = deepcopy(SECTION)
         edit(data)
         assert not rules.assess(json.dumps(data), section).correct
-    trace = Case.load(TARGETS["subsurface-06"])
+    trace = Case.load(TARGETS["dsfl-14"])
     for edit in (
         lambda d: d["arguments"].update(x=155001),
         lambda d: d["result"]["column"].update(verticalDatum="maaiveld"),

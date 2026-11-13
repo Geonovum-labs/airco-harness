@@ -1,5 +1,5 @@
 {
-  "task": "lookup", "standard": "subsurface", "tags": ["subsurface", "geotop", "bro"],
+  "task": "lookup", "standard": "dsfl", "tags": ["subsurface", "geotop", "bro"],
   "input": "Wat is in GeoTOP op RD (155000, 463000) de maaiveldhoogte in meter NAP, wat is de bovenste eenheid en welke eenheid ligt daar direct onder? Geef alleen JSON met de sleutels surface, unit, reference_plane, top_unit en next_unit.",
   "metadata": {"status": "draft", "hypothesis": "The answer must distinguish surface elevation from voxel boundaries and identify the first two distinct units.", "expected_variant": 1, "location": "GEOTOP-v01r6s1-001, RD (155000, 463000)", "absence": false}
 }
