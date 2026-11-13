@@ -4,7 +4,7 @@ Each rule fills four of the five score keys (`source` comes from the tool log, s
 airco_harness.scorers). A rule never raises on a malformed answer: it reports
 parseable 0 and correct 0 instead. Rules are selected by the "rule" key in a
 case's expected.json: `fields` for a JSON answer, `map` for what the agent
-showed on the map.
+showed on the map, and `series` for data passed to a plot.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from pathlib import Path
 
 from jsonschema import validators
 
-from . import answers, geo
+from . import answers, geo, series
 from .refmodel import ReferenceModel, normalize
 
 TESTSETS_DIR = Path(__file__).resolve().parent.parent / "testsets"
@@ -96,8 +96,15 @@ def _same(answer: object, expected: object) -> bool:
 
 
 def _accepted(want: object) -> list[object]:
-    """`want` is a literal, or {"one_of": [...]} for alternatives."""
-    return want["one_of"] if isinstance(want, dict) else [want]
+    """`want` is a literal, alternatives, or a numeric value with tolerance."""
+    return want["one_of"] if isinstance(want, dict) and "one_of" in want else [want]
+
+
+def _matches(answer: object, want: object) -> bool:
+    if isinstance(want, dict) and "tolerance" in want:
+        return (isinstance(answer, (int, float)) and not isinstance(answer, bool)
+                and abs(answer - want["value"]) <= want["tolerance"])
+    return _same(answer, want)
 
 
 def _invented_terms(values: list) -> list[str]:
@@ -116,7 +123,7 @@ def rule_fields(answer: str, case: Case) -> Assessment:
     if failure:
         return failure
     fields: dict[str, object] = case.expected["expected"]
-    wrong = {key: {"expected": want, "given": data.get(key)} for key, want in fields.items() if not any(_same(data.get(key), a) for a in _accepted(want))}
+    wrong = {key: {"expected": want, "given": data.get(key)} for key, want in fields.items() if not any(_matches(data.get(key), a) for a in _accepted(want))}
     term_values = [data.get(k) for k in case.expected.get("term_fields", []) if k in wrong]
     invented = _invented_terms(term_values)
     details |= {"wrong": wrong, "invented_terms": invented}
@@ -126,8 +133,7 @@ def rule_fields(answer: str, case: Case) -> Assessment:
 
 
 def rule_map(answer: str, case: Case) -> Assessment:
-    """Places on the map, matched to the panden of the reference extract: every pand in `must`
-    has to be on it, and a place that matches no pand of the extract is invented.
+    """Places on the map, matched to the features of the reference extract.
 
     `answer` is the GeoJSON the agent passed to show_on_map, or "" when it showed no map.
     """
@@ -139,19 +145,64 @@ def rule_map(answer: str, case: Case) -> Assessment:
         return unparseable(f"not GeoJSON: {error}")
     reference = geo.Reference.load(case.expected["reference"])
     tolerance = case.expected["tolerance_m"]
-    matched = [(place, reference.nearest(place, tolerance)) for place in places]
-    shown = {pand for _, pand in matched if pand}
     must = set(case.expected["must"])
+    if "optional" in case.expected:
+        identifiers = reference.assign_points(places, tolerance, must | set(case.expected["optional"]))
+    else:
+        identifiers = [reference.nearest(place, tolerance) for place in places]
+    matched = list(zip(places, identifiers))
+    shown = {identifier for _, identifier in matched if identifier}
     missing = sorted(must - shown)
-    unmatched = [[round(place.x, 6), round(place.y, 6)] for place, pand in matched if pand is None]
+    unmatched = [[round(place.x, 6), round(place.y, 6)] for place, identifier in matched if identifier is None]
     details = {"places": len(places), "shown": sorted(shown), "missing": missing, "unmatched": unmatched,
                "swapped": sum(geo.swapped(place) for place, _ in matched)}  # fmt: skip
-    complete = 1 - len(missing) / len(must)
+    complete = 1 - len(missing) / len(must) if must else 1.0
     return Assessment(not missing and not unmatched, complete, len(unmatched), True,
-                      f"{len(must) - len(missing)} of {len(must)} required panden shown; {len(unmatched)} places match no pand", details)  # fmt: skip
+                      f"{len(must) - len(missing)} of {len(must)} required features shown; {len(unmatched)} places match no allowed feature", details)  # fmt: skip
 
 
-RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map}
+def rule_series(answer: str, case: Case) -> Assessment:
+    """Score the daily values and gaps passed to the plot, not its rendered image."""
+    if not answer.strip():
+        return unparseable("no plot shown")
+    try:
+        data = json.loads(answer)
+    except ValueError:
+        return unparseable("no JSON plot data")
+    error = series.validate(data)
+    if error:
+        return unparseable(error)
+    wanted = case.expected["points"]
+    tolerance = case.expected["tolerance"]
+    by_date = {}
+    extras = []
+    for point in data["points"]:
+        date, value = point["date"], point["value"]
+        if date in by_date or date not in wanted:
+            extras.append(date)
+        else:
+            by_date[date] = value
+    missing, wrong, filled_gaps = [], [], []
+    for date, value in wanted.items():
+        if date not in by_date:
+            missing.append(date)
+        elif value is None:
+            if by_date[date] is not None:
+                filled_gaps.append(date)
+        elif not _matches(by_date[date], {"value": value, "tolerance": tolerance}):
+            wrong.append(date)
+    dates = [point["date"] for point in data["points"]]
+    ordered = dates == sorted(dates)
+    metadata_wrong = [key for key in ("unit", "reference_plane", "connect_gaps") if not _same(data[key], case.expected[key])]
+    matched = len(wanted) - len(missing) - len(wrong) - len(filled_gaps)
+    invented = len(extras) + len(filled_gaps)
+    details = {"missing": missing, "wrong": wrong, "filled_gaps": filled_gaps, "extra": extras, "metadata_wrong": metadata_wrong, "ordered": ordered}
+    complete = matched / len(wanted) if wanted else 1.0
+    correct = not missing and not wrong and not invented and not metadata_wrong and ordered
+    return Assessment(correct, complete, invented, True, f"{matched} of {len(wanted)} days match; {invented} invented; metadata wrong: {metadata_wrong}; ordered: {ordered}", details)
+
+
+RULES: dict[str, Callable[[str, Case], Assessment]] = {"fields": rule_fields, "map": rule_map, "series": rule_series}
 
 
 def assess(answer: str, case: Case) -> Assessment:

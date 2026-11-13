@@ -10,6 +10,7 @@ export const KINDS = {
   missing: {label: "required, not shown", style: {color: "#cf222e", fillColor: "#cf222e", fillOpacity: 0.15, weight: 2, dashArray: "4 3"}},
   extra: {label: "optional, shown", style: {color: "#0969da", fillColor: "#218bff", fillOpacity: 0.5, weight: 2}},
   rest: {label: "optional, not shown", style: {color: "#6e7781", fillOpacity: 0, weight: 1}},
+  excluded: {label: "outside selection", style: {color: "#8c959f", fillOpacity: 0, weight: 1}},
 };
 const PLACE = {radius: 6, color: "#9a6700", fillColor: "#d4a72c", fillOpacity: 0.9, weight: 2};
 
@@ -44,7 +45,7 @@ function placeInfo(title, kind, list) {
   head.append(el("b", null, title), " ", el("span", "muted", kind));
   box.append(head);
   if (!list.length) {
-    box.append(el("p", "muted", "The agent did not put this pand on the map."));
+    box.append(el("p", "muted", "The agent did not put this feature on the map."));
     return box;
   }
   for (const place of list) {
@@ -82,28 +83,31 @@ export function createMap(element) {
   L.tileLayer("https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/grijs/EPSG:28992/{z}/{x}/{y}.png",
     {minZoom: 0, maxZoom: 14, attribution: 'BRT achtergrondkaart: <a href="https://www.pdok.nl/">PDOK</a>, Kadaster'}).addTo(map);
   let layer = null;
-  return function show(run, must, collection) {
+  return function show(run, must, collection, optional = null) {
     const required = new Set(must), shown = new Set(run.map ? run.map.shown : []);
+    const allowed = optional === null ? null : new Set(optional);
     // What the agent said per pand; a run from before the places were kept has none, and the map still colours the panden.
     const places = run.map && run.map.places ? run.map.places : null;
     const byPand = new Map();
     for (const place of places || []) if (place.pand) (byPand.get(place.pand) || byPand.set(place.pand, []).get(place.pand)).push(place);
-    const kind = id => required.has(id) ? (shown.has(id) ? "hit" : "missing") : (shown.has(id) ? "extra" : "rest");
-    const counts = {hit: 0, missing: 0, extra: 0, rest: 0, unmatched: run.map ? run.map.unmatched.length : 0};
+    const kind = id => required.has(id) ? (shown.has(id) ? "hit" : "missing") : (allowed && !allowed.has(id) ? "excluded" : (shown.has(id) ? "extra" : "rest"));
+    const counts = {hit: 0, missing: 0, extra: 0, rest: 0, excluded: 0, unmatched: run.map ? run.map.unmatched.length : 0};
     // A pand is a few meters wide, so at city scale a dot in its colour marks it too.
     const dots = [];
     const polygons = L.geoJSON(collection, {
       style: f => KINDS[kind(f.properties.identificatie)].style,
+      pointToLayer: (f, latlng) => L.circleMarker(latlng, {...KINDS[kind(f.properties.identificatie)].style, radius: 5}),
       onEachFeature: (f, l) => {
         const id = f.properties.identificatie, k = kind(id);
         counts[k]++;
         const own = byPand.get(id) || [];
         const name = own.map(nameOf).find(Boolean);
-        const tip = `${name ? `${name} · ` : ""}pand ${id}: ${KINDS[k].label}`;
-        const dot = L.circleMarker(l.getBounds().getCenter(), {...KINDS[k].style, radius: k === "rest" ? 3 : 5, fillOpacity: k === "rest" ? 0 : 0.9});
+        const tip = `${name ? `${name} · ` : ""}feature ${id}: ${KINDS[k].label}`;
+        const center = l.getLatLng ? l.getLatLng() : l.getBounds().getCenter();
+        const dot = L.circleMarker(center, {...KINDS[k].style, radius: k === "rest" ? 3 : 5, fillOpacity: k === "rest" ? 0 : 0.9});
         for (const layer of [l, dot]) {
           layer.bindTooltip(tip);
-          if (places) layer.bindPopup(() => placeInfo(`pand ${id}`, KINDS[k].label, own), {maxWidth: 360});
+          if (places) layer.bindPopup(() => placeInfo(`feature ${id}`, KINDS[k].label, own), {maxWidth: 360});
         }
         dots.push(dot);
       },
@@ -111,8 +115,8 @@ export function createMap(element) {
     const loose = places ? places.filter(p => !p.pand) : (run.map ? run.map.unmatched : []).map(([lon, lat]) => ({lon, lat, details: {}}));
     const markers = loose.map(place => {
       const name = nameOf(place);
-      const marker = L.circleMarker([place.lat, place.lon], PLACE).bindTooltip(`${name ? `${name} · ` : ""}on no pand: ${place.lat.toFixed(5)}, ${place.lon.toFixed(5)}`);
-      if (places) marker.bindPopup(() => placeInfo(name || "Place on no pand", "invented, on no pand", [place]), {maxWidth: 360});
+      const marker = L.circleMarker([place.lat, place.lon], PLACE).bindTooltip(`${name ? `${name} · ` : ""}unmatched: ${place.lat.toFixed(5)}, ${place.lon.toFixed(5)}`);
+      if (places) marker.bindPopup(() => placeInfo(name || "Unmatched place", "invented", [place]), {maxWidth: 360});
       return marker;
     });
     if (layer) layer.remove();

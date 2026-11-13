@@ -1,4 +1,4 @@
-"""GeoJSON from an agent's map, matched to the panden of a vendored BAG extract.
+"""GeoJSON from an agent's map, matched to a vendored reference extract.
 
 Coordinates are WGS84 longitude, latitude, as GeoJSON requires, and the extract
 is fetched in WGS84 too, so nothing is reprojected. Distances use a local
@@ -24,32 +24,56 @@ NETHERLANDS = (3.2, 50.7, 7.3, 53.6)  # lon/lat bounding box, to recognize swapp
 METERS_PER_DEGREE = 111_320
 
 
-def pand_id(feature: dict) -> str:
-    """The identificatie of a pand: a property in the PDOK WFS extracts, the feature id in the bag.ldproxy.net ones."""
+def feature_id(feature: dict) -> str:
+    """The identificatie property, or the feature id when that property is absent."""
     return (feature.get("properties") or {}).get("identificatie") or feature["id"]
 
 
 @dataclass(frozen=True)
 class Reference:
-    """Pand polygons by identificatie, in meters around `lat0`."""
+    """Reference geometries by identificatie, in meters around `lat0`."""
 
-    panden: dict[str, BaseGeometry]
+    features: dict[str, BaseGeometry]
     lat0: float
 
     @classmethod
     @cache
     def load(cls, source: str, commit: str = "") -> Reference:
-        """`source` is a GeoJSON file under sources/ with a pand per feature, see pand_id; as it was at `commit`, if given."""
+        """Load a GeoJSON file under sources/, as it was at `commit`, if given."""
         features = json.loads(sources.read(sources.path(source), commit))["features"]
-        polygons = {pand_id(f): shape(f["geometry"]) for f in features}
-        lat0 = sum(p.centroid.y for p in polygons.values()) / len(polygons)
-        return cls({i: _metric(p, lat0) for i, p in polygons.items()}, lat0)
+        geometries = {feature_id(f): shape(f["geometry"]) for f in features}
+        lat0 = sum(p.centroid.y for p in geometries.values()) / len(geometries)
+        return cls({i: _metric(p, lat0) for i, p in geometries.items()}, lat0)
 
     def nearest(self, point: Point, tolerance_m: float) -> str | None:
-        """The pand that contains the WGS84 point, else the nearest pand within tolerance_m, else None."""
+        """The nearest reference geometry within tolerance_m, or None."""
         here = _metric(point, self.lat0)
-        distance, pand = min((p.distance(here), i) for i, p in self.panden.items())
-        return pand if distance <= tolerance_m else None
+        distance, identifier = min((p.distance(here), i) for i, p in self.features.items())
+        return identifier if distance <= tolerance_m else None
+
+    def assign_points(self, places: list[Point], tolerance_m: float, allowed: set[str]) -> list[str | None]:
+        """Maximum one-to-one matching of places to allowed point features, with nearest candidates first."""
+        candidates = []
+        for place in places:
+            here = _metric(place, self.lat0)
+            candidates.append([i for d, i in sorted((p.distance(here), i) for i, p in self.features.items() if i in allowed)
+                               if d <= tolerance_m])
+        owners: dict[str, int] = {}
+
+        def assign(index: int, seen: set[str]) -> bool:
+            for identifier in candidates[index]:
+                if identifier in seen:
+                    continue
+                seen.add(identifier)
+                if identifier not in owners or assign(owners[identifier], seen):
+                    owners[identifier] = index
+                    return True
+            return False
+
+        for index in range(len(places)):
+            assign(index, set())
+        assigned = {index: identifier for identifier, index in owners.items()}
+        return [assigned.get(index) or (choices[0] if choices else None) for index, choices in enumerate(candidates)]
 
 
 def _metric(geometry: BaseGeometry, lat0: float) -> BaseGeometry:

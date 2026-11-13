@@ -8,6 +8,7 @@ publication form the agent can reach, such as an MCP server. Three agents answer
 fetch tool, the same for every model; "claude-code" is Claude Code with its
 own prompt and tools, what a user has. In a test set with a map question, the
 agents inspect and claude-code also get show_on_map, the map a user sees.
+For a series question they also get plot_series.
 """
 
 import os
@@ -26,7 +27,7 @@ from inspect_ai.tool import Tool, mcp_server_http, mcp_server_stdio, web_search
 from . import dataset
 from .models import register_costs
 from .scorers import quality, source
-from .tools import ProviderNamedTools, fetch, show_on_map
+from .tools import ProviderNamedTools, fetch, plot_series, show_on_map
 
 
 @dataclass(frozen=True)
@@ -40,8 +41,8 @@ class Variant:
     tags: tuple[str, ...] = ()
 
 
-# Revision ceec94f of 12 November 2026. The image is built for linux/amd64 only, and its default profile serves HTTP; prod speaks stdio.
-GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:a9fba4c7f014ded600b172c9894b4e5d1ca5091c5cd15d99fc670f8d3a2c5127"
+# Revision d712dcc of 13 November 2026. The image is built for linux/amd64 only, and its default profile serves HTTP; prod speaks stdio.
+GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:ebbce9d90a7bdefca2e19178ccb108dae54c9894d2ae38cace38270187434344"
 VARIANTS = {
     "0": Variant("The question alone: the agent finds the standard as it is published today, or not."),
     "mcp-groundwater-monitoring": Variant(
@@ -76,20 +77,32 @@ def samples(testset: str, variant: str, ids: list[str] | None = None, tags: list
     return dataset.load(testset, ids=ids, tags=tags)
 
 
-def _agent(agent: AgentName, map_tool: bool, variant: Variant) -> Agent:
+def variant_form(variant: str) -> Variant:
+    """Resolve the optional local server override after loading .env."""
+    form = VARIANTS[variant]
+    jar = os.environ.get("AIRCO_GROUNDWATER_MCP_JAR", "").strip()
+    if variant != "mcp-groundwater-monitoring" or not jar:
+        return form
+    path = Path(jar).expanduser().resolve()
+    if not path.is_file():
+        raise ValueError(f"AIRCO_GROUNDWATER_MCP_JAR is not a file: {path}")
+    return Variant(form.about, ("java", "-Dstdout.encoding=UTF-8", "-jar", str(path)), form.tags)
+
+
+def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant) -> Agent:
     if agent == "model":
         # No system prompt, no tools, no submit tool: the agent is done when the model stops calling tools, and its last message is the answer.
         return react(prompt=None, tools=[], submit=False)
     if agent == "inspect":
         # Inspect's defaults: its own system prompt and submit tool. web_search() uses the search of the model's own provider.
-        tools = [web_search(), fetch(), *([show_on_map()] if map_tool else [])]
+        tools = [web_search(), fetch(), *([show_on_map()] if map_tool else []), *([plot_series()] if series_tool else [])]
         if not variant.mcp:
             return react(tools=tools, submit=AgentSubmit(answer_only=True))
         # The MCP server comes on top of the tools of variant 0, so that the server is the one difference.
         return _with_mcp(tools, variant.mcp)
     from .claude_code import claude_code_agent
 
-    return claude_code_agent(map_tool, variant.mcp if isinstance(variant.mcp, str) else None)
+    return claude_code_agent(map_tool, series_tool, variant.mcp if isinstance(variant.mcp, str) else None)
 
 
 def server_instructions(name: str, instructions: str | None) -> str | None:
@@ -123,7 +136,7 @@ def _setup(agent: AgentName):
     return claude_code_setup()
 
 
-def _metadata(testset: str, variant: str, agent: AgentName) -> dict:
+def _metadata(testset: str, variant: str, agent: AgentName, form: Variant) -> dict:
     """What a run used besides the code, which the git revision in the log identifies."""
     return {
         "harness": {"airco-harness": version("airco-harness"), "inspect-ai": version("inspect-ai")},
@@ -131,7 +144,7 @@ def _metadata(testset: str, variant: str, agent: AgentName) -> dict:
         "agent": agent,
         "testset": {"name": testset, "version": dataset.manifest(testset)["version"]},
         "variant": variant,
-        "variant_form": asdict(VARIANTS[variant]),
+        "variant_form": asdict(form),
     }
 
 
@@ -172,13 +185,14 @@ def airco(
         raise ValueError(f"the agent {agent} does not take the MCP server of variant {variant}")
     load_dotenv(find_dotenv(usecwd=True))
     register_costs()
+    form = variant_form(variant)
     chosen = samples(testset, variant, ids=ids.split(",") if isinstance(ids, str) else ids, tags=tags.split(",") if isinstance(tags, str) else tags)
     if not len(chosen):
         raise ValueError(f"no samples of test set {testset} for variant {variant}; choose others with ids or tags")
     return Task(
         dataset=chosen,
         setup=_setup(agent),
-        solver=as_solver(_agent(agent, dataset.asks_for_map(testset), VARIANTS[variant])),
+        solver=as_solver(_agent(agent, dataset.asks_for_map(testset), dataset.asks_for_series(testset), form)),
         scorer=[quality(), source()],
         config=GenerateConfig(max_tool_output=MAX_TOOL_OUTPUT),
         # A path relative to the working directory, so that the log names no home directory.
@@ -189,5 +203,5 @@ def airco(
         time_limit=time_limit,
         cost_limit=cost_limit,
         version="0.1",
-        metadata=_metadata(testset, variant, agent),
+        metadata=_metadata(testset, variant, agent, form),
     )

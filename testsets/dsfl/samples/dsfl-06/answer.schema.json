@@ -2,12 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "level_cm_nap": {
-      "type": "integer"
-    }
+    "value": {"type": "number"},
+    "unit": {"type": "string"},
+    "reference_plane": {"type": "string"}
   },
   "required": [
-    "level_cm_nap"
+    "value",
+    "unit",
+    "reference_plane"
   ],
   "additionalProperties": true
 }

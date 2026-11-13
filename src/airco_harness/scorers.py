@@ -68,6 +68,14 @@ def map_shown(messages: list[ChatMessage]) -> str:
     return shown[-1] if isinstance(shown[-1], str) else json.dumps(shown[-1], ensure_ascii=False)
 
 
+def series_shown(messages: list[ChatMessage]) -> str:
+    """The data from the last successful plot_series call, including bridged Claude Code calls."""
+    shown = [u["arguments"].get("data") for u in tool_uses(messages) if u["tool"].endswith("plot_series") and not u["failed"]]
+    if not shown:
+        return ""
+    return shown[-1] if isinstance(shown[-1], str) else json.dumps(shown[-1], ensure_ascii=False)
+
+
 URL_IN_CODE = re.compile(r"https?://[^\s'\"<>`|\\]+")
 CODE_ARGUMENTS = ("command", "code")  # Claude Code's Bash, a provider's code execution
 
@@ -144,11 +152,11 @@ def retrievals(messages: list[ChatMessage]) -> list[dict]:
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})
 def quality():
     """correct, complete, invented and parseable from the rule named in the sample's expected.json.
-    The answer is the last message, or for the rule map, what the agent showed on the map."""
+    The answer is the last message, or the data passed to the map or series tool."""
 
     async def score(state: TaskState, target: Target) -> Score:
         case = rules.Case.load(target.text)
-        answer = map_shown(state.messages) if case.rule == "map" else state.output.completion
+        answer = map_shown(state.messages) if case.rule == "map" else series_shown(state.messages) if case.rule == "series" else state.output.completion
         result = await asyncio.to_thread(rules.assess, answer, case)
         return Score(value=result.score_value(), answer=answer, explanation=result.explanation, metadata={"rule": case.rule, **result.details})
 

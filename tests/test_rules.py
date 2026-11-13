@@ -37,7 +37,7 @@ def vendored(name: str) -> list[dict]:
 def must_points(sample_id: str, features: list[dict]) -> list:
     """The point every map gets for a pand: inside it, as an agent that takes the pand's centre or its address would place it."""
     must = set(Case.load(TARGETS[sample_id]).expected["must"])
-    return [shapely.geometry.shape(f["geometry"]).representative_point() for f in features if geo.pand_id(f) in must]
+    return [shapely.geometry.shape(f["geometry"]).representative_point() for f in features if geo.feature_id(f) in must]
 
 
 PANDEN = bag("panden.geojson")
@@ -53,6 +53,13 @@ NO_HOME_POINTS = [shapely.geometry.shape(f["geometry"]).representative_point() f
 WELLS = vendored("bro-gmw-amersfoort-1km.geojson")
 MUST_WELLS = Case.load(TARGETS["dsfl-07"]).expected["must"]
 WELL_PLACES = {f["id"]: f["geometry"]["coordinates"] for f in WELLS}
+SERIES_EXPECTED = Case.load(TARGETS["dsfl-08"]).expected
+SERIES = {
+    "points": [{"date": date, "value": value} for date, value in SERIES_EXPECTED["points"].items()],
+    "unit": "m",
+    "reference_plane": "NAP",
+    "connect_gaps": False,
+}
 STADHUISPLEIN = (5.38416472, 52.15671963)
 METERS_PER_DEGREE_LON = 111_320 * 0.6097  # cos(52.157 degrees)
 RIVER = (5.3792, 52.164)  # north of the center, on no pand: a place from another source
@@ -110,24 +117,21 @@ CASES = [
     # Old panden without a home only.
     ("dsfl-05", shown([point(p.x, p.y) for p in NO_HOME_POINTS]), full(0, 0.0, 0)),
     ("dsfl-05", shown([point(p.y, p.x) for p in HOMES_1800_POINTS]), full(0, 0.0, len(MUST_1800))),
-    ("dsfl-06", as_json({"level_cm_nap": 213}), full()),
-    ("dsfl-06", as_json({"level_cm_nap": 213}, fenced=False), full()),
-    # The depth below ground (ground level 5.61 m NAP), positive or negative.
-    ("dsfl-06", as_json({"level_cm_nap": 348}), full(0, 0.0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": -348}), full(0, 0.0, 0)),
-    # The level of the neighboring day, or of the last measurement.
-    ("dsfl-06", as_json({"level_cm_nap": 212}), full(0, 0.0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": 248}), full(0, 0.0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": "2.13 m"}), full(0, 0.0, 0, 0)),
-    ("dsfl-06", as_json({"level_cm_nap": 2.13}), full(0, 0.0, 0, 0)),
-    ("dsfl-06", "The level was about 2.13 m above NAP.", full(0, 0.0, 0, 0)),
+    ("dsfl-06", as_json({"value": 2.13, "unit": "m", "reference_plane": "NAP"}), full()),
+    ("dsfl-06", as_json({"value": 2.134, "unit": "m", "reference_plane": "nap"}, fenced=False), full()),
+    ("dsfl-06", as_json({"value": 2.14, "unit": "m", "reference_plane": "NAP"}), full(0, 0.6667, 0)),
+    ("dsfl-06", as_json({"value": -3.48, "unit": "m", "reference_plane": "NAP"}), full(0, 0.6667, 0)),
+    ("dsfl-06", as_json({"value": 2.13, "unit": "cm", "reference_plane": "maaiveld"}), full(0, 0.3333, 0)),
+    ("dsfl-06", as_json({"value": "2.13", "unit": "m", "reference_plane": "NAP"}), full(0, 0.0, 0, 0)),
+    ("dsfl-06", as_json({"value": 2.13}), full(0, 0.0, 0, 0)),
+    ("dsfl-06", "De stand was 2,13 m NAP.", full(0, 0.0, 0, 0)),
     ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in MUST_WELLS]), full()),
-    # Every well of the search, within 1 km: more than required, but all in the reference.
-    ("dsfl-07", shown(WELLS), full()),
+    # Every well of the search: the 44 outside the requested radius are invented.
+    ("dsfl-07", shown(WELLS), full(0, 1.0, 44)),
     # The required wells and the removed well at 428 m, which is optional.
     ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000133351"]]), full()),
-    # The required wells and the well at 603 m, which is in the reference.
-    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000009371"]]), full()),
+    # The required wells and a well outside the requested radius.
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in [*MUST_WELLS, "GMW000000009371"]]), full(0, 1.0, 1)),
     # Coordinates rounded to six decimals, as an agent copies them: about 0.1 m.
     ("dsfl-07", shown([point(*(round(c, 6) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
     # Only the nearest 6.
@@ -135,11 +139,13 @@ CASES = [
     ("dsfl-07", shown([*(point(*WELL_PLACES[i]) for i in MUST_WELLS), point(*STADHUISPLEIN)]), full(0, 1.0, 1)),
     ("dsfl-07", shown([point(*STADHUISPLEIN)]), full(0, 0.0, 1)),
     ("dsfl-07", shown([point(WELL_PLACES[i][1], WELL_PLACES[i][0]) for i in MUST_WELLS]), full(0, 0.0, len(MUST_WELLS))),
-    # 3 m east of each well: within tolerance, but both places of the twin wells 0.8 m apart match the eastern one.
-    ("dsfl-07", shown([point(WELL_PLACES[i][0] + 3 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full(0, round(11 / 12, 4), 0)),
+    # Two distinct places can be assigned to the twins even if both are nearer the same well.
+    ("dsfl-07", shown([point(WELL_PLACES[i][0] + 3 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full()),
+    ("dsfl-07", shown([point(*WELL_PLACES[i]) for i in MUST_WELLS if i != "GMW000000009391"]), full(0, round(11 / 12, 4), 0)),
     ("dsfl-07", shown([point(WELL_PLACES[i][0] + 10 / METERS_PER_DEGREE_LON, WELL_PLACES[i][1]) for i in MUST_WELLS]), full(0, 0.0, len(MUST_WELLS))),
     ("dsfl-07", shown([point(*(round(c, 5) for c in WELL_PLACES[i])) for i in MUST_WELLS]), full()),
     ("dsfl-07", shown([]), full(0, 0.0, 0)),
+    ("dsfl-08", json.dumps(SERIES), full()),
 ]
 
 
@@ -157,6 +163,32 @@ def test_rules_are_repeatable():
     case = Case.load(TARGETS[sample_id])
     first, second = rules.assess(answer, case), rules.assess(answer, case)
     assert (first.score_value(), first.explanation, first.details) == (second.score_value(), second.explanation, second.details)
+
+
+def test_series_scores_dates_values_gaps_and_metadata():
+    def assess(**changes):
+        return rules.assess(json.dumps({**SERIES, **changes}), Case.load(TARGETS["dsfl-08"]))
+
+    points = SERIES["points"]
+    assert assess(points=points[1:]).score_value() == full(0, round(10 / 11, 4), 0)
+    assert assess(points=[*points, {"date": "2023-01-21", "value": 3.0}]).score_value() == full(0, 1, 1)
+    assert assess(points=[*points, points[-1]]).score_value() == full(0, 1, 1)
+    assert assess(points=[{**p, "value": 2.9} if p["date"] == "2023-01-15" else p for p in points]).score_value() == full(0, round(10 / 11, 4), 1)
+    assert assess(points=[{**p, "value": 50} if p["date"] == "2023-01-10" else p for p in points]).score_value() == full(0, round(10 / 11, 4), 0)
+    assert assess(points=list(reversed(points))).score_value() == full(0, 1, 0)
+    assert assess(unit="cm").score_value() == full(0, 1, 0)
+    assert assess(reference_plane="maaiveld").score_value() == full(0, 1, 0)
+    assert assess(connect_gaps=True).score_value() == full(0, 1, 0)
+    assert assess(points=[{"date": "2023-02-30", "value": 2}]).score_value() == full(0, 0, 0, 0)
+    assert assess(points=[{"date": "2023-01-10", "value": float("nan")}]).score_value() == full(0, 0, 0, 0)
+    assert rules.assess("", Case.load(TARGETS["dsfl-08"])).score_value() == full(0, 0, 0, 0)
+
+
+def test_point_map_can_score_a_zero_result_selection():
+    original = Case.load(TARGETS["dsfl-07"])
+    case = Case(original.sample_id, {**original.expected, "must": [], "optional": []}, original.directory)
+    assert rules.assess(shown([]), case).score_value() == full()
+    assert rules.assess(shown([point(*WELL_PLACES[MUST_WELLS[0]])]), case).score_value() == full(0, 1, 1)
 
 
 def test_validators_never_import_inspect():

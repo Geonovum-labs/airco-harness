@@ -1,4 +1,4 @@
-"""The tools the harness gives an agent: fetch, show_on_map for a test set that asks for a map, and the tools of a variant's MCP server.
+"""The tools the harness gives an agent: fetch, show_on_map, plot_series and a variant's MCP tools.
 
 fetch returns a web page as markdown, in pages of 40,000 characters. Inspect
 has web_search() but no plain fetch, and an agent that can search but not read
@@ -19,7 +19,7 @@ import httpx
 from inspect_ai.tool import MCPServer, Tool, ToolDef, ToolError, ToolSource, tool
 from markdownify import markdownify
 
-from validators import geo
+from validators import geo, series
 
 PAGE_CHARS = 40_000
 USER_AGENT = "Mozilla/5.0 (compatible; airco-harness/0.1; +https://github.com/Geonovum-labs/airco-harness)"
@@ -116,3 +116,19 @@ class ProviderNamedTools(ToolSource):
 
     async def tools(self) -> list[Tool]:
         return [ToolDef(t, name=re.sub(r"[^A-Za-z0-9_-]", "_", ToolDef(t).name)).as_tool() for t in await self.server.tools()]
+
+
+@tool(name="plot_series")
+def plot_series() -> Tool:
+    async def execute(data: dict) -> str:
+        """Show a time series plot. A new call replaces the plot.
+
+        Args:
+          data: Object with points (ordered daily objects with ISO date and numeric value or null for a gap), unit, reference_plane and connect_gaps (boolean).
+        """
+        error = series.validate(data)
+        if error:
+            raise ToolError(error)
+        return f"{len(data['points'])} daily entries shown in the plot."
+
+    return execute

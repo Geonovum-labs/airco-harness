@@ -110,7 +110,7 @@ def details(properties: object) -> dict[str, str]:
 
 
 def places(messages: list, expected: dict) -> list[dict]:
-    """Every place the agent showed with show_on_map: where it put it, the pand of the reference extract it matched
+    """Every place the agent showed with show_on_map: where it put it, the reference feature it matched
     (by the same rule as the scorer, else null), and its details."""
     shown = scorers.map_shown(messages)
     try:
@@ -120,6 +120,7 @@ def places(messages: list, expected: dict) -> list[dict]:
     features = collection.get("features") if isinstance(collection, dict) and collection.get("type") == "FeatureCollection" else [collection]
     reference = geo.Reference.load(expected["reference"], expected["commit"])
     out = []
+    all_points = []
     for feature in features or []:
         if not isinstance(feature, dict):
             continue
@@ -129,7 +130,14 @@ def places(messages: list, expected: dict) -> list[dict]:
             continue
         info = details(feature.get("properties"))
         for point in points:
-            out.append({"lon": round(point.x, 6), "lat": round(point.y, 6), "pand": reference.nearest(point, expected["tolerance_m"]), "details": info})
+            all_points.append(point)
+            out.append({"lon": round(point.x, 6), "lat": round(point.y, 6), "details": info})
+    if "allowed_optional" in expected:
+        identifiers = reference.assign_points(all_points, expected["tolerance_m"], set(expected["must"]) | set(expected["allowed_optional"]))
+    else:
+        identifiers = [reference.nearest(point, expected["tolerance_m"]) for point in all_points]
+    for place, identifier in zip(out, identifiers):
+        place["pand"] = identifier
     return out
 
 
@@ -179,7 +187,7 @@ def panden(reference: str, commit: str) -> dict:
         "features": [
             {
                 "type": "Feature",
-                "properties": {"identificatie": geo.pand_id(f)},
+                "properties": {"identificatie": geo.feature_id(f)},
                 "geometry": {"type": f["geometry"]["type"], "coordinates": rounded(f["geometry"]["coordinates"])},
             }  # fmt: skip
             for f in features
@@ -220,7 +228,8 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     maps = {
         f"{name}/{sample}": {
             "must": e["must"],
-            "optional": len(panden(e["reference"], e["commit"])["features"]) - len(e["must"]),
+            "optional": len(e["allowed_optional"]) if "allowed_optional" in e else len(panden(e["reference"], e["commit"])["features"]) - len(e["must"]),
+            **({"allowed_optional": e["allowed_optional"]} if "allowed_optional" in e else {}),
             "note": e["note"],
             "panden": reference_file(e["reference"], e["commit"]),
             "reference": e["reference"],

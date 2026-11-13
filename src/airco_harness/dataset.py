@@ -39,6 +39,11 @@ def asks_for_map(testset: str) -> bool:
     return any(json.loads(f.read_text(encoding="utf-8"))["rule"] == "map" for f in (TESTSETS_DIR / testset / "samples").glob("*/expected.json"))
 
 
+def asks_for_series(testset: str) -> bool:
+    """Whether the test set gives agents the time-series plot tool."""
+    return any(json.loads(f.read_text(encoding="utf-8"))["rule"] == "series" for f in (TESTSETS_DIR / testset / "samples").glob("*/expected.json"))
+
+
 def standards(testset: str) -> list[str]:
     return sorted({r["standard"] for r in records(testset)})
 

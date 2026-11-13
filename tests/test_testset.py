@@ -48,4 +48,5 @@ def test_a_map_sample_requires_only_panden_of_its_reference(folder):
     if expected["rule"] != "map":
         pytest.skip("not a map sample")
     reference = Reference.load(expected["reference"])
-    assert expected["must"] and set(expected["must"]) <= set(reference.panden)
+    assert expected["must"] and set(expected["must"]) <= set(reference.features)
+    assert set(expected.get("optional", [])) <= set(reference.features) - set(expected["must"])

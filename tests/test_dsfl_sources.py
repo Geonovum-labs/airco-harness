@@ -4,6 +4,7 @@ import csv
 import datetime
 import json
 import math
+import statistics
 import zoneinfo
 
 import pytest
@@ -82,20 +83,22 @@ def test_dsfl_05_must_is_the_old_panden_with_a_home_in_use():
     assert all(f["properties"]["oorspronkelijkBouwjaar"] < 1800 and f["properties"]["status"] in sources.PAND_EXISTS for f in reference)
 
 
-def test_dsfl_06_level_of_the_well_on_the_day_in_cm_nap():
+def test_dsfl_06_daily_mean_of_tube_one_in_m_nap():
     rows = list(csv.DictReader(sources.path("dsfl/bro-gld000000025798.csv").read_text(encoding="utf-8").splitlines()))
     day = datetime.date(2026, 9, 21)
-    levels = {"utc": set(), "local": set()}
+    levels = []
     for r in rows:
         value = r["Voorlopige Waarde [m]"]
         moment = datetime.datetime.fromtimestamp(int(r["Tijdstip"]) / 1000, datetime.timezone.utc)
-        if value and moment.date() == day:
-            levels["utc"].add(round(float(value) * 100))
         if value and moment.astimezone(AMSTERDAM).date() == day:
-            levels["local"].add(round(float(value) * 100))
-    assert levels["utc"] == levels["local"] == {expected("dsfl-06")["expected"]["level_cm_nap"]}
+            levels.append(float(value))
+    fields = expected("dsfl-06")["expected"]
+    assert len(levels) == 24
+    assert statistics.mean(levels) == pytest.approx(fields["value"]["value"])
+    assert fields["value"]["tolerance"] == 0.005
+    assert (fields["unit"], fields["reference_plane"]) == ("m", "NAP")
     relations = json.loads(sources.path("dsfl/bro-gmw000000009441-relations.json").read_text(encoding="utf-8"))
-    assert [t["gldReferences"][0]["broId"] for t in relations["monitoringTubeReferences"]] == ["GLD000000025798"]
+    assert [(t["tubeNumber"], [g["broId"] for g in t["gldReferences"]]) for t in relations["monitoringTubeReferences"]] == [(1, ["GLD000000025798"])]
     well = etree.parse(str(sources.path("dsfl/bro-gmw000000009441.xml"))).getroot()
     assert float(well.findtext(".//{*}groundLevelPosition")) == 5.61
 
@@ -116,6 +119,7 @@ def test_dsfl_07_must_is_the_wells_within_500_m_that_are_not_removed():
     assert min(math.dist(STADHUISPLEIN_RD, xy) for i, (xy, _) in wells.items() if i not in within) == pytest.approx(505.93, abs=0.01)
     assert sorted(i for i in within if wells[i][1] == "nee") == expected("dsfl-07")["must"]
     assert {i for i in within if wells[i][1] == "ja"} == {"GMW000000133351"}
+    assert sorted(i for i in within if wells[i][1] == "ja") == expected("dsfl-07")["optional"]
 
 
 def test_dsfl_07_reference_is_the_wells_of_the_search_as_points():
@@ -136,7 +140,27 @@ def test_dsfl_07_tolerance_keeps_required_wells_apart_from_the_rest():
     assert 1 < tolerance < gap / 2  # above five-decimal rounding, far below the distance to a well that is not required
 
 
-@pytest.mark.parametrize("sample_id", [f"dsfl-0{n}" for n in range(1, 8)])
+def test_dsfl_08_daily_means_and_gaps_are_from_the_same_tube():
+    rows = csv.DictReader(sources.path("dsfl/bro-gld000000025798.csv").read_text(encoding="utf-8").splitlines())
+    points = expected("dsfl-08")["points"]
+    levels = {date: [] for date in points}
+    for row in rows:
+        date = datetime.datetime.fromtimestamp(int(row["Tijdstip"]) / 1000, datetime.timezone.utc).astimezone(AMSTERDAM).date().isoformat()
+        if date in levels and row["Voorlopige Waarde [m]"]:
+            levels[date].append(float(row["Voorlopige Waarde [m]"]))
+    assert {date: len(values) for date, values in levels.items()} == dict(zip(points, [24, 24, 24, 21, 0, 0, 0, 0, 11, 24, 24]))
+    for date, values in levels.items():
+        if values:
+            assert points[date] == pytest.approx(statistics.mean(values))
+        else:
+            assert points[date] is None
+    data = expected("dsfl-08")
+    assert (data["unit"], data["reference_plane"], data["connect_gaps"], data["tolerance"]) == ("m", "NAP", False, 0.005)
+    relations = json.loads(sources.path("dsfl/bro-gmw000000009441-relations.json").read_text(encoding="utf-8"))
+    assert [(t["tubeNumber"], [g["broId"] for g in t["gldReferences"]]) for t in relations["monitoringTubeReferences"]] == [(1, ["GLD000000025798"])]
+
+
+@pytest.mark.parametrize("sample_id", [f"dsfl-0{n}" for n in range(1, 9)])
 def test_every_dsfl_sample_names_its_origin_and_its_source(sample_id):
     data = expected(sample_id)
     assert data["note"].startswith("Deck wording: " if sample_id < "dsfl-06" else "Origin: ") and "sources/dsfl/" in data["source"]

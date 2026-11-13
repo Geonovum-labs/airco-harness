@@ -184,6 +184,8 @@ def maps(log_dir: str) -> dict | None:
     for r in done.sort_values(["model", "id", "epoch"]).itertuples():
         expected = json.loads(sources.read(rules.TESTSETS_DIR / r.target, r.at_commit))
         entry = {key: expected[key] for key in ("reference", "must", "tolerance_m")} | {"note": expected.get("note", ""), "commit": r.at_commit}
+        if "optional" in expected:
+            entry["allowed_optional"] = expected["optional"]
         if samples.setdefault(r.id, entry) != entry:
             raise ValueError(f"{log_dir}: the runs of {r.id} are from two commits, {samples[r.id]['commit']!r} and {r.at_commit!r}")
         details = json.loads(r.details) if isinstance(r.details, str) else r.details
