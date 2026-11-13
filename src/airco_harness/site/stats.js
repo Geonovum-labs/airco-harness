@@ -61,3 +61,8 @@ export function costPerCorrect(runs) {
   if (!correct || runs.some(r => r.cost === null)) return null;
   return runs.reduce((a, r) => a + r.cost, 0) / correct;
 }
+
+/** The MCP server versions the runs met, joined with ", "; empty when none was recorded. */
+export function mcpServers(runs) {
+  return [...new Set(runs.map(r => r.mcp_server).filter(Boolean))].sort().join(", ");
+}

@@ -96,3 +96,20 @@ def test_the_site_orders_models_as_the_report_does(tmp_path):
     script.write_text(ORDER.replace("APP", json.dumps(str(STATS.with_name("app.js")))), encoding="utf-8")
     result = subprocess.run([NODE, str(script)], input=json.dumps(MODELS), capture_output=True, text=True, check=True)
     assert json.loads(result.stdout) == sorted(MODELS, key=report.model_order)
+
+
+SERVERS = """
+import {mcpServers} from STATS;
+console.log(JSON.stringify([
+  mcpServers([{mcp_server: "bag 2"}, {mcp_server: ""}, {mcp_server: "bag 1"}, {mcp_server: "bag 2"}]),
+  mcpServers([{}, {mcp_server: ""}]),
+]));
+"""
+
+
+@pytest.mark.skipif(NODE is None, reason="node is not installed")
+def test_the_site_names_each_server_version_once_and_ignores_runs_without_one(tmp_path):
+    script = tmp_path / "servers.mjs"
+    script.write_text(SERVERS.replace("STATS", json.dumps(STATS.as_uri())), encoding="utf-8")
+    result = subprocess.run([NODE, str(script)], capture_output=True, text=True, check=True)
+    assert json.loads(result.stdout) == ["bag 1, bag 2", ""]

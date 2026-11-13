@@ -39,6 +39,7 @@ RUN_FIELDS = [
     "tool_calls",
     "total_time_s",
     "explanation",
+    "mcp_server",
     "log",
 ]
 
@@ -214,7 +215,6 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
         "testsets": _distinct(table["testset"]),
         "testset_versions": _distinct(table["testset"] + " " + table["testset_version"]),
         "commits": _distinct(table["commit"]),
-        "mcp_servers": _distinct(table["mcp_server"]),
         "limits": {key: _distinct(table[f"{key}_limit"]) for key in ("cost", "token", "message", "time")},
         "runs": len(table),
         "failed": int(table["failed"].sum()),

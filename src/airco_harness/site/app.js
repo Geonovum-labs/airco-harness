@@ -2,7 +2,7 @@
 // All aggregation goes through stats.js, which tests/test_site_stats.py holds to airco-report's numbers.
 // Names and values from the logs are data: they go into the page as text nodes, never as HTML.
 
-import {aggregate, commonSamples, costPerCorrect, groupBy} from "./stats.js";
+import {aggregate, commonSamples, costPerCorrect, groupBy, mcpServers} from "./stats.js";
 import {createMap, KINDS, panden, PLACE_STYLE} from "./map.js";
 
 const root = document.body.dataset.root;
@@ -597,14 +597,19 @@ function comparisonWarnings(by, chosen, runs, fixedMeasurement) {
   const factsOf = names => [...names].map(n => MEASUREMENTS.get(n));
   if (by === "measurement" || by === "variant") {
     const per = chosen.map(g => factsOf(new Set(runs.filter(r => value(r, by) === g).map(r => r.m))));
-    for (const [key, text] of [["testset_versions", "test set versions"], ["commits", "commits of the harness"], ["mcp_servers", "MCP server versions"]]) {
-      const sets = per.map(ms => ms.flatMap(m => m[key] || []).sort().join(", "));
+    for (const [key, text] of [["testset_versions", "test set versions"], ["commits", "commits of the harness"]]) {
+      const sets = per.map(ms => ms.flatMap(m => m[key]).sort().join(", "));
       if (new Set(sets).size > 1) notes.push(`The groups differ in ${text}: ${chosen.map((g, i) => `${by === "measurement" ? when(g, true) : g}: ${sets[i] || "n/a"}`).join("; ")}.`);
     }
     for (const [key, text] of [["cost", "cost limit"], ["token", "token limit"], ["message", "message limit"]]) {
       const sets = per.map(ms => ms.flatMap(m => m.limits[key]).sort().join(", "));
       if (new Set(sets).size > 1) notes.push(`The groups differ in ${text}: ${chosen.map((g, i) => `${by === "measurement" ? when(g, true) : g}: ${sets[i] || "none"}`).join("; ")}. A run that hits a limit counts as answered with what it had.`);
     }
+  }
+  // Per run, because one measurement can mix variants with and without a server. Variants differ in their server by design.
+  if (by !== "variant") {
+    const servers = chosen.map(g => mcpServers(runs.filter(r => value(r, by) === g)));
+    if (new Set(servers).size > 1) notes.push(`The groups ran against different MCP server versions: ${chosen.map((g, i) => `${by === "measurement" ? when(g, true) : g}: ${servers[i] || "none recorded"}`).join("; ")}.`);
   }
   if (by !== "measurement" && fixedMeasurement === "all" && new Set(runs.map(r => r.m)).size > 1) notes.push("Runs of several measurements are pooled per sample; choose one measurement to hold it fixed.");
   return notes.length ? [h("div", {class: "warning", role: "note"}, h("b", {text: "Read with care. "}), notes.length === 1 ? notes[0] : h("ul", {}, notes.map(n => h("li", {text: n}))))] : [];
