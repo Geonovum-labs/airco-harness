@@ -56,6 +56,7 @@ def test_site_has_an_overview_a_comparison_and_a_dashboard_and_viewer_per_measur
     for page, kind in [("index.html", "overview"), ("compare.html", "compare"), ("2026-10-19T21-45-03/report.html", "measurement")]:
         shell = (site / page).read_text(encoding="utf-8")
         assert f'data-page="{kind}"' in shell and 'assets/app.js"' in shell and "plot@0.6.17" in shell, page
+        assert '<a class="repo" href="https://github.com/Geonovum-labs/airco-harness"' in shell.split("</header>")[0], page
     assert 'data-measurement="2026-10-19T21-45-03"' in (site / "2026-10-19T21-45-03" / "report.html").read_text(encoding="utf-8")
     assert {p.name for p in (site / "assets").iterdir()} >= {"app.js", "stats.js", "map.js", "style.css"}
     viewer = site / "2026-10-19T21-45-03" / "viewer"

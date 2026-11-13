@@ -26,6 +26,8 @@ header nav { display: flex; gap: 1rem; font-size: 0.95rem; }
 header nav a { color: var(--muted); text-decoration: none; }
 header nav a[aria-current="page"] { color: var(--fg); font-weight: 600; }
 header .tagline { color: var(--muted); font-size: 0.9rem; margin-left: auto; }
+header a.repo { color: var(--muted); align-self: center; display: inline-flex; }
+header a.repo:hover, header a.repo:focus-visible { color: var(--fg); }
 main { max-width: 72rem; margin: 0 auto; padding: 0.5rem 1.25rem 2rem; }
 h1 { font-size: 1.75rem; line-height: 1.25; margin: 1.25rem 0 0.4rem; }
 h2 { font-size: 1.15rem; margin: 0 0 0.6rem; }
