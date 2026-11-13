@@ -21,7 +21,7 @@ A model needs a key in `.env`, which `.gitignore` lists, and a price in `model-c
 
 2. Check that `model-costs.yaml` has the model with its current list price, in dollars per million tokens; the header names the sources and the date the prices were read. Without a price, a task with `cost_limit` refuses to start with `cost_limit requires cost data for all models`, and the report cannot compute the cost per correct answer. For a local model or your own GPU, set 0 or an agreed rate. Commit a price change before the run, so that the log's commit holds the prices it was costed with.
 
-	Inspect knows one price per model. For a model that charges more above a prompt length, enter the higher price: the cost limit then never stops a run too late, and the reported cost of that model is an upper bound.
+	Inspect knows one price per model. For a model that charges more above a prompt length, add a `long_prompt` entry with the threshold `above` and the higher rates. Inspect then gets the higher price, so the cost limit never stops a run too late. The report prices each call by its own prompt length (input, cache write and cache read tokens), and adds `web_search` dollars for each successful server-side web search. A key the price file does not know is an error.
 
 3. Run one sample with a low cost limit, to check the key, the endpoint and the logging.
 
@@ -129,7 +129,7 @@ The report averages each sample over its epochs first, then takes the mean and s
 | `tool_calls` | Tool uses in the conversation, as the `source` scorer counted them: the agent's own tool calls and the tools the model's provider ran on its servers, such as a web search |
 | `tokens`, `tokens_input`, `tokens_output`, `tokens_cache_read`, `tokens_cache_write`, `tokens_reasoning` | Token counts |
 | `total_time_s`, `working_time_s` | Time in seconds, the second without waiting for a provider limit |
-| `cost` | Dollars, as Inspect logged them from the prices in `model-costs.yaml`; empty for a model without a price |
+| `cost` | Dollars, priced per model call from `model-costs.yaml` in this checkout, by the prompt length of that call, plus web searches; not Inspect's logged `total_cost`, which uses the highest price; empty for a model without a price |
 | `retrieved` | The URLs the agent retrieved with success, each with its class for `source`, joined with `; ` |
 | `hosts` | The hosts of those URLs, each once with its class, joined with `, ` |
 | `rule` | The scoring rule of the sample, such as `fields` or `map` |

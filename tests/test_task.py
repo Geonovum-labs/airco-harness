@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from inspect_ai import eval
-from inspect_ai.model import ModelCost, ModelOutput, get_model, get_model_info
+from inspect_ai.model import ModelCost, ModelOutput, ModelUsage, get_model, get_model_info
 
 from airco_harness import models, tasks
 from airco_harness.tasks import airco
@@ -249,3 +249,68 @@ def test_claude_code_sandbox_has_the_network_on_and_the_fetch_preflight_off():
     assert (service["image"], service["network_mode"]) == ("aisiuk/inspect-tool-support", "bridge")
     assert claude_code.SETTINGS == {"skipWebFetchPreflight": True}
     assert claude_code.CLAUDE_CODE_VERSION.count(".") == 2
+
+
+HAIKU = models.Price(
+    input=0.10,
+    output=0.50,
+    input_cache_write=0.125,
+    input_cache_read=0.01,
+    long_prompt=models.LongPrompt(above=100000, input=0.50, output=2.50, input_cache_write=0.625, input_cache_read=0.05),
+)
+
+
+def usage(input, cache_write, cache_read, output, total_cost=None):
+    return ModelUsage(
+        input_tokens=input,
+        input_tokens_cache_write=cache_write,
+        input_tokens_cache_read=cache_read,
+        output_tokens=output,
+        total_tokens=input + output,
+        total_cost=total_cost,
+    )
+
+
+def test_a_short_prompt_pays_the_base_rates_as_logged_by_inspect():
+    assert HAIKU.call(usage(4, 97484, 0, 396)) == pytest.approx(0.0123839, rel=1e-9)
+
+
+def test_a_prompt_over_the_threshold_pays_the_long_rates_for_every_token_of_the_call():
+    assert HAIKU.call(usage(10, 1000, 120000, 2000)) == pytest.approx(0.01163, rel=1e-9)
+
+
+def test_the_threshold_is_exclusive_and_counts_cache_tokens():
+    assert HAIKU.call(usage(0, 40000, 60000, 0)) == pytest.approx(0.0056)
+    assert HAIKU.call(usage(1, 40000, 60000, 0)) == pytest.approx((0.5 + 25000 + 3000) / 1e6)
+
+
+def test_inspect_gets_the_highest_rates_of_a_model():
+    assert HAIKU.ceiling() == ModelCost(input=0.50, output=2.50, input_cache_write=0.625, input_cache_read=0.05)
+
+
+def test_an_unknown_key_in_a_price_names_the_model_and_the_key(tmp_path):
+    prices = tmp_path / "model-costs.yaml"
+    prices.write_text("a/x: {input: 1, output: 1, input_cache_write: 1, input_cache_read: 1, long_promt: {above: 1}}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"a/x[\s\S]*long_promt"):
+        models.load_prices(prices)
+
+
+def test_the_shipped_price_file_prices_haiku_in_tiers_and_counts_web_searches():
+    prices = models.load_prices(Path(__file__).parent.parent / "model-costs.yaml")
+    assert prices["anthropic/claude-haiku-5-5"].ceiling().input == 0.50
+    assert [prices[f"anthropic/claude-{m}"].web_search for m in ("haiku-5-5", "sonnet-5-5", "opus-5-5", "fable-5-1")] == [0.01] * 4
+
+
+def test_a_one_hour_cache_write_is_recovered_from_the_cost_inspect_logged():
+    sonnet = models.Price(input=2.00, output=10.00, input_cache_write=2.50, input_cache_read=0.10)
+    claude_code_call = usage(2, 26654, 0, 212, total_cost=0.10874)
+    assert sonnet.cache_ttl(claude_code_call) == "1h"
+    assert sonnet.call(claude_code_call, "1h") == pytest.approx(0.10874, rel=1e-9)
+    assert sonnet.cache_ttl(usage(2, 26654, 0, 212, total_cost=0.068759)) == "5m"
+    assert sonnet.cache_ttl(usage(2, 26654, 0, 212)) is None
+
+
+def test_the_ttl_of_a_haiku_call_logged_at_the_ceiling_is_recovered_too():
+    logged_at_ceiling = usage(10, 1000, 20000, 100, total_cost=(10 * 0.50 + 1000 * 0.625 * 1.6 + 20000 * 0.05 + 100 * 2.50) / 1e6)
+    assert HAIKU.cache_ttl(logged_at_ceiling) == "1h"
+    assert HAIKU.call(logged_at_ceiling, "1h") == pytest.approx((10 * 0.10 + 1000 * 0.125 * 1.6 + 20000 * 0.01 + 100 * 0.50) / 1e6)

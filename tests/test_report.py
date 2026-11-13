@@ -5,13 +5,14 @@ import math
 import re
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from inspect_ai import eval
 from inspect_ai.log import EvalRevision, read_eval_log, write_eval_log
-from inspect_ai.model import ModelOutput, get_model
+from inspect_ai.model import ContentToolUse, ModelOutput, ModelUsage, get_model
 
-from airco_harness import matrix, report, rescore, tasks
+from airco_harness import matrix, models, report, rescore, tasks
 from airco_harness.tasks import airco
 
 GOOD = json.dumps({"objecttype": "OverigBouwwerk", "type": "bassin"})
@@ -76,11 +77,6 @@ def test_retrieved_urls_come_from_the_source_scorer():
     recorded = {PAGE: "authoritative", "https://geonovum.github.io/IMGeo-dev/": "non_authoritative"}
     assert report._retrieved(json.dumps(recorded)) == f"{PAGE} (authoritative); https://geonovum.github.io/IMGeo-dev/ (non_authoritative)"
     assert (report._retrieved(recorded), report._retrieved(None), report._retrieved(float("nan"))) == (report._retrieved(json.dumps(recorded)), "", "")
-
-
-def test_cost_is_what_inspect_logged_and_unknown_without_a_price():
-    assert report._cost(json.dumps({"a/x": {"total_cost": 0.25}, "a/y": {"total_cost": 0.5}})) == 0.75
-    assert math.isnan(report._cost(json.dumps({"a/x": {"input_tokens": 10}})))
 
 
 def test_report_goes_next_to_the_logs_unless_out_says_otherwise(log_dir, monkeypatch, capsys):
@@ -279,3 +275,50 @@ def test_hosts_are_listed_once_with_their_class():
     retrieved = {"https://api.pdok.nl/a": "authoritative", "https://nominatim.openstreetmap.org/x": "other", "https://api.pdok.nl/b": "authoritative"}
     assert report._hosts(retrieved) == "api.pdok.nl (authoritative), nominatim.openstreetmap.org (other)"
     assert report._hosts(None) == ""
+
+
+def test_cost_prices_each_call_by_its_prompt_length_not_by_what_inspect_logged(tmp_path, monkeypatch):
+    prices = tmp_path / "prices.yaml"
+    prices.write_text(
+        "mockllm/model: {input: 1000000, output: 2000000, input_cache_write: 0, input_cache_read: 0,"
+        " long_prompt: {above: 1000000000, input: 10000000, output: 20000000, input_cache_write: 0, input_cache_read: 0}}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("AIRCO_MODEL_COSTS", str(prices))
+    answer = get_model("mockllm/model", custom_outputs=[ModelOutput.from_content("mockllm/model", GOOD)])
+    eval(airco(ids=SAMPLE, cost_limit=None), model=answer, log_dir=str(tmp_path), display="none")
+    [row] = report.runs(str(tmp_path)).itertuples()
+    assert row.tokens_input > 0
+    assert row.cost == row.tokens_input + 2 * row.tokens_output
+
+
+def test_cost_is_nan_for_a_model_without_a_price():
+    event = model_event("anthropic/unknown", usage=ModelUsage(input_tokens=1, output_tokens=1, total_tokens=2))
+    assert math.isnan(report.sample_cost([event], models.load_prices(Path("missing.yaml"))))
+
+
+def model_event(model, *blocks, usage=None):
+    output = ModelOutput.from_content(model, "")
+    output.choices[0].message.content = list(blocks)
+    output.usage = usage
+    return SimpleNamespace(event="model", model=model, output=output)
+
+
+def search(id, error=None):
+    return ContentToolUse(tool_type="web_search", id=id, name="web_search", arguments="{}", result="", error=error)
+
+
+def test_searches_count_successful_blocks_once_per_sample():
+    events = [
+        model_event("a/x", search("s1"), search("s2", error="max_uses_exceeded")),
+        SimpleNamespace(event="tool"),
+        model_event("a/x", search("s1"), search("s3"), ContentToolUse(tool_type="mcp_call", id="m1", name="lookup", arguments="{}", result="")),
+    ]
+    assert report.searches(events) == 2
+
+
+def test_sample_cost_adds_the_web_search_price_of_the_model_to_the_call_prices():
+    price = models.Price(input=1, output=2, input_cache_write=0, input_cache_read=0, web_search=0.01)
+    usage = ModelUsage(input_tokens=1_000_000, output_tokens=500_000, total_tokens=1_500_000)
+    events = [model_event("a/x", search("s1"), search("s2", error="unavailable"), usage=usage), model_event("a/x", search("s1"), search("s3"))]
+    assert report.sample_cost(events, {"a/x": price}) == pytest.approx(2.0 + 0.02)

@@ -13,8 +13,9 @@ For a question answered on a map, the report adds a line per run: what the
 rule found on the map, and the hosts the agent retrieved from; the site draws
 each map from the logs (maps() gives what it needs).
 Cost per correct answer is the cost of all runs, failed ones included, over the
-number of correct runs; the cost is what Inspect logged from the prices in
-model-costs.yaml during the run.
+number of correct runs. The report prices each model call from model-costs.yaml
+in this checkout, by the prompt length of that call, plus web searches; Inspect's
+logged total_cost is the ceiling used for cost_limit.
 """
 
 from __future__ import annotations
@@ -28,8 +29,12 @@ from pathlib import Path
 
 import pandas as pd
 from inspect_ai.analysis import EvalInfo, EvalModel, EvalTask, SampleColumn, SampleSummary, messages_df, samples_df
+from inspect_ai.log import read_eval_log_samples
+from inspect_ai.model import ContentToolUse
 
 from validators import rules, sources
+
+from .models import Price, load_prices
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
 TRAJECTORY = ["tool_calls", "tokens", "total_time_s", "working_time_s"]
@@ -48,10 +53,40 @@ def _usage(model_usage: object) -> dict:
     return json.loads(model_usage) if isinstance(model_usage, str) else {}
 
 
-def _cost(model_usage: object) -> float:
-    """Dollars Inspect logged for the run; NaN when a model had no price."""
-    costs = [u.get("total_cost") for u in _usage(model_usage).values()]
-    return float("nan") if any(c is None for c in costs) else float(sum(costs))
+def _search_ids(event: object) -> list[str]:
+    """The ids of the successful server-side web searches in the reply of one model event."""
+    content = event.output.message.content
+    return [b.id for b in content if isinstance(b, ContentToolUse) and b.name == "web_search" and not b.error] if isinstance(content, list) else []
+
+
+def searches(events: list) -> int:
+    """The successful server-side web searches in the model events of one sample; a block id counts once."""
+    return len({i for event in events if event.event == "model" for i in _search_ids(event)})
+
+
+def sample_cost(events: list, prices: dict[str, Price]) -> float:
+    """Dollars for the model calls of one sample, each by its own prompt length and cache TTL, plus its web searches; NaN when a model has no price."""
+    total, seen = 0.0, set()
+    for event in (e for e in events if e.event == "model"):
+        price = prices.get(event.model)
+        if price is None:
+            return float("nan")
+        usage = event.output.usage
+        total += price.call(usage, price.cache_ttl(usage)) if usage else 0.0
+        new = set(_search_ids(event)) - seen
+        seen |= new
+        total += price.web_search * len(new)
+    return total
+
+
+def _costs(logs: pd.Series) -> dict[tuple[str, str, int], float]:
+    """The cost of every sample in the given logs, keyed by log file name, sample id and epoch."""
+    prices = load_prices()
+    return {
+        (Path(str(log)).name, str(sample.id), sample.epoch): sample_cost(sample.events, prices)
+        for log in logs.dropna().unique()
+        for sample in read_eval_log_samples(str(log), all_samples_required=False)
+    }
 
 
 RETRIEVED = SampleColumn("retrieved", path="scores.source.metadata.retrieved", full=True)
@@ -139,6 +174,7 @@ def runs(log_dir: str) -> pd.DataFrame:
     error = df["error"].fillna("").astype(str) if "error" in df else pd.Series("", index=df.index)
     limit = df["limit"].fillna("").astype(str) if "limit" in df else pd.Series("", index=df.index)
     messages = messages_df(log_dir, quiet=True)
+    costs = _costs(df["log"])
     out = pd.DataFrame(
         {
             "model": df["model"],
@@ -156,7 +192,7 @@ def runs(log_dir: str) -> pd.DataFrame:
             **{name: df["model_usage"].map(lambda u, f=field: _token_sum(u, f)) for name, field in TOKEN_FIELDS.items()},
             "total_time_s": df["total_time"],
             "working_time_s": df["working_time"],
-            "cost": df["model_usage"].map(_cost),
+            "cost": [costs.get((Path(str(log)).name, str(sample), epoch), float("nan")) for log, sample, epoch in zip(df["log"], df["id"], df["epoch"])],
             "retrieved": df["retrieved"].map(_retrieved) if "retrieved" in df else pd.Series("", index=df.index),
             "hosts": df["retrieved"].map(_hosts) if "retrieved" in df else pd.Series("", index=df.index),
             "rule": df["rule"].fillna("") if "rule" in df else pd.Series("", index=df.index),
