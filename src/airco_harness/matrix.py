@@ -115,7 +115,7 @@ def main() -> None:
         if not n_samples[v]:
             print(f"variant {v} has no samples in test set {args.testset}; skipped")
         elif without := sorted({a for a, _ in pairs if not takes(v, a)}):
-            print(f"variant {v} gives the agent an MCP server, which only the agent inspect takes so far; skipped for {', '.join(without)}")
+            print(f"variant {v} has an MCP server that the agent {', '.join(without)} does not take; skipped")
     if not combos:
         print("no runs left", file=sys.stderr)
         sys.exit(2)

@@ -61,8 +61,12 @@ SANDBOX_COMPOSE = Path(__file__).parent / "sandbox" / "compose.yaml"
 
 
 def takes(variant: str, agent: AgentName) -> bool:
-    """Whether the agent can be given the variant: an MCP server only reaches the agent inspect so far."""
-    return not VARIANTS[variant].mcp or agent == "inspect"
+    """Whether the agent can be given the variant's MCP server.
+
+    The agent model has no tools. Claude Code reaches an HTTP server from its sandbox, but the sandbox cannot run a stdio server's container.
+    """
+    mcp = VARIANTS[variant].mcp
+    return not mcp or agent == "inspect" or (agent == "claude-code" and isinstance(mcp, str))
 
 
 def samples(testset: str, variant: str, ids: list[str] | None = None, tags: list[str] | None = None) -> MemoryDataset:
@@ -85,7 +89,7 @@ def _agent(agent: AgentName, map_tool: bool, variant: Variant) -> Agent:
         return _with_mcp(tools, variant.mcp)
     from .claude_code import claude_code_agent
 
-    return claude_code_agent(map_tool)
+    return claude_code_agent(map_tool, variant.mcp if isinstance(variant.mcp, str) else None)
 
 
 def server_instructions(name: str, instructions: str | None) -> str | None:
@@ -148,7 +152,7 @@ def airco(
 
     Args:
       testset: Test set under testsets/.
-      variant: Variant: 0, the question alone; mcp-groundwater-monitoring or mcp-bag-ldproxy, variant 0 plus an MCP server, for the agent inspect.
+      variant: Variant: 0, the question alone; mcp-groundwater-monitoring (agent inspect) or mcp-bag-ldproxy (agents inspect and claude-code), variant 0 plus an MCP server.
       agent: model for the model without prompt or tools; inspect for Inspect's react() with web search and fetch; claude-code for Claude Code in a Docker sandbox.
       ids: Comma-separated sample ids; default the samples the variant is made for, all for variant 0.
       tags: Comma-separated tags; the samples with one of them.
@@ -165,7 +169,7 @@ def airco(
     if agent not in get_args(AgentName):
         raise ValueError(f"unknown agent {agent!r}; choose from {', '.join(get_args(AgentName))}")
     if not takes(variant, agent):
-        raise ValueError(f"variant {variant} gives the agent an MCP server, which only the agent inspect takes so far")
+        raise ValueError(f"the agent {agent} does not take the MCP server of variant {variant}")
     load_dotenv(find_dotenv(usecwd=True))
     register_costs()
     chosen = samples(testset, variant, ids=ids.split(",") if isinstance(ids, str) else ids, tags=tags.split(",") if isinstance(tags, str) else tags)

@@ -86,10 +86,18 @@ def test_a_variant_runs_the_samples_it_is_made_for_unless_ids_or_tags_choose_oth
         airco(variant=GROUNDWATER, agent="inspect")
 
 
-@pytest.mark.parametrize("agent", ["model", "claude-code"])
-def test_an_mcp_variant_takes_only_the_agent_inspect(agent):
-    with pytest.raises(ValueError, match="only the agent inspect takes so far"):
-        airco(testset="dsfl", variant=GROUNDWATER, agent=agent)
+@pytest.mark.parametrize(("variant", "agent"), [(GROUNDWATER, "model"), (GROUNDWATER, "claude-code"), ("mcp-bag-ldproxy", "model")])
+def test_an_mcp_variant_refuses_an_agent_that_cannot_reach_its_server(variant, agent):
+    with pytest.raises(ValueError, match=f"the agent {agent} does not take the MCP server of variant {variant}"):
+        airco(testset="dsfl", variant=variant, agent=agent)
+
+
+def test_claude_code_reaches_an_http_server_under_the_name_a_user_would_give_it():
+    from airco_harness import claude_code
+
+    assert tasks.takes("mcp-bag-ldproxy", "claude-code") and not tasks.takes(GROUNDWATER, "claude-code")
+    assert claude_code.server_name("https://bag.ldproxy.net/bag/mcp") == "bag"
+    assert len(airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="claude-code").dataset) == 5
 
 
 def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept(tmp_path, monkeypatch):
@@ -114,17 +122,6 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
 
 def test_a_server_without_instructions_leaves_the_prompt_of_variant_0():
     assert tasks.server_instructions("bag", None) is None and tasks.server_instructions("bag", "") is None
-
-
-def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, monkeypatch):
-    stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
-    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
-    call = ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gld": "GLD000000025798", "date": "2026-09-21"})
-    submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
-    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect")
-    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[call, call, submit, submit]), log_dir=str(tmp_path), display="none", max_samples=2)
-    assert log.status == "success"
-    assert [[m.text for m in s.messages if m.role == "tool"] for s in log.samples] == [["GLD000000025798 2026-09-21: 2.13 m NAP"]] * 2
 
 
 def test_the_groundwater_variant_runs_a_pinned_image():

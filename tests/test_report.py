@@ -189,7 +189,7 @@ def test_matrix_counts_the_runs_of_each_variant_on_its_own_samples(monkeypatch, 
     assert "variant 0: 7 samples x 2 agent-model pairs x 2 epochs = 28 runs" in out
     assert "variant mcp-groundwater-monitoring: 2 samples x 1 agent-model pairs x 2 epochs = 4 runs" in out
     assert "32 runs (2 variants, 2 agents, 1 models)" in out
-    assert "only the agent inspect takes so far; skipped for model" in out
+    assert "variant mcp-groundwater-monitoring has an MCP server that the agent model does not take; skipped" in out
 
 
 def test_matrix_tags_narrow_every_variant(monkeypatch, capsys):

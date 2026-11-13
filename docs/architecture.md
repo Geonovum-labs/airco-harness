@@ -69,6 +69,6 @@ Besides that, `eval.metadata` holds the versions of `airco-harness` and `inspect
 
 The harness covers one standard. A second standard needs its sources in `SOURCES` in `validators/sources.py`, a section in `testsets/sources-allowlist.json`, a reference model, and changes where the code assumes IMGeo: `validators/refmodel.py` reads the IMGeo MIM model and the BGT and IMGeo catalogs, and `rules.refmodel()` loads the IMGeo reference model. A standard without a MIM model, such as NL-SBB, needs another source of known terms.
 
-Other variants come once the assessment framework defines them. A new variant is an entry in `VARIANTS` in `tasks.py`, a publication form the agent can reach, and tests. An MCP server reaches the agent `inspect` only so far; Claude Code would need the server in its sandbox or over HTTP. Inspect's `skill()` writes to a sandbox and crashes without one.
+Other variants come once the assessment framework defines them. A new variant is an entry in `VARIANTS` in `tasks.py`, a publication form the agent can reach, and tests. An MCP server over HTTP reaches the agents `inspect` and `claude-code`; a stdio server reaches `inspect` only, because Claude Code's sandbox cannot run the server's container. Inspect's `skill()` writes to a sandbox and crashes without one.
 
 No model grader is enabled yet. Setup 3 (IDE and chat assistants) is not in the harness; other CLI agents than Claude Code are not either, although Inspect SWE offers Codex CLI and Gemini CLI the same way.
