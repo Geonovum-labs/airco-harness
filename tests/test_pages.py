@@ -205,3 +205,9 @@ def test_the_error_line_is_the_one_that_says_why():
     assert error_line("Exit code 1\nTraceback ...\nValueError: x", "https://a.example/", shared=True) == ""
     assert error_line("HTTP 404") == "HTTP 404"
     assert error_line("") == ""
+
+
+def test_the_questions_of_a_measurement_are_listed_in_sample_order():
+    """The logs hold the runs in the order they finished; the measurement of 13 November 2026 lists dsfl-05 first."""
+    logs = Path(__file__).parent.parent / "reports" / "2026-11-13T09-33-45" / "logs"
+    assert list(sitedata.questions(logs)) == [f"dsfl-0{n}" for n in range(1, 6)]

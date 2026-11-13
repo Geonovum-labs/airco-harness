@@ -67,9 +67,9 @@ def question(text: object) -> str:
 
 
 def questions(log_dir: Path) -> dict[str, str]:
-    """Per sample, the question of its first run in the logs."""
-    df = samples_df(str(log_dir), columns=SampleSummary, quiet=True)
-    return {sample: question(text) for sample, text in df.drop_duplicates("id")[["id", "input"]].itertuples(index=False)}
+    """Per sample in id order, the question of its first run in the logs."""
+    df = samples_df(str(log_dir), columns=SampleSummary, quiet=True).drop_duplicates("id").sort_values("id")
+    return {sample: question(text) for sample, text in df[["id", "input"]].itertuples(index=False)}
 
 
 ERROR_LINE = re.compile(r"^(?:[\w.]+(?:Error|Exception)\b.*|curl: \(\d+\).*|.*returned error: .*)$")
