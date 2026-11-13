@@ -187,33 +187,38 @@ function overview() {
   const ms = data.measurements.filter(m => !testset || m.testsets.includes(testset));
   const names = new Set(ms.map(m => m.name));
   const runs = runsOf(r => names.has(r.m));
+  const variants = [...new Set(runs.map(r => r.variant))].sort();
+  const variant = variants.includes(p.get("variant")) ? p.get("variant") : variants[0];
 
   const body = [
     h("h1", {text: "Measurements"}),
     h("p", {class: "lead"}, "Each measurement runs a test set against agents and models. The cells show ", h("b", {text: "complete"}),
       ": the share of the expected content in the answer, averaged per sample over its epochs and then over the samples. Open a measurement for its runs, or ",
       h("a", {href: "compare.html", text: "compare"}), " measurements, variants, models and agents."),
-    h("div", {class: "filters"}, select("Test set", [["", "All test sets"], ...testsets.map(t => [t, t])], testset, v => { setParams({testset: v}); render(); })),
+    h("div", {class: "filters"}, select("Test set", [["", "All test sets"], ...testsets.map(t => [t, t])], testset, v => { setParams({testset: v}); render(); }),
+      variants.length > 1 ? select("Variant", variants.map(v => [v, v]), variant, v => { setParams({variant: v}); render(); }) : null),
     h("div", {class: "kpis"}, kpi("Measurements", String(ms.length)), kpi("Runs", String(runs.length)),
       kpi("Samples", String(new Set(runs.map(r => r.sample)).size)), kpi("Cost", money(runs.reduce((a, r) => a + (r.cost || 0), 0)), "as Inspect logged it")),
   ];
 
-  // The current state of a test set: for each of its samples, the runs of the newest measurement that has it.
+  // The current state of a test set: for each of its samples, the runs of the newest measurement that has it on the variant.
+  const ofVariant = new Set(runs.filter(r => r.variant === variant).map(r => `${r.m}|${r.sample}`));
   const cards = (testset ? [testset] : testsets).map(t => {
     const own = ms.filter(m => m.testsets.includes(t));
     const newest = new Map();
-    for (const m of own) for (const sample of m.samples) if (!newest.has(sample)) newest.set(sample, m.name);
-    const current = runsOf(r => newest.get(r.sample) === r.m);
+    for (const m of own) for (const sample of m.samples) if (!newest.has(sample) && ofVariant.has(`${m.name}|${sample}`)) newest.set(sample, m.name);
+    if (!newest.size) return null;
+    const current = runsOf(r => newest.get(r.sample) === r.m && r.variant === variant);
     const used = [...new Set(newest.values())].map(n => MEASUREMENTS.get(n));
     const groups = groupBy(current, r => `${r.model}|${r.agent}`);
-    const link = used.length === 1 ? `${used[0].name}/report.html` : null;
+    const link = used.length === 1 ? `${used[0].name}/report.html#variant=${encodeURIComponent(variant)}` : null;
     return h("section", {class: "card"},
-      h("header", {}, h("h2", {text: t}), h("p", {text: `${newest.size} sample${newest.size === 1 ? "" : "s"} · ${current.length} runs`})),
+      h("header", {}, h("h2", {text: t}), h("p", {text: `${newest.size} sample${newest.size === 1 ? "" : "s"} · ${current.length} runs${variants.length > 1 ? ` · variant ${variant}` : ""}`})),
       h("p", {class: "muted", style: "margin:0 0 0.6rem;font-size:0.88rem"}, "Newest run of each sample: ", ...used.flatMap((m, i) => [i ? ", " : "",
         h("a", {href: `${m.name}/report.html`, text: when(m.name, true)}), ` (${m.samples.filter(x => newest.get(x) === m.name).join(", ")})`])),
       heatmap({models: sortedModels(current), agents: sortedAgents(current), metric: "complete",
         value: (model, agent) => cellValue(groups.get(`${model}|${agent}`), "complete"),
-        onSelect: link ? (model, agent) => (location.href = `${link}#model=${encodeURIComponent(model)}&agent=${encodeURIComponent(agent)}`) : null,
+        onSelect: link ? (model, agent) => (location.href = `${link}&model=${encodeURIComponent(model)}&agent=${encodeURIComponent(agent)}`) : null,
         detail: (model, agent) => [`correct ${fmt(aggregate(groups.get(`${model}|${agent}`), "correct").mean)}`, link ? "Click for the runs" : "Open a measurement for the runs"]}),
       scaleLegend("complete"));
   });
@@ -242,7 +247,11 @@ function measurementPage() {
   const sample = m.samples.includes(p.get("sample")) ? p.get("sample") : "";
   const metric = HEAT_METRICS.includes(p.get("metric")) ? p.get("metric") : "complete";
   const all = runsOf(r => r.m === name);
-  const runs = all.filter(r => !sample || r.sample === sample);
+  // A variant changes what the agent gets, so a cell shows one variant; the tables below put the variants side by side.
+  const variants = [...new Set(all.map(r => r.variant))].sort();
+  const variant = variants.includes(p.get("variant")) ? p.get("variant") : variants[0];
+  const inSample = r => !sample || r.sample === sample;
+  const runs = all.filter(r => r.variant === variant && inSample(r));
   const models = sortedModels(all), agents = sortedAgents(all);
   const groups = groupBy(runs, r => `${r.model}|${r.agent}`);
   const pair = [p.get("model"), p.get("agent")];
@@ -262,7 +271,7 @@ function measurementPage() {
   const body = [
     h("nav", {class: "crumbs"}, h("a", {href: "../", text: "All measurements"}), " › ", when(name), " · ", h("a", {href: "viewer/", text: "Viewer"}), " · ",
       h("a", {href: `https://github.com/Geonovum-labs/airco-harness/blob/main/reports/${name}/report.md`, text: "report.md"}), " · ",
-      h("a", {href: `../compare.html#by=model&measurement=${encodeURIComponent(name)}`, text: "Compare"})),
+      h("a", {href: `../compare.html#by=${variants.length > 1 ? "variant" : "model"}&measurement=${encodeURIComponent(name)}`, text: variants.length > 1 ? "Compare variants" : "Compare"})),
     h("h1", {text: `Measurement of ${when(name)}`}),
     h("p", {class: "facts"}, facts.map(([k, v]) => h("span", {}, `${k} `, h("b", {text: v})))),
     questionBlock(m, sample, s => { setParams({sample: s}); render(); }),
@@ -270,11 +279,12 @@ function measurementPage() {
       kpi("Cost", money(m.cost), "all runs"), kpi("Errors / at a limit", `${m.failed} / ${m.at_limit}`, "a run at a limit counts as answered")),
     h("div", {class: "filters"},
       select("Sample", [["", `All samples (${m.samples.length})`], ...m.samples.map(s => [s, s])], sample, v => { setParams({sample: v}); render(); }),
+      variants.length > 1 ? select("Variant", variants.map(v => [v, v]), variant, v => { setParams({variant: v}); render(); }) : null,
       select("Metric", HEAT_METRICS.map(k => [k, k]), metric, v => { setParams({metric: v}); render(); })),
   ];
 
   body.push(h("section", {class: "card"},
-    h("header", {}, h("h2", {text: `${metric} per model and agent`}), h("p", {text: `${METRICS[metric].about}; mean over samples, each sample first averaged over its epochs. Choose a cell for its runs.`})),
+    h("header", {}, h("h2", {text: `${metric} per model and agent${variants.length > 1 ? `, variant ${variant}` : ""}`}), h("p", {text: `${METRICS[metric].about}; mean over samples, each sample first averaged over its epochs. Choose a cell for its runs.`})),
     heatmap({models, agents, metric, selected: chosen, value: (model, agent) => cellValue(groups.get(`${model}|${agent}`), metric),
       onSelect: (model, agent) => { setParams({model, agent}); render(); document.getElementById("detail").scrollIntoView({behavior: "smooth", block: "start"}); },
       detail: (model, agent) => { const g = groups.get(`${model}|${agent}`); return [`${g.length} runs · ${money(g.reduce((a, r) => a + (r.cost || 0), 0))}`]; }}),
@@ -282,22 +292,21 @@ function measurementPage() {
 
   body.push(chosen ? pairDetail(name, chosen, groups.get(`${chosen[0]}|${chosen[1]}`)) : h("p", {class: "empty", id: "detail", text: "No runs for this selection."}));
 
-  const rows = [...groups].map(([key, g]) => {
-    const [model, agent] = key.split("|");
-    return h("tr", {}, h("td", {class: "nowrap", text: model}), h("td", {text: agent}),
-      ...Object.keys(METRICS).map(k => { const v = aggregate(g, k); return h("td", {class: "num", text: v.se === null ? fmt(v.mean) : `${fmt(v.mean)} ± ${fmt(v.se)}`}); }));
-  });
-  body.push(h("details", {}, h("summary", {text: "Table: quality metrics per model and agent"}),
-    table(["Model", "Agent", ...Object.keys(METRICS)], rows, [2, 3, 4, 5, 6])));
-  const trajectory = [...groups].map(([key, g]) => {
-    const [model, agent] = key.split("|");
-    return h("tr", {}, h("td", {class: "nowrap", text: model}), h("td", {text: agent}),
+  const split = groupBy(all.filter(inSample), r => `${r.model}|${r.agent}|${r.variant}`);
+  const cells = models.flatMap(mo => agents.flatMap(a => variants.map(v => `${mo}|${a}|${v}`))).filter(k => split.has(k)).map(k => [k.split("|"), split.get(k)]);
+  const rows = cells.map(([[model, agent, v], g]) =>
+    h("tr", {}, h("td", {class: "nowrap", text: model}), h("td", {text: agent}), h("td", {class: "nowrap", text: v}),
+      ...Object.keys(METRICS).map(k => { const s = aggregate(g, k); return h("td", {class: "num", text: s.se === null ? fmt(s.mean) : `${fmt(s.mean)} ± ${fmt(s.se)}`}); })));
+  body.push(h("details", {open: variants.length > 1}, h("summary", {text: "Table: quality metrics per model, agent and variant"}),
+    table(["Model", "Agent", "Variant", ...Object.keys(METRICS)], rows, [3, 4, 5, 6, 7])));
+  const trajectory = cells.map(([[model, agent, v], g]) => {
+    return h("tr", {}, h("td", {class: "nowrap", text: model}), h("td", {text: agent}), h("td", {class: "nowrap", text: v}),
       h("td", {class: "num", text: fmt(aggregate(g, "tool_calls").mean, 1)}), h("td", {class: "num", text: compact(aggregate(g, "tokens").mean)}),
       h("td", {class: "num", text: fmt(aggregate(g, "total_time_s").mean, 0)}), h("td", {class: "num", text: money(g.reduce((a, r) => a + (r.cost || 0), 0))}),
       h("td", {class: "num", text: money(costPerCorrect(g))}));
   });
-  body.push(h("details", {}, h("summary", {text: "Trajectory and cost per model and agent"}),
-    table(["Model", "Agent", "Tool calls", "Tokens", "Time (s)", "Cost", "Cost per correct"], trajectory, [2, 3, 4, 5, 6])));
+  body.push(h("details", {}, h("summary", {text: "Trajectory and cost per model, agent and variant"}),
+    table(["Model", "Agent", "Variant", "Tool calls", "Tokens", "Time (s)", "Cost", "Cost per correct"], trajectory, [3, 4, 5, 6, 7])));
   return body;
 }
 
