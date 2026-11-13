@@ -477,8 +477,9 @@ const axisRow = cls => h("div", {class: `drow axis ${cls}`, "aria-hidden": "true
   h("div", {class: "track"}, h("div", {class: "plot"}, [0, 0.25, 0.5, 0.75, 1].map(t => h("span", {class: "tick", style: `left:${x(t)}`, text: pct(t)})))), h("div"));
 const dotKey = (d, v) => h("span", {class: "dot key", style: `--c:${d.style.get(v).color}`, "aria-hidden": "true"});
 
-/** A 0 to 100% track with one dot per variant, a faint band of one standard error around each, and a ring for the model alone. */
-function track(d, marks, ring) {
+/** A 0 to 100% track with one dot per variant, a faint band of one standard error around each, and a ring for the model
+ * alone. The dots are joined only when they are scored on the same questions (`joined`). */
+function track(d, marks, ring, joined = true) {
   const values = [...marks.values()].filter(s => s.mean !== null).map(s => s.mean);
   const lo = Math.min(...values), hi = Math.max(...values);
   return h("div", {class: "track"}, h("div", {class: "plot"}, gridlines(),
@@ -486,7 +487,7 @@ function track(d, marks, ring) {
       const a = Math.max(0, s.mean - s.se), b = Math.min(1, s.mean + s.se);
       return h("span", {class: "band", style: `left:${x(a)};width:${(b - a) * 100}%;--c:${d.style.get(v).color}`});
     }),
-    values.length > 1 ? h("span", {class: "stem", style: `left:${x(lo)};width:${(hi - lo) * 100}%`}) : null,
+    joined && values.length > 1 ? h("span", {class: "stem", style: `left:${x(lo)};width:${(hi - lo) * 100}%`}) : null,
     ring && ring.mean !== null ? h("span", {class: "dot ring", style: `left:${x(ring.mean)}`}) : null,
     [...marks].filter(([, s]) => s.mean !== null).map(([v, s]) => h("span", {class: "dot", style: `left:${x(s.mean)};--c:${d.style.get(v).color}`}))));
 }
@@ -531,7 +532,7 @@ function setupChart(d, m) {
   const rows = groups.map(rs => h("div", {class: "dgroup"}, h("div", {class: "dmodel", text: rs[0].model}),
     h("div", {}, rs.map(r => {
       const row = h("div", {class: "drow setup", tabindex: "0", "aria-label": lines(r).join(". ")},
-        h("div", {class: "dagent", text: r.agent === ALONE ? "no tools" : r.agent}), track(d, r.marks, ringOf(r)), d.comparing ? gainCell(r) : meanCell(r));
+        h("div", {class: "dagent", text: r.agent === ALONE ? "no tools" : r.agent}), track(d, r.marks, ringOf(r), !r.disjoint), d.comparing ? gainCell(r) : meanCell(r));
       tip(row, () => lines(r));
       return row;
     }))));
@@ -564,11 +565,11 @@ function questionStats(d, m) {
     const present = d.variants.filter(v => d.rows.some(r => (r.byVariant.get(v) || []).some(x => x.sample === sample && !x.failed)));
     const rows = d.rows.filter(r => present.every(v => (r.byVariant.get(v) || []).some(x => x.sample === sample && !x.failed)));
     const of = (r, v) => r.byVariant.get(v).filter(x => x.sample === sample);
-    const stats = new Map(present.map(v => [v, aggregate(rows.flatMap(r => of(r, v)), "complete")]));
+    const pooled = v => rows.flatMap(r => of(r, v));
+    const stats = new Map(present.map(v => [v, aggregate(pooled(v), "complete")]));
     const solved = new Map(present.map(v => [v, rows.filter(r => aggregate(of(r, v), "complete").mean === 1).length]));
     const alone = [...new Set(d.rows.map(r => r.alone).filter(Boolean))].flatMap(a => [...a.byVariant.values()].flat()).filter(x => x.sample === sample);
-    const base = d.baseline && stats.get(d.baseline);
-    const gains = new Map(base ? present.filter(v => v !== d.baseline).map(v => [v, stats.get(v).mean - base.mean]) : []);
+    const gains = new Map(present.includes(d.baseline) ? present.filter(v => v !== d.baseline).map(v => [v, paired(pooled(d.baseline), pooled(v), "complete").mean]) : []);
     return {sample, n: i + 1, text: splitQuestion(m.questions[sample] || sample)[0], present, rows, stats, solved, gains, ring: alone.length ? aggregate(alone, "complete") : null};
   });
 }
@@ -713,7 +714,7 @@ function questionCard(d, m, sample, n, selected, onPick) {
     h("ul", {class: "why"}, summaryLines(d, m, sample)),
     h("div", {class: "qplot"}, h("div", {class: "qrow axisrow", "aria-hidden": "true"}, h("div", {class: "aname"}),
       h("div", {class: "qaxis"}, [0, 0.5, 1].map(t => h("span", {style: `left:${x(t)}`, text: pct(t)}))), h("div", {class: "rvals muted", text: "Mean"})), groups),
-    chosen ? runDetail(d, m, chosen) : null,
+    chosen ? runDetail(d, m, chosen, () => onPick(null)) : null,
     tableView);
 }
 
@@ -735,10 +736,10 @@ function hostList(run) {
   return [...lines.slice(0, 2), more];
 }
 
-function runDetail(d, m, run) {
+function runDetail(d, m, run, onClose) {
   const yes = (v, ok, no) => (run.failed ? "error" : v === 1 ? ok : no);
   const score = (label, value, good) => h("div", {}, h("dt", {text: label}), h("dd", {class: good === undefined || run.failed ? "" : good ? "ok" : "bad", text: value}));
-  const close = h("button", {class: "btn", type: "button", text: "Close", onclick: () => { setParams({run: null}); render(); document.querySelector(`[data-run="${CSS.escape(runKey(run))}"]`)?.focus({preventScroll: true}); }});
+  const close = h("button", {class: "btn", type: "button", text: "Close", onclick: onClose});
   const section = h("div", {class: "detail", id: "detail", role: "region", "aria-label": "Run detail"},
     h("div", {class: "detailhead"}, h("strong", {text: `${setupName(run)} · variant ${run.variant} · epoch ${run.epoch}`}),
       h("span", {}, h("a", {class: "btn", href: viewerLink(run), text: "Log"}), close)),
@@ -753,7 +754,7 @@ function runDetail(d, m, run) {
     run.mcp_server ? h("p", {class: "muted small", text: `MCP server available: ${run.mcp_server}.`}) : null);
   const sample = mapOf(run);
   if (sample) {
-    const result = h("p", {class: "result"}), counts = h("ul", {class: "legend"});
+    const counts = h("ul", {class: "legend"});
     const element = h("div", {id: "map", role: "img", "aria-label": "Map of the chosen run"});
     section.append(h("div", {class: "scoring"},
       h("p", {}, h("b", {text: "Required: "}), `the ${sample.must.length} features the map has to show; each one missing lowers complete. `,
@@ -761,11 +762,14 @@ function runDetail(d, m, run) {
         h("b", {text: "Invented: "}), "a place with no allowed match."),
       sample.note ? h("details", {}, h("summary", {text: "Why these features"}), h("p", {text: sample.note})) : null),
       h("p", {class: "muted small"}, "What the agent showed with ", h("code", {text: "show_on_map"}), ", on the BRT achtergrondkaart in RD. Click a feature or a dot for what the agent said about that place."),
-      result, element, counts);
-    // Leaflet needs the element in the page to size the map, so it draws after the page is in place.
+      element, counts);
+    // Leaflet needs the element in the page to size the map, so it draws once the detail is in place, and not at all
+    // when another run replaced the detail meanwhile.
     requestAnimationFrame(async () => {
-      const c = createMap(element)(run, sample.must, await panden(root, sample.panden), sample.allowed_optional ?? null);
-      result.textContent = run.explanation;
+      if (!element.isConnected) return;
+      const collection = await panden(root, sample.panden);
+      if (!element.isConnected) return;
+      const c = createMap(element)(run, sample.must, collection, sample.allowed_optional ?? null);
       counts.replaceChildren(...Object.keys(KINDS).map(k => h("li", {}, swatch(k), `${KINDS[k].label}: `, h("b", {text: String(c[k])}))),
         h("li", {}, swatch("invented"), `${INVENTED}: `, h("b", {text: String(c.unmatched)})));
     });
@@ -783,12 +787,19 @@ function measurementPage() {
   const all = runsOf(r => r.m === name);
   const d = design(all);
   const p = params();
-  const selected = all.some(r => runKey(r) === p.get("run")) ? p.get("run") : null;
+  const runOf = key => all.find(r => runKey(r) === key) || null;
+  let selected = runOf(p.get("run")) ? p.get("run") : null;
+  const card = sample => questionCard(d, m, sample, m.samples.indexOf(sample) + 1, selected, onPick);
+  // Choosing a run redraws only the cards of the run that closes and the run that opens, so the rest of the page keeps
+  // its open tables and the reader's place. onPick(null) closes the open run.
   const onPick = r => {
-    const key = runKey(r);
-    setParams({run: selected === key ? null : key});
-    render();
-    document.querySelector(`[data-run="${CSS.escape(key)}"]`)?.focus({preventScroll: true});
+    tooltip.hidden = true;
+    const before = runOf(selected), key = r ? runKey(r) : null;
+    selected = key === selected ? null : key;
+    setParams({run: selected});
+    for (const sample of new Set([before?.sample, r?.sample].filter(Boolean))) document.getElementById(`q-${sample}`)?.replaceWith(card(sample));
+    const focus = key || (before && runKey(before));
+    if (focus) document.querySelector(`[data-run="${CSS.escape(focus)}"]`)?.focus({preventScroll: true});
   };
   const facts = [
     ["Test set", testsetLabel(m)], ["Commit", m.commits.join(", ") || "n/a"], ["Limits per run", limitsText(m.limits)],
@@ -821,7 +832,7 @@ function measurementPage() {
     costCard(d, m),
     h("h2", {class: "section", text: m.samples.length > 1 ? "Question by question" : "The question"}),
     cardsLegend(d, m),
-    ...m.samples.map((s, i) => questionCard(d, m, s, i + 1, selected, onPick)),
+    ...m.samples.map(card),
     h("details", {}, h("summary", {text: "Table: quality metrics per model, agent and variant"}),
       table(["Model", "Agent", "Variant", ...Object.keys(METRICS)], quality, [3, 4, 5, 6, 7]),
       h("p", {class: "muted small", text: `Mean ± standard error over the questions. ${SOURCE_NOTE[0].toUpperCase()}${SOURCE_NOTE.slice(1)}`})),
@@ -975,6 +986,7 @@ function comparisonWarnings(by, chosen, runs, fixedMeasurement) {
 
 function render() {
   const page = document.body.dataset.page;
+  tooltip.hidden = true;
   const body = page === "overview" ? overview() : page === "measurement" ? measurementPage() : comparePage();
   app.replaceChildren(...body);
 }
