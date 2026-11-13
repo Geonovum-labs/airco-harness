@@ -23,6 +23,8 @@ The split comes from the tooling note. Inspect depends on one maintainer and cha
 
 A variant is a form in which the standard is published. Which forms there will be, and how many, is for the assessment framework to define. Variant 0 is the standard as it is published today, and the agent finds it or not. Variants `mcp-groundwater-monitoring` and `mcp-bag-ldproxy` add an MCP server, on BRO groundwater data and on the BAG of Amersfoort, to the tools of variant 0, so that the server is the one difference; they are made for the samples tagged `bro` and `bag`. The variants are entries of `VARIANTS` in `tasks.py`, and `eval.metadata` holds the entry a run used, with the pinned image or the URL of its server.
 
+For development, `AIRCO_GROUNDWATER_MCP_JAR` replaces that image with a local Java server and records its resolved launch command in the variant metadata. Unlike a pinned image, a local JAR is not identified by the harness commit; see [Running](running.md) before publishing or comparing measurements.
+
 What differs is the agent, because the baseline is what a user gets from the agent the user has:
 
 | Agent | What answers | Setup |

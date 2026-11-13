@@ -105,14 +105,17 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
     monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
     outputs = [
-        ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gld": "GLD000000025798", "date": "2026-09-21"}),
+        ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}),
         ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps({"value": 2.13, "unit": "m", "reference_plane": "NAP"})}),
     ]
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
     [log] = eval(task, model=get_model("mockllm/model", custom_outputs=outputs), log_dir=str(tmp_path), display="none")
     [sample] = log.samples
     [result] = [m for m in sample.messages if m.role == "tool"]
-    assert (result.function, result.text) == ("groundwater-monitoring_series_get", "GLD000000025798 2026-09-21: 2.13 m NAP")
+    assert result.function == "groundwater-monitoring_series_get"
+    payload = json.loads(result.text)
+    assert payload["segments"][0]["gldBroId"] == "GLD000000025798"
+    assert payload["window"] == {"from": "2026-09-21", "to": "2026-09-21", "total": 1, "returned": 1, "truncated": False}
     assert sample.scores["quality"].value["correct"] == 1
     assert log.eval.metadata["variant_form"] == {"about": "stub", "mcp": [sys.executable, str(stub)], "tags": ["bro"]}
     [system] = [m for m in sample.messages if m.role == "system"]
@@ -131,7 +134,7 @@ def test_plot_tool_is_available_alongside_the_mcp_server(tmp_path, monkeypatch):
     data = {"points": [{"date": date, "value": value} for date, value in expected["points"].items()],
             "unit": "m", "reference_plane": "NAP", "connect_gaps": False}
     outputs = [
-        ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gld": "GLD000000025798", "date": "2026-09-21"}),
+        ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}),
         ModelOutput.for_tool_call("mockllm/model", "plot_series", {"data": data}),
         ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de grafiek."}),
     ]
@@ -145,18 +148,32 @@ def test_plot_tool_is_available_alongside_the_mcp_server(tmp_path, monkeypatch):
 def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
     monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
-    call = ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gld": "GLD000000025798", "date": "2026-09-21"})
+    call = ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"})
     submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06,dsfl-07")
     [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[call, call, submit, submit]), log_dir=str(tmp_path), display="none", max_samples=2)
     assert log.status == "success"
-    assert [[m.text for m in s.messages if m.role == "tool"] for s in log.samples] == [["GLD000000025798 2026-09-21: 2.13 m NAP"]] * 2
+    results = [[json.loads(m.text) for m in s.messages if m.role == "tool"] for s in log.samples]
+    assert [len(r) for r in results] == [1, 1]
+    assert all(r[0]["window"]["truncated"] is False for r in results)
+
+
+def test_local_groundwater_server_uses_utf8_and_records_resolved_command(tmp_path, monkeypatch):
+    jar = tmp_path / "server.jar"
+    jar.touch()
+    monkeypatch.setenv("AIRCO_GROUNDWATER_MCP_JAR", str(jar))
+    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
+    assert task.metadata["variant_form"]["mcp"] == ("java", "-Dstdout.encoding=UTF-8", "-jar", str(jar))
+    monkeypatch.setenv("AIRCO_GROUNDWATER_MCP_JAR", str(tmp_path / "missing.jar"))
+    with pytest.raises(ValueError, match="AIRCO_GROUNDWATER_MCP_JAR is not a file"):
+        airco(testset="dsfl", variant=GROUNDWATER, agent="inspect")
 
 
 def test_the_groundwater_variant_runs_a_pinned_image():
     command = tasks.VARIANTS[GROUNDWATER].mcp
     assert command[:-1] == ("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod")
     assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", command[-1])
+    assert command[-1].endswith("sha256:ebbce9d90a7bdefca2e19178ccb108dae54c9894d2ae38cace38270187434344")
 
 
 def test_the_bag_variant_reaches_its_server_over_http_and_runs_the_bag_samples():
