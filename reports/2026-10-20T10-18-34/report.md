@@ -28,14 +28,14 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 | Model | Agent | Variant | Tool calls | Tokens | Total time (s) | Working time (s) | Cost per correct answer ($) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | claude-code | 0 | 2.3 | 135829 | 63.2 | 51.3 | 0.0105 |
-| anthropic/claude-haiku-5-5 | inspect | 0 | 2.7 | 66045 | 8.6 | 8.5 | 0.0058 |
+| anthropic/claude-haiku-5-5 | claude-code | 0 | 2.3 | 135829 | 63.2 | 51.3 | 0.0205 |
+| anthropic/claude-haiku-5-5 | inspect | 0 | 2.7 | 66045 | 8.6 | 8.5 | 0.0191 |
 | anthropic/claude-haiku-5-5 | model | 0 | 0.0 | 1574 | 8.0 | 7.9 |  |
-| anthropic/claude-sonnet-5-5 | claude-code | 0 | 0.7 | 50387 | 51.7 | 38.8 | 0.0906 |
-| anthropic/claude-sonnet-5-5 | inspect | 0 | 7.7 | 81195 | 28.3 | 28.3 | 0.0790 |
+| anthropic/claude-sonnet-5-5 | claude-code | 0 | 0.7 | 50387 | 51.7 | 38.8 | 0.1006 |
+| anthropic/claude-sonnet-5-5 | inspect | 0 | 7.7 | 81195 | 28.3 | 28.3 | 0.0890 |
 | anthropic/claude-sonnet-5-5 | model | 0 | 0.0 | 1725 | 15.2 | 15.1 |  |
 | anthropic/claude-opus-5-5 | claude-code | 0 | 0.0 | 22174 | 58.5 | 28.6 | 0.0833 |
-| anthropic/claude-opus-5-5 | inspect | 0 | 3.7 | 30703 | 17.9 | 17.8 | 0.0787 |
+| anthropic/claude-opus-5-5 | inspect | 0 | 3.7 | 30703 | 17.9 | 17.8 | 0.0887 |
 | anthropic/claude-opus-5-5 | model | 0 | 0.0 | 520 | 6.9 | 6.8 | 0.0086 |
 | mistral/mistral-small-2603 | inspect | 0 | 0.0 | 2365 | 2.4 | 2.3 |  |
 | mistral/mistral-small-2603 | model | 0 | 0.0 | 104 | 1.0 | 0.9 |  |

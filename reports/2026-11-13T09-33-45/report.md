@@ -1,6 +1,6 @@
 # airco-harness report
 
-Logs: `logs/2026-11-13T09-33-45`. Runs: 90, of which with an error: 0, and at a limit: 32.
+Logs: `reports/2026-11-13T09-33-45/logs/logs`. Runs: 90, of which with an error: 0, and at a limit: 32.
 
 Per model and variant: first the mean over the epochs of each sample, then the mean over the samples; the standard error over the samples in parentheses. A run at a limit counts with the scores it got, a run with an error is left out.
 
@@ -19,7 +19,7 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 | Model | Agent | Variant | Tool calls | Tokens | Total time (s) | Working time (s) | Cost per correct answer ($) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | inspect | mcp-bag-ldproxy | 2.0 | 636116 | 37.8 | 37.7 | 0.0738 |
+| anthropic/claude-haiku-5-5 | inspect | mcp-bag-ldproxy | 2.0 | 636116 | 37.8 | 37.7 | 0.2912 |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-bag-ldproxy | 3.1 | 407836 | 62.3 | 62.1 | 0.5690 |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | 3.0 | 474352 | 83.3 | 82.7 | 1.8992 |
 | mistral/mistral-small-2603 | inspect | mcp-bag-ldproxy | 4.1 | 490975 | 56.3 | 50.9 | 0.3745 |

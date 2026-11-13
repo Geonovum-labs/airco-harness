@@ -1,6 +1,6 @@
 # airco-harness report
 
-Logs: `logs/2026-11-12T14-28-32`. Runs: 135, of which with an error: 0, and at a limit: 17.
+Logs: `reports/2026-11-12T14-28-32/logs/logs`. Runs: 135, of which with an error: 0, and at a limit: 17.
 
 Per model and variant: first the mean over the epochs of each sample, then the mean over the samples; the standard error over the samples in parentheses. A run at a limit counts with the scores it got, a run with an error is left out.
 
@@ -22,14 +22,14 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 | Model | Agent | Variant | Tool calls | Tokens | Total time (s) | Working time (s) | Cost per correct answer ($) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | claude-code | 0 | 8.1 | 309969 | 258.7 | 250.2 | 0.2396 |
-| anthropic/claude-haiku-5-5 | inspect | 0 | 8.5 | 164773 | 33.2 | 33.0 | 0.0413 |
+| anthropic/claude-haiku-5-5 | claude-code | 0 | 8.1 | 309969 | 258.7 | 250.2 | 0.3896 |
+| anthropic/claude-haiku-5-5 | inspect | 0 | 8.5 | 164773 | 33.2 | 33.0 | 0.2060 |
 | anthropic/claude-haiku-5-5 | model | 0 | 0.0 | 892 | 5.3 | 5.3 | 0.0021 |
-| anthropic/claude-sonnet-5-5 | claude-code | 0 | 7.3 | 266490 | 288.5 | 283.6 | 0.9610 |
-| anthropic/claude-sonnet-5-5 | inspect | 0 | 32.6 | 333089 | 125.6 | 125.5 | 0.5734 |
+| anthropic/claude-sonnet-5-5 | claude-code | 0 | 7.3 | 266490 | 288.5 | 283.6 | 1.0043 |
+| anthropic/claude-sonnet-5-5 | inspect | 0 | 32.6 | 333089 | 125.6 | 125.5 | 0.8014 |
 | anthropic/claude-sonnet-5-5 | model | 0 | 0.0 | 1335 | 12.0 | 11.9 | 0.0487 |
-| anthropic/claude-opus-5-5 | claude-code | 0 | 6.7 | 244422 | 186.0 | 185.5 | 1.1295 |
-| anthropic/claude-opus-5-5 | inspect | 0 | 17.3 | 274341 | 172.9 | 172.7 | 1.3784 |
+| anthropic/claude-opus-5-5 | claude-code | 0 | 6.7 | 244422 | 186.0 | 185.5 | 1.1415 |
+| anthropic/claude-opus-5-5 | inspect | 0 | 17.3 | 274341 | 172.9 | 172.7 | 1.4184 |
 | anthropic/claude-opus-5-5 | model | 0 | 0.0 | 1368 | 14.6 | 14.5 | 0.0666 |
 
 ## `correct` / `complete` per sample (mean over epochs)
@@ -52,33 +52,33 @@ On the site, the dashboard of this measurement draws each run on the BRT achterg
 
 | Model | Agent | Variant | Sample | Epoch | On the map | Retrieved from |
 | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-03 | 1 | 1 of 2745 required panden shown; 4 places match no pand | nominatim.openstreetmap.org (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-03 | 1 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-03 | 1 | not parseable: no map shown | api.pdok.nl (authoritative), service.pdok.nl (other), overpass-api.de (other), nominatim.openstreetmap.org (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-03 | 2 | not parseable: no map shown | nothing |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-03 | 1 | 1 of 2745 required panden shown; 4 places match no pand | nominatim.openstreetmap.org (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-03 | 2 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-03 | 2 | not parseable: no map shown | api.pdok.nl (authoritative), service.pdok.nl (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-03 | 3 | 0 of 2745 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-03 | 2 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-03 | 3 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-03 | 3 | not parseable: no map shown | service.pdok.nl (authoritative), api.pdok.nl (authoritative) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-04 | 1 | 7 of 78 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-03 | 3 | 0 of 2745 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-04 | 1 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-04 | 1 | 4 of 78 required panden shown; 0 places match no pand | nominatim.openstreetmap.org (other), photon.komoot.io (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-04 | 2 | 7 of 78 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-04 | 1 | 7 of 78 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-04 | 2 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-04 | 2 | 6 of 78 required panden shown; 1 places match no pand | overpass-api.de (other), nominatim.openstreetmap.org (other), photon.komoot.io (other), geocoding.geo.admin.nl (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-04 | 3 | 8 of 78 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other), photon.komoot.io (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-04 | 2 | 7 of 78 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-04 | 3 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-04 | 3 | 7 of 78 required panden shown; 2 places match no pand | overpass-api.de (other), nominatim.openstreetmap.org (other), overpass.kumi.systems (other), maps.mail.ru (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 1 | 28 of 195 required panden shown; 12 places match no pand | nl.wikipedia.org (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-04 | 3 | 8 of 78 required panden shown; 2 places match no pand | nominatim.openstreetmap.org (other), photon.komoot.io (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-05 | 1 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-05 | 1 | not parseable: no map shown | nl.wikipedia.org (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 2 | 15 of 195 required panden shown; 6 places match no pand | nl.wikipedia.org (other), query.wikidata.org (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 1 | 28 of 195 required panden shown; 12 places match no pand | nl.wikipedia.org (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-05 | 2 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-05 | 2 | not parseable: no map shown | nl.wikipedia.org (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 3 | 18 of 195 required panden shown; 6 places match no pand | nl.wikipedia.org (other), query.wikidata.org (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 2 | 15 of 195 required panden shown; 6 places match no pand | nl.wikipedia.org (other), query.wikidata.org (other) |
 | anthropic/claude-haiku-5-5 | model | 0 | dsfl-05 | 3 | not parseable: no map shown | nothing |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-05 | 3 | not parseable: no map shown | nl.wikipedia.org (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 3 | 18 of 195 required panden shown; 6 places match no pand | nl.wikipedia.org (other), query.wikidata.org (other) |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-03 | 1 | not parseable: no map shown | www.destadamersfoort.nl (other), www.amersfoort.nl (other), amersfoort.nieuws.nl (other), www.hardnieuws.nl (other), www.amersfoorttoenennu.nl (other), eijva.nl (other), focusbv.com (other), www.rtvutrecht.nl (other), api.pdok.nl (other), www.habion.nl (other) |
 | anthropic/claude-sonnet-5-5 | model | 0 | dsfl-03 | 1 | not parseable: no map shown | nothing |
 | anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-03 | 1 | not parseable: no map shown | api.pdok.nl (authoritative), service.pdok.nl (authoritative) |
@@ -143,8 +143,8 @@ On the site, the dashboard of this measurement draws each run on the BRT achterg
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-03 | 3 | token | 606116 |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-05 | 1 | token | 617935 |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-05 | 2 | token | 627614 |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 3 | token | 658925 |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-05 | 3 | token | 653814 |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-05 | 3 | token | 658925 |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-01 | 2 | token | 651175 |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-03 | 1 | token | 625064 |
 | anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-03 | 1 | time | 574496 |

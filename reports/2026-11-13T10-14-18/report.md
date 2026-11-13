@@ -1,6 +1,6 @@
 # airco-harness report
 
-Logs: `logs/2026-11-13T10-14-18`. Runs: 135, of which with an error: 0, and at a limit: 49.
+Logs: `reports/2026-11-13T10-14-18/logs/logs`. Runs: 135, of which with an error: 0, and at a limit: 49.
 
 Per model and variant: first the mean over the epochs of each sample, then the mean over the samples; the standard error over the samples in parentheses. A run at a limit counts with the scores it got, a run with an error is left out.
 
@@ -22,8 +22,8 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 | Model | Agent | Variant | Tool calls | Tokens | Total time (s) | Working time (s) | Cost per correct answer ($) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | claude-code | mcp-bag-ldproxy | 3.1 | 470683 | 84.8 | 73.6 | 0.0161 |
-| anthropic/claude-haiku-5-5 | inspect | mcp-bag-ldproxy | 2.3 | 561794 | 46.8 | 46.6 | 0.0686 |
+| anthropic/claude-haiku-5-5 | claude-code | mcp-bag-ldproxy | 3.1 | 470683 | 84.8 | 73.6 | 0.0806 |
+| anthropic/claude-haiku-5-5 | inspect | mcp-bag-ldproxy | 2.3 | 561794 | 46.8 | 46.6 | 0.2662 |
 | anthropic/claude-sonnet-5-5 | claude-code | mcp-bag-ldproxy | 3.3 | 451492 | 79.0 | 70.7 | 0.2805 |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-bag-ldproxy | 2.6 | 462897 | 66.1 | 66.0 | 0.8616 |
 | anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | 3.0 | 440483 | 81.7 | 74.8 | 0.6186 |
@@ -88,24 +88,24 @@ On the site, the dashboard of this measurement draws each run on the BRT achterg
 | anthropic/claude-sonnet-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 2 | not parseable: no map shown | nothing |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 3 | not parseable: no map shown | nothing |
 | anthropic/claude-sonnet-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 3 | not parseable: no map shown | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 1 | not parseable: no map shown | nothing |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-03 | 1 | not parseable: no map shown | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 2 | not parseable: no map shown | bag.ldproxy.net (authoritative) |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 1 | not parseable: no map shown | nothing |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-03 | 2 | not parseable: no map shown | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 3 | not parseable: no map shown | bag.ldproxy.net (authoritative) |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 2 | not parseable: no map shown | bag.ldproxy.net (authoritative) |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-03 | 3 | 57 of 2745 required panden shown; 14 places match no pand | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-04 | 1 | 34 of 78 required panden shown; 0 places match no pand | nothing |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 3 | not parseable: no map shown | bag.ldproxy.net (authoritative) |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-04 | 1 | 34 of 78 required panden shown; 0 places match no pand | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-04 | 2 | 34 of 78 required panden shown; 0 places match no pand | nothing |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-04 | 1 | 34 of 78 required panden shown; 0 places match no pand | nothing |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-04 | 2 | 34 of 78 required panden shown; 0 places match no pand | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-04 | 3 | 43 of 78 required panden shown; 0 places match no pand | nothing |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-04 | 2 | 34 of 78 required panden shown; 0 places match no pand | nothing |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-04 | 3 | 22 of 78 required panden shown; 0 places match no pand | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 1 | not parseable: no map shown | nothing |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-04 | 3 | 43 of 78 required panden shown; 0 places match no pand | nothing |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 1 | not parseable: no map shown | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 2 | not parseable: no map shown | nothing |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 1 | not parseable: no map shown | nothing |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 2 | not parseable: no map shown | nothing |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 3 | not parseable: no map shown | nothing |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 2 | not parseable: no map shown | nothing |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 3 | 127 of 195 required panden shown; 0 places match no pand | bag.ldproxy.net (authoritative) |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 3 | not parseable: no map shown | nothing |
 | mistral/mistral-small-2603 | inspect | mcp-bag-ldproxy | dsfl-03 | 1 | 3 of 2745 required panden shown; 7 places match no pand | nothing |
 | mistral/mistral-small-2603 | inspect | mcp-bag-ldproxy | dsfl-03 | 2 | not parseable: no map shown | nothing |
 | mistral/mistral-small-2603 | inspect | mcp-bag-ldproxy | dsfl-03 | 3 | 0 of 2745 required panden shown; 19 places match no pand | nothing |
@@ -162,17 +162,17 @@ On the site, the dashboard of this measurement draws each run on the BRT achterg
 | anthropic/claude-sonnet-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 2 | token | 686992 |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 3 | token | 601170 |
 | anthropic/claude-sonnet-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 3 | token | 689970 |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 1 | token | 688085 |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-03 | 1 | token | 813400 |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 2 | token | 685908 |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 1 | token | 688085 |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-03 | 2 | token | 1107516 |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 2 | token | 685908 |
 | anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-03 | 3 | token | 690902 |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 1 | token | 688169 |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 1 | token | 697279 |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 2 | token | 690261 |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 1 | token | 688169 |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 2 | token | 699708 |
-| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 3 | token | 688167 |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 2 | token | 690261 |
 | anthropic/claude-opus-5-5 | inspect | mcp-bag-ldproxy | dsfl-05 | 3 | token | 711052 |
+| anthropic/claude-opus-5-5 | claude-code | mcp-bag-ldproxy | dsfl-05 | 3 | token | 688167 |
 | mistral/mistral-small-2603 | inspect | mcp-bag-ldproxy | dsfl-02 | 1 | token | 608562 |
 | mistral/mistral-small-2603 | inspect | mcp-bag-ldproxy | dsfl-04 | 1 | token | 661599 |
 | mistral/mistral-small-2603 | inspect | mcp-bag-ldproxy | dsfl-05 | 1 | token | 664925 |

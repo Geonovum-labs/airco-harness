@@ -1,6 +1,6 @@
 # airco-harness report
 
-Logs: `logs/2026-11-13T11-36-04`. Runs: 135, of which with an error: 0, and at a limit: 17.
+Logs: `reports/2026-11-13T11-36-04/logs/logs`. Runs: 135, of which with an error: 0, and at a limit: 17.
 
 Per model and variant: first the mean over the epochs of each sample, then the mean over the samples; the standard error over the samples in parentheses. A run at a limit counts with the scores it got, a run with an error is left out.
 
@@ -28,14 +28,14 @@ Per model and variant: first the mean over the epochs of each sample, then the m
 
 | Model | Agent | Variant | Tool calls | Tokens | Total time (s) | Working time (s) | Cost per correct answer ($) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | claude-code | 0 | 11.0 | 366966 | 342.1 | 215.7 | 0.0261 |
+| anthropic/claude-haiku-5-5 | claude-code | 0 | 11.0 | 366966 | 342.1 | 215.7 | 0.0536 |
 | anthropic/claude-haiku-5-5 | inspect | 0 | 14.3 | 248578 | 47.2 | 46.9 |  |
-| anthropic/claude-haiku-5-5 | inspect | mcp-groundwater-monitoring | 8.9 | 118349 | 110.3 | 109.6 | 0.0143 |
-| anthropic/claude-sonnet-5-5 | claude-code | 0 | 10.7 | 290500 | 316.2 | 304.2 | 0.2413 |
-| anthropic/claude-sonnet-5-5 | inspect | 0 | 26.6 | 522987 | 119.5 | 117.4 | 1.1900 |
+| anthropic/claude-haiku-5-5 | inspect | mcp-groundwater-monitoring | 8.9 | 118349 | 110.3 | 109.6 | 0.0218 |
+| anthropic/claude-sonnet-5-5 | claude-code | 0 | 10.7 | 290500 | 316.2 | 304.2 | 0.2513 |
+| anthropic/claude-sonnet-5-5 | inspect | 0 | 26.6 | 522987 | 119.5 | 117.4 | 1.3150 |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-groundwater-monitoring | 9.4 | 127551 | 104.9 | 103.5 | 0.1126 |
 | anthropic/claude-opus-5-5 | claude-code | 0 | 6.3 | 188749 | 189.9 | 156.0 | 0.2419 |
-| anthropic/claude-opus-5-5 | inspect | 0 | 10.0 | 347166 | 64.1 | 62.7 | 0.7416 |
+| anthropic/claude-opus-5-5 | inspect | 0 | 10.0 | 347166 | 64.1 | 62.7 | 0.7449 |
 | anthropic/claude-opus-5-5 | inspect | mcp-groundwater-monitoring | 8.8 | 114806 | 94.7 | 94.0 | 0.2937 |
 | mistral/mistral-small-2603 | inspect | 0 | 6.9 | 83270 | 75.0 | 41.5 |  |
 | mistral/mistral-small-2603 | inspect | mcp-groundwater-monitoring | 4.7 | 59411 | 126.0 | 80.5 | 0.0281 |
@@ -70,30 +70,30 @@ On the site, the dashboard of this measurement draws each run on the BRT achterg
 
 | Model | Agent | Variant | Sample | Epoch | On the map | Retrieved from |
 | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other), www.dinoloket.nl (other), www.bro-productomgeving.nl (other), publiek.broservices.nl (authoritative) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-07 | 2 | 0 of 12 required features shown; 1 places match no allowed feature | nominatim.openstreetmap.org (other), grondwaterstandkaart.nl (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-07 | 2 | 12 of 12 required features shown; 1 places match no allowed feature | nominatim.openstreetmap.org (other), www.dinoloket.nl (other), service.pdok.nl (other), api.pdok.nl (other) |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-07 | 3 | not parseable: no map shown | grondwaterstandkaart.nl (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-07 | 2 | 0 of 12 required features shown; 1 places match no allowed feature | nominatim.openstreetmap.org (other), grondwaterstandkaart.nl (other) |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | nominatim.openstreetmap.org (other), publiek.broservices.nl (authoritative), service.pdok.nl (other), api.pdok.nl (other), www.opengis.net (other) |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-07 | 3 | not parseable: no map shown | grondwaterstandkaart.nl (other) |
 | anthropic/claude-haiku-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 1 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-haiku-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 2 | 1 of 12 required features shown; 13 places match no allowed feature | nothing |
 | anthropic/claude-haiku-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | nothing |
-| anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other) |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
-| anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-07 | 2 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other) |
+| anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other) |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-07 | 2 | not parseable: no map shown | api.pdok.nl (other), www.pdok.nl (other), www.opengis.net (other) |
-| anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other) |
+| anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-07 | 2 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other) |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
+| anthropic/claude-sonnet-5-5 | claude-code | 0 | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other) |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 2 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-sonnet-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
-| anthropic/claude-opus-5-5 | inspect | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-opus-5-5 | claude-code | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other), publiek.broservices.nl (authoritative), www.broservices.nl (other), www.opengis.net (other) |
-| anthropic/claude-opus-5-5 | inspect | 0 | dsfl-07 | 2 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
+| anthropic/claude-opus-5-5 | inspect | 0 | dsfl-07 | 1 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-opus-5-5 | claude-code | 0 | dsfl-07 | 2 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other), publiek.broservices.nl (authoritative), www.broservices.nl (other), www.opengis.net (other) |
-| anthropic/claude-opus-5-5 | inspect | 0 | dsfl-07 | 3 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other), publiek.broservices.nl (authoritative) |
+| anthropic/claude-opus-5-5 | inspect | 0 | dsfl-07 | 2 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-opus-5-5 | claude-code | 0 | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other), service.pdok.nl (other) |
+| anthropic/claude-opus-5-5 | inspect | 0 | dsfl-07 | 3 | 12 of 12 required features shown; 2 places match no allowed feature | api.pdok.nl (other), publiek.broservices.nl (authoritative) |
 | anthropic/claude-opus-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 1 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-opus-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 2 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
 | anthropic/claude-opus-5-5 | inspect | mcp-groundwater-monitoring | dsfl-07 | 3 | 12 of 12 required features shown; 1 places match no allowed feature | api.pdok.nl (other) |
@@ -120,8 +120,8 @@ On the site, the dashboard of this measurement draws each run on the BRT achterg
 
 | Model | Agent | Variant | Sample | Epoch | Reason | Tokens |
 | --- | --- | --- | --- | --- | --- | --- |
-| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-08 | 2 | token | 629768 |
 | anthropic/claude-haiku-5-5 | claude-code | 0 | dsfl-08 | 2 | token | 605926 |
+| anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-08 | 2 | token | 629768 |
 | anthropic/claude-haiku-5-5 | inspect | 0 | dsfl-08 | 3 | token | 600395 |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-06 | 2 | token | 625357 |
 | anthropic/claude-sonnet-5-5 | inspect | 0 | dsfl-07 | 2 | token | 644045 |
