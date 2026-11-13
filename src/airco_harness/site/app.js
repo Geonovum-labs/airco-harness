@@ -371,7 +371,13 @@ const OTHER_VARIANTS = [...new Set(data.runs.map(r => r.variant))].filter(v => v
 const variantHue = v => HUES[v === BASELINE ? 0 : OTHER_VARIANTS.indexOf(v) + 1] || "--muted";
 /** "anthropic/claude-haiku-5-5" reads as "Claude Haiku 5.5"; the tables keep the full id. */
 const modelName = id => id.split("/").pop().replace(/-(\d+)-(\d+)$/, "-$1.$2").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-const COMPLETE = "share of the expected content in the answer";
+/** The metrics the measurement page's charts can be read on, the default first: the preregistration tests on correct. */
+const PAGE_METRICS = {
+  correct: {option: "correct: fully right, nothing invented", plot: "correct: share of runs fully right with nothing invented",
+    said: p => `gave a fully correct answer in ${p} of the runs`},
+  complete: {option: "complete: share of the expected content", plot: "complete: share of the expected content in the answer",
+    said: p => `found ${p} of the expected content`},
+};
 const NOISE = "No run-to-run noise margin has been measured yet, so read small differences with care.";
 const SOURCE_NOTE = "source counts web retrievals with a URL only; an MCP call carries no URL, so it does not count.";
 
@@ -399,7 +405,7 @@ function limitsText(limits) {
 
 /** One model with one agent: its runs per variant, the samples its variants are scored on (those every variant it ran
  * has, so that the distance between two marks is the gain) and per variant other than the baseline its paired gain. */
-function setup(model, agent, runs, variants, baseline) {
+function setup(model, agent, runs, variants, baseline, metric) {
   const byVariant = new Map(variants.map(v => [v, runs.filter(r => r.variant === v)]).filter(([, rs]) => rs.length));
   const groups = [...byVariant.values()];
   const common = groups.length > 1 ? commonSamples(groups) : null;
@@ -407,8 +413,8 @@ function setup(model, agent, runs, variants, baseline) {
   const base = baseline ? byVariant.get(baseline) : null;
   return {
     model, agent, byVariant, samples, disjoint: !!common && !common.size,
-    marks: new Map([...byVariant].map(([v, rs]) => [v, aggregate(rs, "complete", samples)])),
-    gains: new Map(base && samples ? [...byVariant].filter(([v]) => v !== baseline).map(([v, rs]) => [v, paired(base, rs, "complete", samples)]) : []),
+    marks: new Map([...byVariant].map(([v, rs]) => [v, aggregate(rs, metric, samples)])),
+    gains: new Map(base && samples ? [...byVariant].filter(([v]) => v !== baseline).map(([v, rs]) => [v, paired(base, rs, metric, samples)]) : []),
     scored: v => (samples ? byVariant.get(v).filter(r => samples.has(r.sample)) : byVariant.get(v) || []),
   };
 }
@@ -416,7 +422,7 @@ function setup(model, agent, runs, variants, baseline) {
 /** What a measurement compares. Variants with the baseline first. Setups are every model with every agent; the chart
  * rows are the agents with tools, and the model alone is a ring on the rows of its model, or a row when it is all the
  * model ran. */
-function design(all) {
+function design(all, metric) {
   const names = [...new Set(all.map(r => r.variant))].sort();
   const baseline = names.includes(BASELINE) ? BASELINE : null;
   const variants = baseline ? [baseline, ...names.filter(v => v !== baseline)] : names;
@@ -427,27 +433,28 @@ function design(all) {
   const setups = [], rows = [];
   for (const model of sortedModels(all)) {
     const own = all.filter(r => r.model === model);
-    const mine = sortedAgents(own).map(agent => setup(model, agent, own.filter(r => r.agent === agent), variants, baseline));
+    const mine = sortedAgents(own).map(agent => setup(model, agent, own.filter(r => r.agent === agent), variants, baseline, metric));
     const tools = mine.filter(s => s.agent !== ALONE), alone = mine.find(s => s.agent === ALONE) || null;
     setups.push(...mine);
     rows.push(...(tools.length ? tools.map(s => ({...s, alone})) : mine.map(s => ({...s, alone: null}))));
   }
-  return {variants, baseline, others, comparing: !!baseline && others.length > 0, style, setups, rows};
+  return {metric, variants, baseline, others, comparing: !!baseline && others.length > 0, style, setups, rows};
 }
 
 const scoredRuns = (rows, v) => rows.flatMap(r => (r.byVariant.has(v) ? r.scored(v) : []));
-const ringOf = r => (r.alone ? aggregate([...r.alone.byVariant.values()].flat(), "complete", r.samples) : null);
+const ringOf = (d, r) => (r.alone ? aggregate([...r.alone.byVariant.values()].flat(), d.metric, r.samples) : null);
 
 /** The answer to the measurement's question in one to three sentences, worded for its shape. */
 function headline(d, m) {
   const questions = m.samples.length === 1 ? "one question" : `${m.samples.length} questions`;
-  const found = (rows, v) => pct(aggregate(scoredRuns(rows, v), "complete").mean);
+  const said = PAGE_METRICS[d.metric].said;
+  const found = (rows, v) => pct(aggregate(scoredRuns(rows, v), d.metric).mean);
   if (!d.comparing) {
     const without = d.baseline ? [] : ["This measurement has no baseline variant 0, so it shows scores without gains."];
     if (d.variants.length > 1) {
       return [...without, ...d.variants.map(v => {
         const rows = d.rows.filter(r => r.byVariant.has(v));
-        return `With variant ${v}, the ${plural(rows.length, "setup")} found ${found(rows, v)} of the expected content.`;
+        return `With variant ${v}, the ${plural(rows.length, "setup")} ${said(found(rows, v))}.`;
       })].slice(0, 3);
     }
     const v = d.variants[0];
@@ -455,10 +462,10 @@ function headline(d, m) {
     const [best, worst] = [ranked[0], ranked[ranked.length - 1]];
     const alone = [...new Set(d.rows.map(r => r.alone).filter(Boolean))].flatMap(a => [...a.byVariant.values()].flat());
     return [
-      `${d.baseline ? "The" : `With variant ${v}, the`} ${plural(ranked.length, "setup")} found ${found(ranked, v)} of the expected content over the ${questions}.`,
+      `${d.baseline ? "The" : `With variant ${v}, the`} ${plural(ranked.length, "setup")} ${said(found(ranked, v))} over the ${questions}.`,
       ...without,
       ranked.length > 1 ? `${setupName(best)} scored highest at ${pct(best.marks.get(v).mean)}, ${setupName(worst)} lowest at ${pct(worst.marks.get(v).mean)}.` : "",
-      alone.length && d.baseline ? `Without tools, the models alone found ${pct(aggregate(alone, "complete").mean)}.` : "",
+      alone.length && d.baseline ? `Without tools, the models alone ${said(pct(aggregate(alone, d.metric).mean))}.` : "",
     ].filter(Boolean).slice(0, 3);
   }
   const lines = d.others.map(v => {
@@ -467,7 +474,7 @@ function headline(d, m) {
     const ranked = [...both].sort((a, b) => b.gains.get(v).mean - a.gains.get(v).mean);
     const [most, least] = [ranked[0], ranked[ranked.length - 1]];
     return [
-      `With variant ${v}, the ${plural(both.length, "setup")} that also ran variant 0 found ${found(both, v)} of the expected content, against ${found(both, d.baseline)} without it.`,
+      `With variant ${v}, the ${plural(both.length, "setup")} that also ran variant 0 ${said(found(both, v))}, against ${found(both, d.baseline)} without it.`,
       both.length > 1 ? `${both.filter(r => r.gains.get(v).mean > 0).length} of ${both.length} scored higher; ${setupName(most)} gained most (${pts(most.gains.get(v).mean)}), ${setupName(least)} least (${pts(least.gains.get(v).mean)}).` : "",
     ];
   });
@@ -527,7 +534,7 @@ function setupChart(d, m) {
     return h("div", {class: g && g.mean !== null ? "" : "muted", title: why || null}, d.others.length > 1 ? dotKey(d, v) : null, h("b", {text: g && g.mean !== null ? pts(g.mean) : "n/a"}));
   }));
   const lines = r => {
-    const ring = ringOf(r);
+    const ring = ringOf(d, r);
     return [setupName(r),
       ...[...r.marks].map(([v, s]) => `${d.style.get(v).label}: ${pct(s.mean)}${plusMinus(s)} (${plural(s.n, "question")})`),
       ...(ring && ring.mean !== null ? [`Same model, no tools: ${pct(ring.mean)}${plusMinus(ring)}`] : []),
@@ -537,17 +544,17 @@ function setupChart(d, m) {
   const rows = groups.map(rs => h("div", {class: "dgroup"}, h("div", {class: "dmodel", title: rs[0].model, text: modelName(rs[0].model)}),
     h("div", {}, rs.map(r => {
       const row = h("div", {class: "drow setup", tabindex: "0", "aria-label": lines(r).join(". ")},
-        h("div", {class: "dagent", text: r.agent === ALONE ? "no tools" : r.agent}), track(d, r.marks, ringOf(r), !r.disjoint), d.comparing ? gainCell(r) : meanCell(r));
+        h("div", {class: "dagent", text: r.agent === ALONE ? "no tools" : r.agent}), track(d, r.marks, ringOf(d, r), !r.disjoint), d.comparing ? gainCell(r) : meanCell(r));
       tip(row, () => lines(r));
       return row;
     }))));
-  const head = h("div", {class: "drow dhead"}, h("div"), h("div", {class: "plotlabel", text: `complete: ${COMPLETE}`}), h("div", {class: "dgain", text: d.comparing ? "Gain" : "Mean"}));
-  const anyRing = d.rows.some(r => ringOf(r)?.mean != null), anyBand = d.rows.some(r => [...r.marks.values()].some(s => s.se !== null));
+  const head = h("div", {class: "drow dhead"}, h("div"), h("div", {class: "plotlabel", text: PAGE_METRICS[d.metric].plot}), h("div", {class: "dgain", text: d.comparing ? "Gain" : "Mean"}));
+  const anyRing = d.rows.some(r => ringOf(d, r)?.mean != null), anyBand = d.rows.some(r => [...r.marks.values()].some(s => s.se !== null));
   const columns = ["Model", "Agent", ...d.variants.map(v => `Variant ${v}`), ...(anyRing ? ["No tools"] : []), ...(d.comparing ? d.others.map(v => `Gain ${v}`) : []), "Questions"];
   const tableView = table(columns,
     d.rows.map(r => h("tr", {}, h("td", {class: "nowrap", text: r.model}), h("td", {text: r.agent}),
       d.variants.map(v => { const s = r.marks.get(v); return h("td", {class: "num", text: s ? `${pct(s.mean)}${plusMinus(s)}` : "not run"}); }),
-      anyRing ? h("td", {class: "num", text: ringOf(r) ? pct(ringOf(r).mean) : ""}) : null,
+      anyRing ? h("td", {class: "num", text: ringOf(d, r) ? pct(ringOf(d, r).mean) : ""}) : null,
       d.comparing ? d.others.map(v => { const g = r.gains.get(v); return h("td", {class: "num", text: g ? `${pts(g.mean)}${g.se === null ? "" : ` ± ${Math.round(g.se * 100)}`}` : "n/a"}); }) : null,
       h("td", {class: "num", text: String(r.samples ? r.samples.size : Math.max(...[...r.marks.values()].map(s => s.n)))}))),
     columns.map((_, i) => i).slice(2));
@@ -571,11 +578,11 @@ function questionStats(d, m) {
     const rows = d.rows.filter(r => present.every(v => (r.byVariant.get(v) || []).some(x => x.sample === sample && !x.failed)));
     const of = (r, v) => r.byVariant.get(v).filter(x => x.sample === sample);
     const pooled = v => rows.flatMap(r => of(r, v));
-    const stats = new Map(present.map(v => [v, aggregate(pooled(v), "complete")]));
-    const solved = new Map(present.map(v => [v, rows.filter(r => aggregate(of(r, v), "complete").mean === 1).length]));
+    const stats = new Map(present.map(v => [v, aggregate(pooled(v), d.metric)]));
+    const solved = new Map(present.map(v => [v, rows.filter(r => aggregate(of(r, v), d.metric).mean === 1).length]));
     const alone = [...new Set(d.rows.map(r => r.alone).filter(Boolean))].flatMap(a => [...a.byVariant.values()].flat()).filter(x => x.sample === sample);
-    const gains = new Map(present.includes(d.baseline) ? present.filter(v => v !== d.baseline).map(v => [v, paired(pooled(d.baseline), pooled(v), "complete").mean]) : []);
-    return {sample, n: i + 1, text: splitQuestion(m.questions[sample] || sample)[0], present, rows, stats, solved, gains, ring: alone.length ? aggregate(alone, "complete") : null};
+    const gains = new Map(present.includes(d.baseline) ? present.filter(v => v !== d.baseline).map(v => [v, paired(pooled(d.baseline), pooled(v), d.metric).mean]) : []);
+    return {sample, n: i + 1, text: splitQuestion(m.questions[sample] || sample)[0], present, rows, stats, solved, gains, ring: alone.length ? aggregate(alone, d.metric) : null};
   });
 }
 
@@ -594,7 +601,7 @@ function questionChart(d, m, qs) {
     tip(row, () => lines(q));
     return row;
   });
-  const head = h("div", {class: "drow question dhead"}, h("div"), h("div", {class: "plotlabel", text: "complete, pooled over the setups"}), h("div", {class: "dgain", text: d.comparing ? "Gain" : "Setups"}));
+  const head = h("div", {class: "drow question dhead"}, h("div"), h("div", {class: "plotlabel", text: `${d.metric}, pooled over the setups`}), h("div", {class: "dgain", text: d.comparing ? "Gain" : "Setups"}));
   const scored = qs.filter(q => q.present.length);
   const v1 = d.comparing ? d.others[0] : d.variants[0];
   const withV = scored.filter(q => q.stats.has(v1));
@@ -616,7 +623,7 @@ function questionChart(d, m, qs) {
     columns.map((_, i) => i).slice(1));
   return chartCard({
     title: "Which questions fail",
-    note: `${note} Each question pools the runs of the setups that ran it with ${d.variants.length > 1 ? "every variant that has it" : "the variant"}; "fully solved" counts setups whose every epoch was complete.`.trim(),
+    note: `${note} Each question pools the runs of the setups that ran it with ${d.variants.length > 1 ? "every variant that has it" : "the variant"}; "fully solved" counts setups whose every epoch was ${d.metric}.`.trim(),
     legendList: legend(d, {ring: qs.some(q => q.ring)}),
     chart: h("div", {class: "dumbbell questions"}, head, rows, axisRow("question")),
     tableView,
@@ -790,8 +797,9 @@ function measurementPage() {
   const name = document.body.dataset.measurement;
   const m = MEASUREMENTS.get(name);
   const all = runsOf(r => r.m === name);
-  const d = design(all);
   const p = params();
+  const metric = PAGE_METRICS[p.get("metric")] ? p.get("metric") : Object.keys(PAGE_METRICS)[0];
+  const d = design(all, metric);
   const runOf = key => all.find(r => runKey(r) === key) || null;
   let selected = runOf(p.get("run")) ? p.get("run") : null;
   const card = sample => questionCard(d, m, sample, m.samples.indexOf(sample) + 1, selected, onPick);
@@ -831,6 +839,8 @@ function measurementPage() {
       h("a", {href: `../compare.html#by=${d.variants.length > 1 ? "variant" : "model"}&measurement=${encodeURIComponent(name)}`, text: d.variants.length > 1 ? "Compare variants" : "Compare"})),
     h("h1", {text: `Measurement of ${when(name)}`}),
     h("p", {class: "facts"}, facts.map(([k, v]) => h("span", {}, `${k} `, h("b", {text: v})))),
+    h("div", {class: "filters"}, select("Metric", Object.entries(PAGE_METRICS).map(([k, v]) => [k, v.option]), metric,
+      v => { setParams({metric: v === Object.keys(PAGE_METRICS)[0] ? null : v}); render(); })),
     h("section", {class: "answer", "aria-label": "Main finding"}, h("p", {class: "verdict", text: verdict}), rest.length ? h("p", {class: "lines", text: rest.join(" ")}) : null),
     setupChart(d, m),
     qs.length > 1 ? questionChart(d, m, qs) : null,
