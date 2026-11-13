@@ -124,8 +124,12 @@ def test_plot_series_validates_and_agent_scores_the_call_not_the_answer(tmp_path
     from airco_harness import dataset
 
     expected = json.loads((dataset.TESTSETS_DIR / "dsfl/samples/dsfl-08/expected.json").read_text(encoding="utf-8"))
-    data = {"points": [{"date": date, "value": value} for date, value in expected["points"].items()],
-            "unit": "m", "reference_plane": "NAP", "connect_gaps": False}
+    data = {
+        "points": [{"date": date, "value": value} for date, value in expected["points"].items()],
+        "unit": "m",
+        "reference_plane": "NAP",
+        "connect_gaps": False,
+    }
     plot = tools.plot_series()
     assert asyncio.run(plot(data=data)) == "11 daily entries shown in the plot."
     with pytest.raises(ToolError):
@@ -136,7 +140,9 @@ def test_plot_series_validates_and_agent_scores_the_call_not_the_answer(tmp_path
     ]
     [log] = eval(
         airco(testset="dsfl", agent="inspect", ids="dsfl-08"),
-        model=get_model("mockllm/model", custom_outputs=steps), log_dir=str(tmp_path), display="none",
+        model=get_model("mockllm/model", custom_outputs=steps),
+        log_dir=str(tmp_path),
+        display="none",
     )
     [sample] = log.samples
     assert sample.scores["quality"].value == {"correct": 1, "complete": 1.0, "invented": 0, "parseable": 1}

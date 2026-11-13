@@ -105,7 +105,9 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
     monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
     outputs = [
-        ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}),
+        ModelOutput.for_tool_call(
+            "mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}
+        ),
         ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps({"value": 2.13, "unit": "m", "reference_plane": "NAP"})}),
     ]
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
@@ -131,10 +133,16 @@ def test_plot_tool_is_available_alongside_the_mcp_server(tmp_path, monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
     monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
     expected = json.loads((tasks.dataset.TESTSETS_DIR / "dsfl/samples/dsfl-08/expected.json").read_text(encoding="utf-8"))
-    data = {"points": [{"date": date, "value": value} for date, value in expected["points"].items()],
-            "unit": "m", "reference_plane": "NAP", "connect_gaps": False}
+    data = {
+        "points": [{"date": date, "value": value} for date, value in expected["points"].items()],
+        "unit": "m",
+        "reference_plane": "NAP",
+        "connect_gaps": False,
+    }
     outputs = [
-        ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}),
+        ModelOutput.for_tool_call(
+            "mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}
+        ),
         ModelOutput.for_tool_call("mockllm/model", "plot_series", {"data": data}),
         ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de grafiek."}),
     ]
@@ -148,7 +156,9 @@ def test_plot_tool_is_available_alongside_the_mcp_server(tmp_path, monkeypatch):
 def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
     monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
-    call = ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"})
+    call = ModelOutput.for_tool_call(
+        "mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}
+    )
     submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06,dsfl-07")
     [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[call, call, submit, submit]), log_dir=str(tmp_path), display="none", max_samples=2)
