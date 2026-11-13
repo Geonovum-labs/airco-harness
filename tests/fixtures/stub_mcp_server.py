@@ -6,7 +6,7 @@ from typing import Annotated
 from mcp.server.mcpserver import MCPServer
 from pydantic import Field
 
-server = MCPServer("stub-groundwater-monitoring", instructions="Call groundwater-monitoring.series.get for a level.")
+server = MCPServer("stub-groundwater-monitoring", version="1.2.3", instructions="Call groundwater-monitoring.series.get for a level.")
 
 
 def series_get(**kwargs) -> dict:

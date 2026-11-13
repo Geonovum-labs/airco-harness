@@ -22,7 +22,9 @@ from inspect_ai import Task, task
 from inspect_ai.agent import Agent, AgentPrompt, AgentState, AgentSubmit, agent, as_solver, react
 from inspect_ai.dataset import MemoryDataset
 from inspect_ai.model import GenerateConfig
+from inspect_ai.solver import Generate, Solver, TaskState, chain, solver
 from inspect_ai.tool import Tool, mcp_server_http, mcp_server_stdio, web_search
+from inspect_ai.util import store
 
 from . import dataset
 from .models import register_costs
@@ -112,6 +114,24 @@ def server_instructions(name: str, instructions: str | None) -> str | None:
     return f"# MCP Server Instructions\n\nThe following MCP servers have provided instructions for how to use their tools and resources:\n\n## {name}\n{instructions}"
 
 
+def record_mcp_server(info) -> None:
+    """Put the serverInfo of the initialize result in the sample store, so that the log says which server version the run met."""
+    store().set("mcp_server", {"name": info.name, "title": info.title, "version": info.version})
+
+
+@solver
+def probe_mcp_server(url: str) -> Solver:
+    """Record the server version from the host, because Claude Code connects from its sandbox and the log would not know it.
+    An unreachable server raises, and Inspect fails the sample, as the agent would not reach the server either."""
+
+    async def solve(state: TaskState, generate: Generate) -> TaskState:
+        async with mcp_server_http(url=url) as connected:
+            record_mcp_server(connected._session.server_info)
+        return state
+
+    return solve
+
+
 @agent(name="react_with_mcp")
 def _with_mcp(tools: list[Tool], mcp: tuple[str, ...] | str) -> Agent:
     """Inspect's react() with the tools and a server of its own per sample, connected for the whole sample, and the server's instructions in its prompt.
@@ -122,17 +142,20 @@ def _with_mcp(tools: list[Tool], mcp: tuple[str, ...] | str) -> Agent:
         async with server as connected:
             # Inspect keeps the initialize result in the session only; a server may explain its data there and nowhere else.
             session = connected._session
+            record_mcp_server(session.server_info)
             prompt = AgentPrompt(instructions=server_instructions(session.server_info.name, session.instructions))
             return await react(prompt=prompt, tools=[*tools, ProviderNamedTools(server)], submit=AgentSubmit(answer_only=True))(state)
 
     return execute
 
 
-def _setup(agent: AgentName):
+def _setup(agent: AgentName, form: Variant):
     if agent != "claude-code":
         return None
     from .claude_code import claude_code_setup
 
+    if isinstance(form.mcp, str):
+        return chain(claude_code_setup(), probe_mcp_server(form.mcp))
     return claude_code_setup()
 
 
@@ -191,7 +214,7 @@ def airco(
         raise ValueError(f"no samples of test set {testset} for variant {variant}; choose others with ids or tags")
     return Task(
         dataset=chosen,
-        setup=_setup(agent),
+        setup=_setup(agent, form),
         solver=as_solver(_agent(agent, dataset.asks_for_map(testset), dataset.asks_for_series(testset), form)),
         scorer=[quality(), source()],
         config=GenerateConfig(max_tool_output=MAX_TOOL_OUTPUT),

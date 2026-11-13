@@ -57,6 +57,7 @@ def _cost(model_usage: object) -> float:
 RETRIEVED = SampleColumn("retrieved", path="scores.source.metadata.retrieved", full=True)
 # The source scorer counts every tool use, including the tools a provider runs on its own servers, which leave no tool message.
 TOOL_CALLS = SampleColumn("tool_calls_scored", path="scores.source.metadata.tool_calls", full=True)
+MCP_SERVER = SampleColumn("mcp_server", path="store.mcp_server", full=True)
 RULE = SampleColumn("rule", path="scores.quality.metadata.rule", full=True)
 EXPLANATION = SampleColumn("explanation", path="scores.quality.explanation", full=True)
 DETAILS = SampleColumn("details", path="scores.quality.metadata", full=True)
@@ -123,10 +124,16 @@ def _column(df: pd.DataFrame, name: str, default: object = "") -> pd.Series:
     return df[name] if name in df else pd.Series(default, index=df.index)
 
 
+def _mcp_server(value: object) -> str:
+    """`name version` of the MCP server a run met, as the task stored it; empty for a run without one."""
+    info = json.loads(value) if isinstance(value, str) else value if isinstance(value, dict) else {}
+    return f"{info['name']} {info['version']}" if info else ""
+
+
 def runs(log_dir: str) -> pd.DataFrame:
     """One row per run (sample x epoch x variant x agent x model) with the quality and trajectory metrics,
     and what a comparison between measurements has to hold fixed: the test set and its version, the commit and the limits."""
-    df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, RULE, EXPLANATION], quiet=True)
+    df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, RULE, EXPLANATION, MCP_SERVER], quiet=True)
     if not len(df):
         raise FileNotFoundError(f"no samples in .eval logs under {log_dir}")
     error = df["error"].fillna("").astype(str) if "error" in df else pd.Series("", index=df.index)
@@ -157,6 +164,7 @@ def runs(log_dir: str) -> pd.DataFrame:
             "testset": _column(df, "task_arg_testset").fillna("").astype(str),
             "testset_version": _column(df, "metadata").map(_testset_version),
             "commit": _column(df, "git_commit").fillna("").astype(str),
+            "mcp_server": _column(df, "mcp_server").map(_mcp_server),
             **{f"{name}_limit": pd.to_numeric(_column(df, f"task_arg_{name}_limit", None), errors="coerce") for name in ("cost", "token", "message", "time")},
             "log": _column(df, "log").map(lambda path: Path(str(path)).name),
         }

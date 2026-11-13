@@ -128,6 +128,23 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     assert "You are a helpful assistant attempting to submit the best possible answer" in system.text
 
 
+def test_an_mcp_run_records_the_server_that_answered_initialize(tmp_path, monkeypatch):
+    stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
+    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
+    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
+    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[submit]), log_dir=str(tmp_path), display="none")
+    [sample] = log.samples
+    recorded = sample.store["mcp_server"]
+    assert recorded["name"] == "stub-groundwater-monitoring"
+    assert recorded["version"] == "1.2.3"
+
+
+def test_variant_0_records_no_server(tmp_path):
+    [sample] = run(tmp_path, text_model(json.dumps(ANSWER))).samples
+    assert "mcp_server" not in sample.store
+
+
 def test_a_server_without_instructions_leaves_the_prompt_of_variant_0():
     assert tasks.server_instructions("bag", None) is None and tasks.server_instructions("bag", "") is None
 

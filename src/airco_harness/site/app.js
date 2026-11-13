@@ -597,8 +597,8 @@ function comparisonWarnings(by, chosen, runs, fixedMeasurement) {
   const factsOf = names => [...names].map(n => MEASUREMENTS.get(n));
   if (by === "measurement" || by === "variant") {
     const per = chosen.map(g => factsOf(new Set(runs.filter(r => value(r, by) === g).map(r => r.m))));
-    for (const [key, text] of [["testset_versions", "test set versions"], ["commits", "commits of the harness"]]) {
-      const sets = per.map(ms => ms.flatMap(m => m[key]).sort().join(", "));
+    for (const [key, text] of [["testset_versions", "test set versions"], ["commits", "commits of the harness"], ["mcp_servers", "MCP server versions"]]) {
+      const sets = per.map(ms => ms.flatMap(m => m[key] || []).sort().join(", "));
       if (new Set(sets).size > 1) notes.push(`The groups differ in ${text}: ${chosen.map((g, i) => `${by === "measurement" ? when(g, true) : g}: ${sets[i] || "n/a"}`).join("; ")}.`);
     }
     for (const [key, text] of [["cost", "cost limit"], ["token", "token limit"], ["message", "message limit"]]) {
