@@ -1,0 +1,275 @@
+{
+  "eval_set_id": "EA7NLS9H5ycyWAxNLSYmg2",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "Xy7GDv7ANvpDCLVwDgRwDg",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "azh2LEnqyBvDXUYhofDvxW",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "3B6mgxPVKXsC2odr4wB5nF",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-opus-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "XyT7uNnXYYEZedHFZjBAmj",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "mistral/mistral-small-2603",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-small-2603",
+      "model_args": {},
+      "sequence": 3
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "MNbu7JHzT2GxR3EDPdQBES",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "mistral/mistral-medium-2604",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-medium-2604",
+      "model_args": {},
+      "sequence": 4
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "7EuyB7PkVtWkPuZTXvVBmw",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "mistral/mistral-large-4",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-large-4",
+      "model_args": {},
+      "sequence": 5
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "WRzEvyC9GH5WqifP3NmK6a",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 6
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "NmdGKxfSTwLkHFHAwvBUna",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 7
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "fgd24dPSMN37W463YBseGq",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-opus-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 8
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "AvrQXAHacmVQzmn7iBeyDq",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-groundwater-monitoring",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 9
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "VFbysnw3FCoEETuaHcmksB",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-groundwater-monitoring",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-sonnet-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 10
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "YZD7LyXNq6eueSqUh6W7RU",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-groundwater-monitoring",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "anthropic/claude-opus-5-5",
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 11
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "eSzRXY62sedBUfyfXYytBc",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-groundwater-monitoring",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "mistral/mistral-small-2603",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-small-2603",
+      "model_args": {},
+      "sequence": 12
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "bH5dff9zPTFSrHAX6MnQ7q",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-groundwater-monitoring",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "mistral/mistral-medium-2604",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-medium-2604",
+      "model_args": {},
+      "sequence": 13
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "2yU5mnHouiwpCvj67UyRup",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-groundwater-monitoring",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "bro"
+        ],
+        "model": "mistral/mistral-large-4",
+        "cost_limit": 2.0
+      },
+      "model": "mistral/mistral-large-4",
+      "model_args": {},
+      "sequence": 14
+    }
+  ]
+}
