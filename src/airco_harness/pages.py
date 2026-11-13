@@ -7,9 +7,11 @@ The site is a dashboard over all measurements under reports/<name>/logs/logs:
 
 - index.html, the overview: every measurement, and the latest per test set as a
   model x agent heatmap;
-- <name>/report.html, a measurement: the heatmap of a chosen metric, the runs of
-  a chosen model and agent with links into the log, and for a map question the
-  map of each run on the BRT achtergrondkaart of PDOK in RD (EPSG:28992);
+- <name>/report.html, a measurement: its main finding, complete per model and
+  agent with the gain of each variant over variant 0, the questions that fail,
+  the cost per correct answer, and per question every run as a mark that opens
+  the run with a link into the log and, for a map question, its map on the BRT
+  achtergrondkaart of PDOK in RD (EPSG:28992);
 - compare.html: measurements over time, variants, models or agents side by side,
   each group scored on the samples all groups have;
 - <name>/viewer/, the Inspect viewer (inspect view bundle) with the logs.
