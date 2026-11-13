@@ -56,7 +56,7 @@ def test_a_model_that_calls_a_tool_it_does_not_have_hits_the_message_limit(tmp_p
 
 
 def test_unknown_variant_agent_sample_or_test_set():
-    with pytest.raises(ValueError, match="unknown variant '0a'; choose from 0, mcp-groundwater-monitoring"):
+    with pytest.raises(ValueError, match="unknown variant '0a'; choose from 0, mcp-groundwater-monitoring, mcp-bag-ldproxy"):
         airco(variant="0a")
     with pytest.raises(ValueError, match="unknown agent 'react'"):
         airco(agent="react")
@@ -107,6 +107,13 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     assert (result.function, result.text) == ("groundwater-monitoring_series_get", "GLD000000025798 2026-09-21: 2.13 m NAP")
     assert sample.scores["quality"].value["correct"] == 1
     assert log.eval.metadata["variant_form"] == {"about": "stub", "mcp": [sys.executable, str(stub)], "tags": ["bro"]}
+    [system] = [m for m in sample.messages if m.role == "system"]
+    assert "## stub-groundwater-monitoring\nCall groundwater-monitoring.series.get for a level." in system.text
+    assert "You are a helpful assistant attempting to submit the best possible answer" in system.text
+
+
+def test_a_server_without_instructions_leaves_the_prompt_of_variant_0():
+    assert tasks.server_instructions("bag", None) is None and tasks.server_instructions("bag", "") is None
 
 
 def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, monkeypatch):
@@ -124,6 +131,11 @@ def test_the_groundwater_variant_runs_a_pinned_image():
     command = tasks.VARIANTS[GROUNDWATER].mcp
     assert command[:-1] == ("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod")
     assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", command[-1])
+
+
+def test_the_bag_variant_reaches_its_server_over_http_and_runs_the_bag_samples():
+    assert tasks.VARIANTS["mcp-bag-ldproxy"].mcp == "https://bag.ldproxy.net/bag/mcp"
+    assert [s.id for s in airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="inspect").dataset] == [f"dsfl-0{n}" for n in range(1, 6)]
 
 
 def test_price_file_registers_a_model_inspect_does_not_know(tmp_path):

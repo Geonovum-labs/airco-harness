@@ -2,7 +2,7 @@
 
 from mcp.server.mcpserver import MCPServer
 
-server = MCPServer("stub-groundwater-monitoring")
+server = MCPServer("stub-groundwater-monitoring", instructions="Call groundwater-monitoring.series.get for a level.")
 
 
 @server.tool(name="groundwater-monitoring.series.get")

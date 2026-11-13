@@ -18,10 +18,10 @@ from typing import Literal, get_args
 
 from dotenv import find_dotenv, load_dotenv
 from inspect_ai import Task, task
-from inspect_ai.agent import Agent, AgentState, AgentSubmit, agent, as_solver, react
+from inspect_ai.agent import Agent, AgentPrompt, AgentState, AgentSubmit, agent, as_solver, react
 from inspect_ai.dataset import MemoryDataset
 from inspect_ai.model import GenerateConfig
-from inspect_ai.tool import Tool, mcp_server_stdio, web_search
+from inspect_ai.tool import Tool, mcp_server_http, mcp_server_stdio, web_search
 
 from . import dataset
 from .models import register_costs
@@ -34,8 +34,8 @@ class Variant:
     """A form in which the standard is published: what the agent gets besides the question."""
 
     about: str
-    # The command line of a stdio MCP server the agent gets as tools.
-    mcp: tuple[str, ...] = ()
+    # The MCP server the agent gets as tools: the command line of a stdio server, or the URL of a Streamable HTTP server.
+    mcp: tuple[str, ...] | str | None = None
     # The samples the variant is made for: the default selection, which ids or tags override.
     tags: tuple[str, ...] = ()
 
@@ -48,6 +48,11 @@ VARIANTS = {
         "Variant 0 plus the groundwater monitoring MCP server on BRO data (github.com/sjaakd/mcp-groundwater-monitoring).",
         mcp=("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod", GROUNDWATER_MONITORING_IMAGE),
         tags=("bro",),
+    ),
+    "mcp-bag-ldproxy": Variant(
+        "Variant 0 plus the MCP server of the BAG API on bag.ldproxy.net, which holds Amersfoort only (BAG extract of 8 October 2026).",
+        mcp="https://bag.ldproxy.net/bag/mcp",
+        tags=("bag",),
     ),
 }
 AgentName = Literal["model", "inspect", "claude-code"]
@@ -83,14 +88,25 @@ def _agent(agent: AgentName, map_tool: bool, variant: Variant) -> Agent:
     return claude_code_agent(map_tool)
 
 
+def server_instructions(name: str, instructions: str | None) -> str | None:
+    """The instructions of an MCP server as a client passes them to the model, verbatim, in the form Claude Code uses."""
+    if not instructions:
+        return None
+    return f"# MCP Server Instructions\n\nThe following MCP servers have provided instructions for how to use their tools and resources:\n\n## {name}\n{instructions}"
+
+
 @agent(name="react_with_mcp")
-def _with_mcp(tools: list[Tool], command: tuple[str, ...]) -> Agent:
-    """Inspect's react() with the tools and a server of its own per sample, connected for the whole sample; unconnected, every tool call starts the server anew."""
+def _with_mcp(tools: list[Tool], mcp: tuple[str, ...] | str) -> Agent:
+    """Inspect's react() with the tools and a server of its own per sample, connected for the whole sample, and the server's instructions in its prompt.
+    Unconnected, every tool call would start the server anew."""
 
     async def execute(state: AgentState) -> AgentState:
-        server = mcp_server_stdio(command=command[0], args=list(command[1:]))
-        async with server:
-            return await react(tools=[*tools, ProviderNamedTools(server)], submit=AgentSubmit(answer_only=True))(state)
+        server = mcp_server_http(url=mcp) if isinstance(mcp, str) else mcp_server_stdio(command=mcp[0], args=list(mcp[1:]))
+        async with server as connected:
+            # Inspect keeps the initialize result in the session only; a server may explain its data there and nowhere else.
+            session = connected._session
+            prompt = AgentPrompt(instructions=server_instructions(session.server_info.name, session.instructions))
+            return await react(prompt=prompt, tools=[*tools, ProviderNamedTools(server)], submit=AgentSubmit(answer_only=True))(state)
 
     return execute
 
@@ -132,7 +148,7 @@ def airco(
 
     Args:
       testset: Test set under testsets/.
-      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, variant 0 plus a groundwater MCP server, for the agent inspect.
+      variant: Variant: 0, the question alone; mcp-groundwater-monitoring or mcp-bag-ldproxy, variant 0 plus an MCP server, for the agent inspect.
       agent: model for the model without prompt or tools; inspect for Inspect's react() with web search and fetch; claude-code for Claude Code in a Docker sandbox.
       ids: Comma-separated sample ids; default the samples the variant is made for, all for variant 0.
       tags: Comma-separated tags; the samples with one of them.

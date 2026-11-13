@@ -21,7 +21,7 @@ The split comes from the tooling note. Inspect depends on one maintainer and cha
 
 ## The variants and the agents
 
-A variant is a form in which the standard is published. Which forms there will be, and how many, is for the assessment framework to define. Variant 0 is the standard as it is published today, and the agent finds it or not. Variant `mcp-groundwater-monitoring` adds an MCP server on BRO groundwater data to the tools of variant 0, so that the server is the one difference; it is made for the samples tagged `bro`. The variants are entries of `VARIANTS` in `tasks.py`, and `eval.metadata` holds the entry a run used, with the pinned image of its server.
+A variant is a form in which the standard is published. Which forms there will be, and how many, is for the assessment framework to define. Variant 0 is the standard as it is published today, and the agent finds it or not. Variants `mcp-groundwater-monitoring` and `mcp-bag-ldproxy` add an MCP server, on BRO groundwater data and on the BAG of Amersfoort, to the tools of variant 0, so that the server is the one difference; they are made for the samples tagged `bro` and `bag`. The variants are entries of `VARIANTS` in `tasks.py`, and `eval.metadata` holds the entry a run used, with the pinned image or the URL of its server.
 
 What differs is the agent, because the baseline is what a user gets from the agent the user has:
 
@@ -35,7 +35,7 @@ Earlier versions of the harness had more: variant 0a, where the harness handed t
 
 ## Why the harness has no system prompt of its own
 
-An agent depends as much on its agent harness as on its model. With the same model, a different system prompt, different tools or different context management gives a different result. A system prompt written by the harness would therefore be a third thing under test, next to the model and the publication. The agent `model` has none, and Inspect's own default additions to the prompt of `react()` are switched off for it, so the conversation is the question and the answer. The agent `inspect` has Inspect's prompt, unchanged, as the one neutral reference that every model gets alike; it stands for no user. Claude Code brings its own prompt, and that prompt is part of what is measured, because it is what a user has.
+An agent depends as much on its agent harness as on its model. With the same model, a different system prompt, different tools or different context management gives a different result. A system prompt written by the harness would therefore be a third thing under test, next to the model and the publication. The agent `model` has none, and Inspect's own default additions to the prompt of `react()` are switched off for it, so the conversation is the question and the answer. The agent `inspect` has Inspect's prompt, unchanged, as the one neutral reference that every model gets alike; it stands for no user. On a variant with an MCP server, the server's own instructions come before that prompt, verbatim and in the form Claude Code uses, because an MCP client passes them to the model and a server may explain its data there and nowhere else. They are the server's text, not the harness's. Inspect's MCP client drops them, so the harness reads them from the session. Claude Code brings its own prompt, and that prompt is part of what is measured, because it is what a user has.
 
 ## Why sources are in git
 
