@@ -212,15 +212,15 @@ function overview() {
     const current = runsOf(r => newest.get(r.sample) === r.m && r.variant === variant);
     const used = [...new Set(newest.values())].map(n => MEASUREMENTS.get(n));
     const groups = groupBy(current, r => `${r.model}|${r.agent}`);
-    const link = used.length === 1 ? `${used[0].name}/report.html#variant=${encodeURIComponent(variant)}` : null;
+    const link = used.length === 1 ? `${used[0].name}/report.html` : null;
     return h("section", {class: "card"},
       h("header", {}, h("h2", {text: t}), h("p", {text: `${newest.size} sample${newest.size === 1 ? "" : "s"} · ${current.length} runs${variants.length > 1 ? ` · variant ${variant}` : ""}`})),
       h("p", {class: "muted", style: "margin:0 0 0.6rem;font-size:0.88rem"}, "Newest run of each sample: ", ...used.flatMap((m, i) => [i ? ", " : "",
         h("a", {href: `${m.name}/report.html`, text: when(m.name, true)}), ` (${m.samples.filter(x => newest.get(x) === m.name).join(", ")})`])),
       heatmap({models: sortedModels(current), agents: sortedAgents(current), metric: "complete",
         value: (model, agent) => cellValue(groups.get(`${model}|${agent}`), "complete"),
-        onSelect: link ? (model, agent) => (location.href = `${link}&model=${encodeURIComponent(model)}&agent=${encodeURIComponent(agent)}`) : null,
-        detail: (model, agent) => [`correct ${fmt(aggregate(groups.get(`${model}|${agent}`), "correct").mean)}`, link ? "Click for the runs" : "Open a measurement for the runs"]}),
+        onSelect: link ? () => (location.href = link) : null,
+        detail: (model, agent) => [`correct ${fmt(aggregate(groups.get(`${model}|${agent}`), "correct").mean)}`, link ? "Click to open the measurement" : "Open a measurement for the runs"]}),
       scaleLegend("complete"));
   });
   body.push(h("h2", {text: "Current results per test set", style: "margin-top:1.5rem"}), h("div", {class: "grid-2"}, cards));
@@ -365,6 +365,12 @@ const ALONE = "model"; // the agent that is the model alone, without tools
 // Variant colors by role: the baseline orange, the other variants blue and aqua in sorted order. Only these three pass
 // the dataviz validator for marks that can sit beside each other in any pairing; a further variant is drawn in muted ink.
 const HUES = ["--v-base", "--v-1", "--v-2"];
+// Ranked over every variant on the site, not over a page's selection, so a variant has one color on every page.
+const OTHER_VARIANTS = [...new Set(data.runs.map(r => r.variant))].filter(v => v !== BASELINE).sort();
+/** The color token of a variant: the baseline orange, the next variants blue and aqua, any further one muted ink. */
+const variantHue = v => HUES[v === BASELINE ? 0 : OTHER_VARIANTS.indexOf(v) + 1] || "--muted";
+/** "anthropic/claude-haiku-5-5" reads as "Claude Haiku 5.5"; the tables keep the full id. */
+const modelName = id => id.split("/").pop().replace(/-(\d+)-(\d+)$/, "-$1.$2").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 const COMPLETE = "share of the expected content in the answer";
 const NOISE = "No run-to-run noise margin has been measured yet, so read small differences with care.";
 const SOURCE_NOTE = "source counts web retrievals with a URL only; an MCP call carries no URL, so it does not count.";
@@ -374,7 +380,7 @@ const pts = v => (v === null || v === undefined ? "n/a" : `${v < 0 ? "−" : "+"
 const plusMinus = s => (s.se === null ? "" : ` ± ${Math.round(s.se * 100)}`);
 const dollars = v => (v === null || v === undefined ? "n/a" : v < 0.1 ? `$${v.toFixed(3)}` : `$${v.toFixed(2)}`);
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-const setupName = s => `${s.model} with ${s.agent === ALONE ? "no tools" : s.agent}`;
+const setupName = s => `${modelName(s.model)} with ${s.agent === ALONE ? "no tools" : s.agent}`;
 const runKey = r => [r.model, r.agent, r.variant, r.sample, r.epoch].join("|");
 const viewerLink = r => `viewer/#/logs/${encodeURIComponent(r.log)}/samples/sample/${encodeURIComponent(r.sample)}/${r.epoch}/`;
 // A sample id can mean another question in another measurement, so a map question is looked up per measurement.
@@ -416,8 +422,7 @@ function design(all) {
   const variants = baseline ? [baseline, ...names.filter(v => v !== baseline)] : names;
   const others = variants.filter(v => v !== baseline);
   const style = new Map(variants.map(v => {
-    const hue = HUES[v === baseline ? 0 : others.indexOf(v) + 1];
-    return [v, {color: `var(${hue || "--muted"})`, label: v === baseline ? "Variant 0, the baseline" : `Variant ${v}`}];
+    return [v, {color: `var(${variantHue(v)})`, label: v === baseline ? "Variant 0, the baseline" : `Variant ${v}`}];
   }));
   const setups = [], rows = [];
   for (const model of sortedModels(all)) {
@@ -529,7 +534,7 @@ function setupChart(d, m) {
       ...[...r.gains].map(([v, g]) => `Gain of variant ${v}: ${pts(g.mean)}${g.se === null ? "" : `, standard error ${Math.round(g.se * 100)} pts`}, paired over ${plural(g.n, "question")}`),
       ...(r.disjoint ? ["The variants of this setup ran no question in common."] : [])];
   };
-  const rows = groups.map(rs => h("div", {class: "dgroup"}, h("div", {class: "dmodel", text: rs[0].model}),
+  const rows = groups.map(rs => h("div", {class: "dgroup"}, h("div", {class: "dmodel", title: rs[0].model, text: modelName(rs[0].model)}),
     h("div", {}, rs.map(r => {
       const row = h("div", {class: "drow setup", tabindex: "0", "aria-label": lines(r).join(". ")},
         h("div", {class: "dagent", text: r.agent === ALONE ? "no tools" : r.agent}), track(d, r.marks, ringOf(r), !r.disjoint), d.comparing ? gainCell(r) : meanCell(r));
@@ -627,7 +632,7 @@ function costCard(d, m) {
   const rows = d.setups.map(s => {
     const cost = new Map([...s.byVariant.keys()].map(v => [v, costPerCorrect(s.scored(v))]));
     const versus = v => (v !== d.baseline && cost.has(d.baseline) && s.samples ? change(cost.get(d.baseline), cost.get(v)) : "");
-    return h("tr", {}, h("td", {class: "who"}, h("span", {text: s.model}), " ", h("span", {class: "muted", text: s.agent === ALONE ? "no tools" : s.agent})),
+    return h("tr", {}, h("td", {class: "who"}, h("span", {title: s.model, text: modelName(s.model)}), " ", h("span", {class: "muted", text: s.agent === ALONE ? "no tools" : s.agent})),
       d.variants.map(v => h("td", {class: "num"}, !cost.has(v) ? "not run" : cost.get(v) === null ? "none correct" : dollars(cost.get(v)),
         cost.has(v) && versus(v) ? h("small", {class: "change", text: versus(v)}) : null)));
   });
@@ -696,7 +701,7 @@ function questionCard(d, m, sample, n, selected, onPick) {
   const groups = [...groupBy(d.setups, s => s.model).values()].map(ss => {
     const lanes = ss.map(s => [s, d.variants.map(v => (s.byVariant.get(v) || []).filter(r => r.sample === sample).sort((a, b) => a.epoch - b.epoch)).filter(rs => rs.length)]).filter(([, ls]) => ls.length);
     if (!lanes.length) return null;
-    return h("div", {class: "qgroup"}, h("div", {class: "mname", text: ss[0].model}),
+    return h("div", {class: "qgroup"}, h("div", {class: "mname", title: ss[0].model, text: modelName(ss[0].model)}),
       h("div", {}, lanes.map(([s, ls]) => h("div", {class: "qrow"}, h("div", {class: "aname", text: s.agent === ALONE ? "no tools" : s.agent}),
         h("div", {class: "strip"}, gridlines(), ls.map(rs => lane(d, m, rs, selected, onPick))), means(s)))));
   });
@@ -871,7 +876,7 @@ function comparePage() {
   const capped = values.slice(-8);
   const chosen = p.get("groups") ? p.get("groups").split(",").filter(v => capped.includes(v)) : by === "measurement" ? capped.slice(-3) : capped;
   const label = v => (by === "measurement" ? when(v, true) : v);
-  const colours = series();
+  const colours = by === "variant" ? capped.map(v => css(variantHue(v))) : series();
   const colour = v => colours[capped.indexOf(v)];
 
   const update = values => { setParams(values); render(); };
