@@ -2,6 +2,7 @@
 
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from inspect_ai import eval
 from inspect_ai.log import EvalRevision, read_eval_log, write_eval_log
 from inspect_ai.model import ModelOutput, get_model
 
-from airco_harness import matrix, report, rescore
+from airco_harness import matrix, report, rescore, tasks
 from airco_harness.tasks import airco
 
 GOOD = json.dumps({"objecttype": "OverigBouwwerk", "type": "bassin"})
@@ -58,6 +59,17 @@ def test_runs_table(log_dir):
     assert all(r.cost > 0 for r in table.itertuples())
     assert good.tokens_input > 0
     assert list(table["retrieved"].unique()) == [""]
+
+
+def test_runs_name_the_mcp_server_version_of_a_run_and_leave_it_empty_without_one(log_dir, tmp_path, monkeypatch):
+    stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
+    monkeypatch.setitem(tasks.VARIANTS, "stub", tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
+    task = airco(testset="dsfl", variant="stub", agent="inspect", ids="dsfl-06", cost_limit=None)
+    eval(task, model=get_model("mockllm/model", custom_outputs=[submit]), log_dir=str(tmp_path), display="none")
+    [row] = report.runs(str(tmp_path)).itertuples()
+    assert re.fullmatch(r"stub-groundwater-monitoring 1\.2\.3", row.mcp_server)
+    assert set(report.runs(log_dir)["mcp_server"]) == {""}
 
 
 def test_retrieved_urls_come_from_the_source_scorer():
