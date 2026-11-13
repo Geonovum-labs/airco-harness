@@ -1,0 +1,1 @@
+{"rule":"fields","answer_schema":"answer.schema.json","expected":{"line_of_sight_only":true,"proves_no_connection":false},"source":"subsurface-models.band-confinement contract: a line does not establish hydraulic separation outside it."}

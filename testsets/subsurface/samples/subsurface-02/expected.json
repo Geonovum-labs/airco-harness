@@ -1,0 +1,1 @@
+{"rule":"fields","answer_schema":"answer.schema.json","expected":{"lithoclass":"ZM","probability":{"value":0.62,"tolerance":0.005}},"source":"Bundle 2026-11, GEOTOP-v01r6s1-001 trace at RD (155000, 463000).","note":"Exactly -12 m lies on a voxel boundary, with different probabilities on either side; -12.25 m is inside the lower voxel."}

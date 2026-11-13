@@ -15,6 +15,11 @@
       "^https?://docs\\.geostandaarden\\.nl/imgeo/def-im-(BGT|IMGeo)-(?!20200701)"
     ]
   },
+  "subsurface": {
+    "note": "The local model bundle and MCP server are not URL retrievals. MCP source attribution is not implemented yet.",
+    "authoritative": [],
+    "non_authoritative": []
+  },
   "dsfl": {
     "note": "The registrations the dsfl questions need: the BAG and the BRO groundwater monitoring wells. bag.ldproxy.net republishes the BAG 2.0 Extract with history, which the PDOK WFS lacks; the working group still has to confirm that it counts as authoritative. publiek.broservices.nl is the public service of the BRO and broloket.nl its public viewer.",
     "authoritative": [

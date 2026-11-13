@@ -59,8 +59,9 @@ Each field of the answer has an expected value.
 | --- | --- |
 | `expected` | For each field, a value, `{"one_of": [...]}` for alternatives, or `{"value": 2.131, "tolerance": 0.005}` for a numeric value within an absolute tolerance (inclusive) |
 | `term_fields` | Optional. Fields in which a value that differs from the expected one must be a known term |
+| `invented_fields` | Optional. Fields for which any differing value counts as invented, for example a fabricated value where the expected value is null |
 
-`complete` is the share of fields that match. `invented` is the number of differing values in `term_fields` that are not a known term, and `correct` is 1 only if everything matches and nothing is invented.
+`complete` is the share of fields that match. `invented` is the number of differing values in `term_fields` that are not a known term plus differing values in `invented_fields`; use each field in at most one of these lists. `correct` is 1 only if everything matches and nothing is invented.
 
 For example, `imgeo-G04-03` expects `objecttype` OverigBouwwerk (or Overig bouwwerk) and `type` bassin. The answer Waterdeel with zwembad gets `complete` 0 and `invented` 1: Waterdeel is a known term, zwembad is not.
 
@@ -84,6 +85,12 @@ For `dsfl-04`, 78 panden are required. A map of all 112 panden of the extract ge
 The answer is the `data` argument of the last successful `plot_series` call (Claude Code: `mcp__plot__plot_series`), not the rendered image or the last message. The plot tool takes an object with `points` (ordered `{"date": "YYYY-MM-DD", "value": number-or-null}` entries), `unit`, `reference_plane`, and `connect_gaps`. A null breaks the line when `connect_gaps` is false. No successful call, invalid dates, or malformed data gets `parseable` 0.
 
 The expected `points` map contains every day of the requested period, with null for a day with no measurements; `tolerance` is the absolute tolerance for each numeric value. `complete` is the share of days with matching values or gaps. Dates outside the period, duplicate dates and filled gaps are invented. The days must be ordered, and `unit`, `reference_plane` and `connect_gaps` must match for `correct` to be 1. Missing dates do not represent gaps: every date must be present, so the plot does not silently connect across missing days.
+
+### The rules `section` and `trace`
+
+The `subsurface` draft set scores selected properties of the last successful subsurface MCP tool result. `section` checks the `section-plot` call and returned path, model, coloring, path length, nonempty geometry and presence of an image. It does not interpret the image. `trace` checks the requested point, model, datum, surface, upper units and column extent; it does not score a rendered Appelboor or every voxel. Neither rule claims that the data prove a geological interpretation. The section plot is not paginated; `subsurface-models.section` is a separate paginated tool.
+
+The subsurface server is not yet attached to either agent, and MCP calls do not yet count as a `source`. See the [subsurface test set](../testsets/subsurface/README.md) for the reference bundle and the remaining integration work.
 
 ### The scorer `source`
 

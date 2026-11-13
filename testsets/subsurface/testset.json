@@ -1,0 +1,10 @@
+{
+  "purpose": "Draft questions about GeoTOP and REGIS model data and their limitations at Amersfoort.",
+  "version": "0.1",
+  "date": "2026-11-13",
+  "bundle": {
+    "version": "2026-11",
+    "manifest_sha256": "1edb3bb556f7075373adbc2ab70f4f1dcbe46de5ac73b9f00ee386534df1bfb9",
+    "models": ["REGIS-v02r2s3-001", "GEOTOP-v01r6s1-001"]
+  }
+}

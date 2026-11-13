@@ -147,6 +147,27 @@ def test_series_is_the_last_successful_plot_call_including_bridged_calls():
     assert series_shown(call(0, "mcp__plot__plot_series", json.dumps(second))) == json.dumps(second)
 
 
+def test_subsurface_result_uses_real_result_and_png():
+    from inspect_ai.model import ContentImage, ContentText
+
+    from airco_harness.scorers import subsurface_result
+
+    def call(i, payload, content=None, error=None):
+        name = "subsurface-models_section-plot"
+        return [
+            ChatMessageAssistant(content="", tool_calls=[ToolCall(id=str(i), function=name, arguments={"points": []})]),
+            ChatMessageTool(content=content or json.dumps(payload), tool_call_id=str(i), function=name,
+                            error=ToolCallError("unknown", error) if error else None),
+        ]
+
+    content = [ContentText(text='{"plot": {}, "path": []}'), ContentImage(image="data:image/png;base64,AA==")]
+    first = call(1, {}, content)
+    assert json.loads(subsurface_result(first, "section-plot"))["image"] is True
+    assert subsurface_result([*first, *call(2, {}, error="failed")], "section-plot") == subsurface_result(first, "section-plot")
+    assert subsurface_result([*first, *call(2, {"code": "INVALID_LOCATION"})], "section-plot") == ""
+    assert subsurface_result([], "trace") == ""
+
+
 def test_a_url_in_a_shell_command_or_code_that_ran_is_a_retrieval():
     """Claude Code often fetches with curl or a script in Bash; the URLs in the command count, as the command ran."""
     bag = "https://api.pdok.nl/kadaster/bag/ogc/v2/collections/pand/items?f=json&limit=5"
