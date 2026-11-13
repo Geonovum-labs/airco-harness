@@ -37,6 +37,13 @@ export function aggregate(runs, metric, samples = null) {
   return summary(values);
 }
 
+/** The paired difference of a metric, after minus before: the summary of the per-sample differences over the samples
+ * both have a value for, optionally only the given samples. Its mean is the gain, its standard error that of the gain. */
+export function paired(before, after, metric, samples = null) {
+  const a = perSample(before, metric), b = perSample(after, metric);
+  return summary([...b].filter(([s]) => a.has(s) && (!samples || samples.has(s))).map(([s, v]) => v - a.get(s)));
+}
+
 /** Runs grouped by a key function, in first-seen order: Map(key -> runs). */
 export function groupBy(runs, key) {
   const groups = new Map();

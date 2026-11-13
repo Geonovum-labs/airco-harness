@@ -113,3 +113,30 @@ def test_the_site_names_each_server_version_once_and_ignores_runs_without_one(tm
     script.write_text(SERVERS.replace("STATS", json.dumps(STATS.as_uri())), encoding="utf-8")
     result = subprocess.run([NODE, str(script)], capture_output=True, text=True, check=True)
     assert json.loads(result.stdout) == ["bag 1, bag 2", ""]
+
+
+PAIRED = """
+import {readFileSync} from "node:fs";
+import {paired} from STATS;
+const runs = JSON.parse(readFileSync(0, "utf-8"));
+const before = runs.filter(r => r.variant === "0"), after = runs.filter(r => r.variant === "mcp");
+console.log(JSON.stringify([paired(before, after, "complete"), paired(before, after, "complete", new Set(["s1"]))]));
+"""
+
+
+@pytest.mark.skipif(NODE is None, reason="node is not installed")
+def test_a_paired_gain_counts_only_the_samples_both_variants_have(tmp_path):
+    rows = [("0", "s1", 1, 0.2), ("0", "s1", 2, 0.4), ("0", "s2", 1, 0.5), ("0", "s3", 1, 0.0),
+            ("mcp", "s1", 1, 0.9), ("mcp", "s2", 1, 0.6), ("mcp", "s2", 2, 0.4), ("mcp", "s4", 1, 1.0)]  # fmt: skip
+    runs = [{"variant": v, "sample": s, "epoch": e, "complete": c, "failed": False} for v, s, e, c in rows]
+    runs.append({"variant": "mcp", "sample": "s3", "epoch": 1, "complete": 1.0, "failed": True})
+    script = tmp_path / "paired.mjs"
+    script.write_text(PAIRED.replace("STATS", json.dumps(STATS.as_uri())), encoding="utf-8")
+    result = subprocess.run([NODE, str(script)], input=json.dumps(runs), capture_output=True, text=True, check=True)
+    both, one = json.loads(result.stdout)
+
+    differences = pd.Series([0.9 - 0.3, 0.5 - 0.5])  # s1 and s2: s3 failed with mcp, s4 has no run without it
+    assert both["n"] == 2
+    assert both["mean"] == pytest.approx(differences.mean())
+    assert both["se"] == pytest.approx(differences.std() / math.sqrt(2))
+    assert one == {"mean": pytest.approx(0.6), "se": None, "n": 1}
