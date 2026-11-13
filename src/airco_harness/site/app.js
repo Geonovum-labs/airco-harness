@@ -7,7 +7,8 @@ import {createMap, KINDS, panden, PLACE_STYLE} from "./map.js";
 
 const root = document.body.dataset.root;
 const app = document.getElementById("app");
-const data = await fetch(root + "data.json").then(r => r.json());
+// GitHub Pages lets a browser keep data.json for ten minutes; revalidate, so that a merged measurement shows at once.
+const data = await fetch(root + "data.json", {cache: "no-cache"}).then(r => r.json());
 const MEASUREMENTS = new Map(data.measurements.map(m => [m.name, m]));
 const dark = window.matchMedia("(prefers-color-scheme: dark)");
 
