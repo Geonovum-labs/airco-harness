@@ -180,8 +180,13 @@ def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, m
         "mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}
     )
     submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
+
+    def script(messages, *_):
+        # Each sample follows its own conversation; a shared list would depend on how the samples interleave.
+        return submit if any(m.role == "tool" for m in messages) else call
+
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06,dsfl-07")
-    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[call, call, submit, submit]), log_dir=str(tmp_path), display="none", max_samples=2)
+    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=script), log_dir=str(tmp_path), display="none", max_samples=2)
     assert log.status == "success"
     results = [[json.loads(m.text) for m in s.messages if m.role == "tool"] for s in log.samples]
     assert [len(r) for r in results] == [1, 1]
