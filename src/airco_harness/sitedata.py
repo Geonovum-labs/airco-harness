@@ -242,11 +242,10 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     return facts, runs, maps
 
 
-def dataset(measurement_dirs: list[Path]) -> dict:
-    """All measurements, newest first, with their runs and the map questions of each."""
+def dataset(parts: list[tuple[dict, list[dict], dict]]) -> dict:
+    """All measurements, newest first, with their runs and the map questions of each, from what measurement() gives."""
     out = {"measurements": [], "runs": [], "maps": {}}
-    for d in measurement_dirs:
-        facts, runs, maps = measurement(d.name, d / "logs" / "logs")
+    for facts, runs, maps in parts:
         out["measurements"].append(facts)
         out["runs"] += runs
         out["maps"] |= maps

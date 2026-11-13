@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import pytest
 from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
 
@@ -125,7 +126,7 @@ def test_a_map_is_drawn_against_the_question_its_sample_id_meant_at_the_commit_o
     names = ["2026-11-12T12-37-01", "2026-10-29T12-39-59"]
     arnhem = "dsfl/bag-arnhem-sport-panden.geojson"
 
-    data = sitedata.dataset([pages.ROOT / "reports" / name for name in names])
+    data = sitedata.dataset([sitedata.measurement(name, pages.ROOT / "reports" / name / "logs" / "logs") for name in names])
     sitedata.write(data, tmp_path)
 
     entries = {key: data["maps"][key] for key in (f"{name}/dsfl-02" for name in names)}
@@ -229,3 +230,27 @@ def test_the_questions_of_a_measurement_are_listed_in_sample_order():
     """The logs hold the runs in the order they finished; the measurement of 13 November 2026 lists dsfl-05 first."""
     logs = Path(__file__).parent.parent / "reports" / "2026-11-13T09-33-45" / "logs"
     assert list(sitedata.questions(logs)) == [f"dsfl-0{n}" for n in range(1, 6)]
+
+
+def test_a_build_from_the_cache_reads_no_log_and_gives_the_same_site(tmp_path, monkeypatch):
+    reports = tmp_path / "reports"
+    log_dir = imgeo_measurement(reports)
+    cache = tmp_path / "cache"
+    pages.build(reports, tmp_path / "cold", cache)
+    (cache / "stale").mkdir()
+
+    def reread(*args):
+        raise AssertionError("the logs were read again")
+
+    monkeypatch.setattr(sitedata, "measurement", reread)
+    monkeypatch.setattr(pages, "bundle", reread)
+    pages.build(reports, tmp_path / "warm", cache)
+
+    def files(site: Path) -> dict[str, bytes]:
+        return {p.relative_to(site).as_posix(): p.read_bytes() for p in site.rglob("*") if p.is_file()}
+
+    assert files(tmp_path / "warm") == files(tmp_path / "cold")
+    assert [e.name.split("-")[:3] for e in cache.iterdir()] == [["2026", "10", "19T21"]]
+    (log_dir / "notes.txt").write_text("a changed log folder", encoding="utf-8")
+    with pytest.raises(AssertionError, match="read again"):
+        pages.build(reports, tmp_path / "again", cache)

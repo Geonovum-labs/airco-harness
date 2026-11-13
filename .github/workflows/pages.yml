@@ -26,7 +26,13 @@ jobs:
       - run: uv sync --all-extras
       # Nothing is published when a log holds a key, an e-mail address or a home directory.
       - run: uv run airco-logcheck reports
-      - run: uv run airco-pages
+      # The last build's part of each measurement; airco-pages reuses one only while its logs and the harness are unchanged.
+      - uses: actions/cache@v6
+        with:
+          path: .site-cache
+          key: site-cache-${{ github.sha }}
+          restore-keys: site-cache-
+      - run: uv run airco-pages --cache .site-cache
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

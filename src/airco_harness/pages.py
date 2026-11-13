@@ -21,12 +21,19 @@ sitedata.py reads from the logs. The statistics are in site/stats.js and agree
 with airco-report (tests/test_site_stats.py). The site is built from what is in
 git and is not committed itself; .github/workflows/pages.yml builds and deploys
 it on every push to main.
+
+Reading a measurement's logs and bundling its viewer take most of the build.
+With --cache, each measurement's part is kept under a key of its logs and of
+everything else it is read with (CODE), and a later build reuses it while
+neither changed. A change to the pages' scripts alone rebuilds nothing.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
+import json
 import os
 import shutil
 import subprocess
@@ -60,6 +67,9 @@ MAP_SCRIPTS = [
     "https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js",
 ]
 MAP_STYLE = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+# What a measurement's part of the site is read with besides its logs: the harness and its rules, the test sets, the
+# reference sources and models, the prices and the locked dependencies. The pages' own scripts (ASSETS) are left out.
+CODE = ["src", "validators", "testsets", "sources", "reference-models", "model-costs.yaml", "pyproject.toml", "uv.lock"]
 
 
 def measurements(reports: Path) -> list[Path]:
@@ -75,6 +85,35 @@ def bundle(log_dir: Path, out: Path, shown_log_dir: Path) -> None:
         [str(inspect), "view", "bundle", "--log-dir", str(log_dir), "--output-dir", str(out), "--overwrite"], check=True, capture_output=True, text=True
     )
     strip_absolute_log_dir(out, shown_log_dir)
+
+
+def digest(base: Path, paths: list[Path]) -> str:
+    """The SHA-256 of the files under `paths`, their paths relative to `base` included, without Python's caches."""
+    h = hashlib.sha256()
+    for path in paths:
+        files = [path] if path.is_file() else sorted(path.rglob("*"))
+        for file in files:
+            if file.is_file() and "__pycache__" not in file.parts and not file.is_relative_to(ASSETS):
+                h.update(f"{file.relative_to(base).as_posix()}\0{file.stat().st_size}\0".encode())
+                h.update(file.read_bytes())
+    return h.hexdigest()
+
+
+def part(m: Path, out: Path, entry: Path | None) -> tuple[dict, list[dict], dict]:
+    """A measurement's facts, runs and maps, with its viewer written to out; from the cache entry when it is there."""
+    log_dir = m / "logs" / "logs"
+    viewer = out / m.name / "viewer"
+    if entry and (entry / "part.json").exists():
+        shutil.copytree(entry / "viewer", viewer)
+        return tuple(json.loads((entry / "part.json").read_text(encoding="utf-8")))
+    bundle(log_dir, viewer, Path("reports") / m.name / "logs" / "logs")
+    found = sitedata.measurement(m.name, log_dir)
+    if entry:
+        # part.json is written last, so an entry that a crash left half written is read again rather than used.
+        shutil.rmtree(entry, ignore_errors=True)
+        shutil.copytree(viewer, entry / "viewer")
+        (entry / "part.json").write_text(json.dumps(found, ensure_ascii=False), encoding="utf-8")
+    return found
 
 
 def page(title: str, kind: str, root: str, current: str, extra: dict[str, str] | None = None, maps: bool = False) -> str:
@@ -100,15 +139,18 @@ def page(title: str, kind: str, root: str, current: str, extra: dict[str, str] |
     )
 
 
-def build(reports: Path, out: Path) -> list[dict]:
-    """The whole site in `out`; the facts of each measurement, newest first."""
+def build(reports: Path, out: Path, cache: Path | None = None) -> list[dict]:
+    """The whole site in `out`; the facts of each measurement, newest first. A cache keeps only what this build used."""
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
     found = measurements(reports)
-    for m in found:
-        bundle(m / "logs" / "logs", out / m.name / "viewer", Path("reports") / m.name / "logs" / "logs")
-    data = sitedata.dataset(found)
+    code = digest(ROOT, [ROOT / p for p in CODE]) if cache else ""
+    entries = {m: cache / f"{m.name}-{hashlib.sha256((code + digest(m, [m / 'logs' / 'logs'])).encode()).hexdigest()[:20]}" if cache else None for m in found}
+    data = sitedata.dataset([part(m, out, entries[m]) for m in found])
+    if cache and cache.is_dir():
+        for stale in set(cache.iterdir()) - set(entries.values()):
+            shutil.rmtree(stale)
     sitedata.write(data, out)
     shutil.copytree(ASSETS, out / "assets")
     (out / "index.html").write_text(page(f"{SITE}: measurements", "overview", "./", "overview"), encoding="utf-8")
@@ -125,10 +167,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="airco-pages", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--reports", default=str(ROOT / "reports"), help="folder with one bundle per measurement")
     parser.add_argument("--out", default=str(ROOT / "site"), help="output folder; it is emptied first")
+    parser.add_argument("--cache", help="folder that keeps each measurement's part between builds; none by default")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    rows = build(Path(args.reports), Path(args.out))
+    rows = build(Path(args.reports), Path(args.out), Path(args.cache) if args.cache else None)
     print(f"{len(rows)} measurement{'' if len(rows) == 1 else 's'}; {args.out}/index.html")

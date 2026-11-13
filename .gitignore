@@ -12,3 +12,4 @@ __pycache__/
 /reports/*/logs/index.html
 /reports/*/logs/robots.txt
 /site/
+/.site-cache/
