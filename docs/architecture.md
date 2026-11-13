@@ -53,7 +53,7 @@ A free-text answer needs a model grader, and a model grader can be influenced. S
 
 That has a price. The question reads less like a user's question, and a model that misses the format gets `parseable` 0 instead of a score for its content. For a proof of concept that has to show repeatability, determinism weighs more. A model grader can come later, as a second metric for open explanations.
 
-A question that asks to show something on the map is the exception: a citizen asks it as a citizen would, with no format. The agents `inspect` and `claude-code` then get the tool `show_on_map`, the map a chat app offers, and the answer is the GeoJSON of the last successful call. The rule `map` matches its places to the panden of a vendored BAG extract, so the score is still a comparison. Only a test set with such a question gets the tool, so the tools of the other test sets stay as they were.
+A question that asks to show something on the map is the exception: a citizen asks it as a citizen would, with no format. The agents `inspect` and `claude-code` then get the tool `show_on_map`, the map a chat app offers, and the answer is the GeoJSON of the last successful call, given inline or as a URL that the tool fetches once and records in the sample store. The rule `map` matches its places to the panden of a vendored BAG extract, so the score is still a comparison. Only a test set with such a question gets the tool, so the tools of the other test sets stay as they were.
 
 ## Why the sample is the unit
 

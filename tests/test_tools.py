@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -15,6 +16,7 @@ from airco_harness.tasks import airco
 from validators import sources
 
 ANSWER = json.dumps({"objecttype": "OverigBouwwerk", "type": "bassin"})
+MAP_DOCUMENT: dict[str, bytes] = {}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -29,6 +31,8 @@ class Handler(BaseHTTPRequestHandler):
             "/page": (b"<html><body><h1>Title</h1><p>bgt-status: <em>bestaand</em></p></body></html>", "text/html", 200),
             "/long": (b"x" * 50_000, "text/plain", 200),
             "/missing": (b"gone", "text/plain", 404),
+            "/map": (MAP_DOCUMENT.get("body", b"{}"), "application/json", 200),
+            "/notjson": (b"<html>no</html>", "text/html", 200),
         }.get(path, (b"not found", "text/plain", 404))
         self.send_response(status)
         self.send_header("Content-Type", kind)
@@ -98,6 +102,56 @@ def test_show_on_map_counts_the_places_and_rejects_what_is_not_geojson():
     for bad in ({"type": "FeatureCollection"}, {"type": "Point", "coordinates": "here"}, {"features": []}):
         with pytest.raises(ToolError):
             asyncio.run(show(geojson=bad))
+
+
+def test_show_on_map_url_errors_are_tool_errors(server):
+    show = tools.show_on_map()
+    point = {"type": "Point", "coordinates": [5.9, 51.98]}
+    for arguments in (
+        {"geojson": point, "url": f"{server}/map"},
+        {},
+        {"url": f"{server}/missing"},
+        {"url": f"{server}/notjson"},
+        {"url": "file:///etc/passwd"},
+    ):
+        with pytest.raises(ToolError):
+            asyncio.run(show(**arguments))
+
+
+def test_show_on_map_url_is_recorded_in_the_store_and_rescore_does_not_fetch_again(tmp_path):
+    from airco_harness import dataset
+
+    must = json.loads((dataset.TESTSETS_DIR / "dsfl/samples/dsfl-04/expected.json").read_text(encoding="utf-8"))["must"]
+    panden = json.loads(sources.path("dsfl/bag-amersfoort-sport-panden.geojson").read_text(encoding="utf-8"))["features"]
+    geojson = {"type": "FeatureCollection", "features": [f for f in panden if f["properties"]["identificatie"] in must]}
+    body = json.dumps(geojson).encode()
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    url = f"http://127.0.0.1:{httpd.server_port}/map"
+    MAP_DOCUMENT["body"] = body
+    try:
+        steps = [
+            ModelOutput.for_tool_call("mockllm/model", "show_on_map", {"url": url}),
+            ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Zie de kaart."}),
+        ]
+        [log] = eval(
+            airco(testset="dsfl", agent="inspect", ids="dsfl-04"),
+            model=get_model("mockllm/model", custom_outputs=steps),
+            log_dir=str(tmp_path),
+            display="none",
+        )
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        MAP_DOCUMENT.clear()
+    [sample] = log.samples
+    assert sample.messages[3].role == "tool" and sample.messages[3].text == f"{len(must)} places shown on the map."
+    assert "FeatureCollection" not in sample.messages[3].text
+    assert sample.store["show_on_map"] == {url: geojson}
+    expected = {"correct": 1, "complete": 1.0, "invented": 0, "parseable": 1}
+    assert sample.scores["quality"].value == expected
+    rescored = subprocess.run(["airco-rescore", log.location, "--out", str(tmp_path / "rescore")], capture_output=True, text=True)
+    assert rescored.returncode == 0, rescored.stdout + rescored.stderr
 
 
 def test_agent_inspect_gets_show_on_map_only_in_a_test_set_with_a_map_question(tmp_path):

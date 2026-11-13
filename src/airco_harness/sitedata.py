@@ -23,6 +23,7 @@ from inspect_ai.log import read_eval_log
 from validators import geo, source_check, sources
 
 from . import report, scorers
+from .tools import MAP_STORE
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
 RUN_FIELDS = [
@@ -110,10 +111,10 @@ def details(properties: object) -> dict[str, str]:
     return text
 
 
-def places(messages: list, expected: dict) -> list[dict]:
+def places(messages: list, expected: dict, maps: dict) -> list[dict]:
     """Every place the agent showed with show_on_map: where it put it, the reference feature it matched
     (by the same rule as the scorer, else null), and its details."""
-    shown = scorers.map_shown(messages)
+    shown = scorers.map_shown(messages, maps)
     try:
         collection = json.loads(shown) if shown else None
     except ValueError:
@@ -166,7 +167,7 @@ def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str
                 failed.setdefault((r["url"], r["status"], error), entry)["times"] += 1
             run = {"retrieved": list(ok.values()), "errors": list(failed.values())}
             if str(sample.id) in map_samples:
-                run["places"] = places(sample.messages, map_samples[str(sample.id)])
+                run["places"] = places(sample.messages, map_samples[str(sample.id)], sample.store.get(MAP_STORE, {}))
             out[(path.name, str(sample.id), sample.epoch)] = run
     return out
 

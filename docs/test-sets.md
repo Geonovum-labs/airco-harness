@@ -67,7 +67,7 @@ For example, `imgeo-G04-03` expects `objecttype` OverigBouwwerk (or Overig bouww
 
 ### The rule `map`
 
-The answer is what the agent showed on the map: the `geojson` argument of its last successful `show_on_map` call (Claude Code calls it `mcp__map__show_on_map`), not its last message. A test set with a `map` sample gives the agents `inspect` and `claude-code` that tool; the agent `model` has no tools and gets `parseable` 0.
+The answer is what the agent showed on the map: the `geojson` argument of its last successful `show_on_map` call (Claude Code calls it `mcp__map__show_on_map`), not its last message. With a `url` argument instead, the answer is the GeoJSON the map fetched at call time, which the tool records in the sample store (key `show_on_map`) so that a rescore never fetches again. The map loads one document and follows no paging links. A test set with a `map` sample gives the agents `inspect` and `claude-code` that tool; the agent `model` has no tools and gets `parseable` 0.
 
 | `expected.json` | Content |
 | --- | --- |

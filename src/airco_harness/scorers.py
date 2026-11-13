@@ -16,6 +16,8 @@ from inspect_ai.solver import TaskState
 
 from validators import rules, source_check
 
+from .tools import MAP_STORE
+
 
 def tool_uses(messages: list[ChatMessage]) -> list[dict]:
     """Every tool use in the conversation, in order, with its arguments, whether it failed and the error it gave.
@@ -59,13 +61,19 @@ def _arguments(block: ContentToolUse) -> dict:
     return arguments if isinstance(arguments, dict) else {}
 
 
-def map_shown(messages: list[ChatMessage]) -> str:
+def map_shown(messages: list[ChatMessage], maps: dict) -> str:
     """The GeoJSON of the last show_on_map call that succeeded, as JSON text, or "" when the agent showed no map.
-    The last call counts because a new call replaces the map. Claude Code names the tool mcp__map__show_on_map."""
-    shown = [u["arguments"].get("geojson") for u in tool_uses(messages) if u["tool"].endswith("show_on_map") and not u["failed"]]
+    The last call counts because a new call replaces the map. Claude Code names the tool mcp__map__show_on_map.
+    For a url argument the GeoJSON is what the map fetched, from maps (the sample store), "" when missing."""
+    shown = [u["arguments"] for u in tool_uses(messages) if u["tool"].endswith("show_on_map") and not u["failed"]]
     if not shown:
         return ""
-    return shown[-1] if isinstance(shown[-1], str) else json.dumps(shown[-1], ensure_ascii=False)
+    last = shown[-1]
+    url = last.get("url")
+    if url is not None:
+        return json.dumps(maps[url], ensure_ascii=False) if url in maps else ""
+    geojson = last.get("geojson")
+    return geojson if isinstance(geojson, str) else json.dumps(geojson, ensure_ascii=False)
 
 
 def series_shown(messages: list[ChatMessage]) -> str:
@@ -187,7 +195,7 @@ def quality():
     async def score(state: TaskState, target: Target) -> Score:
         case = rules.Case.load(target.text)
         if case.rule == "map":
-            answer = map_shown(state.messages)
+            answer = map_shown(state.messages, state.store.get(MAP_STORE, {}))
         elif case.rule == "series":
             answer = series_shown(state.messages)
         elif case.rule in ("section", "trace"):

@@ -137,7 +137,7 @@ def rule_fields(answer: str, case: Case) -> Assessment:
 def rule_map(answer: str, case: Case) -> Assessment:
     """Places on the map, matched to the features of the reference extract.
 
-    `answer` is the GeoJSON the agent passed to show_on_map, or "" when it showed no map.
+    `answer` is the GeoJSON the agent passed to show_on_map, or that the map loaded from its url, or "" when it showed no map.
     """
     if not answer.strip():
         return unparseable("no map shown")

@@ -153,7 +153,7 @@ def test_point_map_places_use_the_same_assignment_and_allowed_selection_as_scori
         ChatMessageTool(content="ok", tool_call_id="map", function="show_on_map"),
     ]
     config = {**expected, "commit": "", "allowed_optional": expected["optional"]}
-    places = sitedata.places(messages, config)
+    places = sitedata.places(messages, config, {})
     assert {p["pand"] for p in places} == {"GMW000000009391", "GMW000000046914", None}
 
 

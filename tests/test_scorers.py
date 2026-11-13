@@ -125,10 +125,33 @@ def test_the_map_is_the_last_show_on_map_call_that_succeeded():
         ]
 
     first, second = {"type": "FeatureCollection", "features": []}, {"type": "Point", "coordinates": [5.9, 51.98]}
-    assert map_shown(fetch_messages([("https://example.org/", None)])) == ""
-    assert map_shown([*call(0, "show_on_map", first), *call(1, "mcp__map__show_on_map", second)]) == json.dumps(second)
-    assert map_shown([*call(0, "show_on_map", first), *call(1, "show_on_map", "not geojson", "invalid")]) == json.dumps(first)
-    assert map_shown(call(0, "mcp__map__show_on_map", json.dumps(second))) == json.dumps(second)
+    assert map_shown(fetch_messages([("https://example.org/", None)]), {}) == ""
+    assert map_shown([*call(0, "show_on_map", first), *call(1, "mcp__map__show_on_map", second)], {}) == json.dumps(second)
+    assert map_shown([*call(0, "show_on_map", first), *call(1, "show_on_map", "not geojson", "invalid")], {}) == json.dumps(first)
+    assert map_shown(call(0, "mcp__map__show_on_map", json.dumps(second)), {}) == json.dumps(second)
+    explicit_null = [
+        ChatMessageAssistant(content="", tool_calls=[ToolCall(id="map-0", function="show_on_map", arguments={"geojson": second, "url": None})]),
+        ChatMessageTool(content="", tool_call_id="map-0", function="show_on_map"),
+    ]
+    assert map_shown(explicit_null, {}) == json.dumps(second)
+
+
+def test_a_map_url_resolves_to_the_geojson_recorded_in_the_store():
+    from airco_harness.scorers import map_shown, retrievals
+
+    def call(i: int, url: str, error: str | None = None) -> list:
+        return [
+            ChatMessageAssistant(content="", tool_calls=[ToolCall(id=f"map-{i}", function="show_on_map", arguments={"url": url})]),
+            ChatMessageTool(content="", tool_call_id=f"map-{i}", function="show_on_map", error=ToolCallError("unknown", error) if error else None),
+        ]
+
+    good, bad = "https://example.org/good", "https://example.org/bad"
+    point = {"type": "Point", "coordinates": [5.9, 51.98]}
+    maps = {good: point}
+    assert map_shown(call(0, good), maps) == json.dumps(point)
+    assert map_shown(call(0, bad), maps) == ""
+    assert map_shown([*call(0, good), *call(1, bad, "HTTP 404")], maps) == json.dumps(point)
+    assert [r["url"] for r in retrievals(call(0, good))] == [good]
 
 
 def test_series_is_the_last_successful_plot_call_including_bridged_calls():
