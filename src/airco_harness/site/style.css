@@ -57,8 +57,18 @@ a.btn:hover, button.btn:hover { border-color: var(--accent); }
 
 /* Dashboard layout */
 .filters { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: end; margin: 1rem 0; }
-.filters label { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
-select { font: inherit; font-size: 0.95rem; text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 0.3rem 0.5rem; max-width: 22rem; }
+.filters label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+/* The browser's own select puts its arrow against the text; this one keeps room for an arrow drawn in the muted ink. */
+select {
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  font: inherit; font-size: 0.92rem; line-height: 1.4; text-transform: none; letter-spacing: 0; font-weight: 400;
+  color: var(--fg); background-color: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+  padding: 0.4rem 2.1rem 0.4rem 0.7rem; min-width: 10rem; max-width: 22rem; text-overflow: ellipsis;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+select:hover { border-color: var(--muted); }
+select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .segmented button { font: inherit; font-size: 0.92rem; padding: 0.3rem 0.75rem; border: 0; background: var(--bg); color: var(--fg); cursor: pointer; }
 .segmented button + button { border-left: 1px solid var(--line); }
