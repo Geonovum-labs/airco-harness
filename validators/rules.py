@@ -225,34 +225,72 @@ def _number(value: object) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def _geojson_positions(value: object, kind: str) -> list | None:
+    if not isinstance(value, dict) or value.get("type") != kind:
+        return None
+    coordinates = value.get("coordinates")
+    positions = [coordinates] if kind == "Point" else coordinates
+    if not isinstance(positions, list) or not positions:
+        return None
+    if kind == "LineString" and not 2 <= len(positions) <= 50:
+        return None
+    if any(
+        not isinstance(p, list) or len(p) != 2 or not all(_number(c) for c in p) or not -180 <= p[0] <= 180 or not -90 <= p[1] <= 90
+        for p in positions
+    ):
+        return None
+    return positions
+
+
+def _rd_path(value: object) -> bool:
+    return isinstance(value, list) and bool(value) and all(isinstance(p, dict) and _number(p.get("x")) and _number(p.get("y")) for p in value)
+
+
+def _same_rd_path(actual: list, expected: list) -> bool:
+    return len(actual) == len(expected) and all(abs(a[k] - b[k]) <= 0.05 for a, b in zip(actual, expected) for k in ("x", "y"))
+
+
+def _georeferenced_positions(result: dict, positions: list) -> list | None:
+    reference = result.get("georeference")
+    if not isinstance(reference, dict) or not _rd_path(reference.get("modelPositions")):
+        return None
+    inputs = reference.get("inputs")
+    if not isinstance(inputs, list) or len(inputs) != len(positions) or len(reference["modelPositions"]) != len(positions):
+        return None
+    if any(
+        not isinstance(p, dict)
+        or any(not _number(p.get(k)) or abs(p[k] - coordinate) > 1e-8 for k, coordinate in zip(("longitude", "latitude"), coordinates))
+        for p, coordinates in zip(inputs, positions)
+    ):
+        return None
+    return reference["modelPositions"]
+
+
 def rule_section(answer: str, case: Case) -> Assessment:
     """Assess the requested plot call and its metadata; the plot is not a paged section."""
     data, failure = _tool_payload(answer)
     if failure:
         return failure
-    args, result = data["arguments"], data["result"]
+    args, envelope = data["arguments"], data["result"]
+    positions = _geojson_positions(args.get("path"), "LineString")
+    result = envelope.get("result")
+    if positions is None or not isinstance(result, dict):
+        return unparseable("malformed GeoJSON section plot")
+    model_positions = _georeferenced_positions(envelope, positions)
     plot, path = result.get("plot"), result.get("path")
-    if not isinstance(plot, dict) or not isinstance(path, list) or not isinstance(args.get("points"), list):
+    if not isinstance(plot, dict) or not _rd_path(path) or len(path) < 2 or model_positions is None:
         return unparseable("malformed section plot")
-
-    def valid_path(points: list) -> bool:
-        return len(points) >= 2 and all(isinstance(p, dict) and _number(p.get("x")) and _number(p.get("y")) for p in points)
-
-    if not valid_path(path) or not valid_path(args["points"]) or not _number(plot.get("pathLengthMetres")):
+    if not _number(plot.get("pathLengthMetres")):
         return unparseable("malformed section path or length")
     want = case.expected
-
-    def matches_path(points: list) -> bool:
-        return (
-            points[0] == want["path"][0]
-            and points[-1] == want["path"][-1]
-            and all(p["y"] == want["path"][0]["y"] for p in points)
-            and all(a["x"] <= b["x"] for a, b in zip(points, points[1:]))
-        )
-
+    endpoints = want["path"]["coordinates"]
     formations = plot.get("formations")
     checks = {
-        "path": matches_path(args["points"]) and matches_path(path) and args["points"] == path,
+        "path": all(abs(a - b) <= 1e-8 for p, q in zip((positions[0], positions[-1]), endpoints) for a, b in zip(p, q))
+        and _same_rd_path(path, model_positions)
+        and _same_rd_path([path[0], path[-1]], want["model_path"])
+        and all(abs(p["y"] - want["model_path"][0]["y"]) <= 0.05 for p in path)
+        and all(a["x"] <= b["x"] for a, b in zip(path, path[1:])),
         "model": args.get("modelId") == plot.get("modelId") == want["model_id"],
         "color": args.get("colorBy", "unit") == plot.get("colorBy") == want["color_by"],
         "length": abs(plot["pathLengthMetres"] - want["length_m"]) <= 0.01,
@@ -269,7 +307,14 @@ def rule_trace(answer: str, case: Case) -> Assessment:
     data, failure = _tool_payload(answer)
     if failure:
         return failure
-    args, result = data["arguments"], data["result"]
+    args, envelope = data["arguments"], data["result"]
+    positions = _geojson_positions(args.get("point"), "Point")
+    result = envelope.get("result")
+    if positions is None or not isinstance(result, dict):
+        return unparseable("malformed GeoJSON trace")
+    model_positions = _georeferenced_positions(envelope, positions)
+    if model_positions is None or not _rd_path([result.get("location")]):
+        return unparseable("malformed trace georeference or location")
     column = result.get("column")
     if not isinstance(column, dict) or not isinstance(column.get("layers"), list):
         return unparseable("malformed trace")
@@ -281,9 +326,10 @@ def rule_trace(answer: str, case: Case) -> Assessment:
         return unparseable("malformed trace layers")
     distinct = [layer["unitCode"] for i, layer in enumerate(layers) if i == 0 or layer["unitCode"] != layers[i - 1]["unitCode"]]
     want = case.expected
-    location = want["location"]
     checks = {
-        "location": result.get("location") == location and all(args.get(k) == v for k, v in location.items()),
+        "location": all(abs(a - b) <= 1e-8 for a, b in zip(positions[0], want["location"]["coordinates"]))
+        and _same_rd_path([result["location"]], model_positions)
+        and _same_rd_path(model_positions, [want["model_location"]]),
         "model": args.get("modelId") == column.get("modelId") == want["model_id"],
         "surface": _matches(column.get("surfaceElevationNap"), {"value": want["surface"], "tolerance": want["surface_tolerance"]}),
         "datum": column.get("verticalDatum") == "NAP",

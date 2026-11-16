@@ -17,6 +17,40 @@ from airco_harness import tasks
 pytestmark = pytest.mark.skipif(os.environ.get("AIRCO_GROUNDWATER_MCP_LIVE") != "1", reason="live BRO MCP smoke test is opt-in")
 
 
+def test_discovery_uses_geojson_wgs84():
+    load_dotenv(find_dotenv(usecwd=True))
+    if not os.environ.get("AIRCO_GROUNDWATER_MCP_JAR"):
+        pytest.fail("Set AIRCO_GROUNDWATER_MCP_JAR to the updated packaged server")
+    command = tasks.variant_form("mcp-groundwater-monitoring").mcp
+
+    async def exercise():
+        async with stdio_client(StdioServerParameters(command=command[0], args=list(command[1:]))) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                tools = {t.name: t for t in (await session.list_tools()).tools}
+                schema = tools["groundwater-monitoring.tubes.search"].input_schema["properties"]["location"]
+                result = await session.call_tool(
+                    "groundwater-monitoring.tubes.search",
+                    {"location": {"type": "Point", "coordinates": [5.113188, 52.088343]}, "radiusMetres": 2000},
+                )
+                assert not result.is_error, result.content
+                payload = json.loads(result.content[0].text)
+                assert payload == result.structured_content
+                assert payload["totalFound"] > 0
+                assert payload["tubes"]
+                well = await session.call_tool("groundwater-monitoring.wells.get", {"broId": payload["tubes"][0]["gmwBroId"]})
+                assert not well.is_error, well.content
+                location = json.loads(well.content[0].text)["well"]["location"]
+                assert location["type"] == "Point"
+                longitude, latitude = location["coordinates"]
+                assert 3 < longitude < 8 and 50 < latitude < 54
+                assert not {"x", "y", "longitude", "latitude"} & location.keys()
+                assert {"type", "coordinates"} <= schema["properties"].keys(), "Server input schema must advertise the GeoJSON it accepts"
+                assert not {"x", "y", "longitude", "latitude"} & schema["properties"].keys()
+
+    asyncio.run(exercise())
+
+
 def test_real_tube_bounded_series_and_plot(tmp_path, monkeypatch):
     load_dotenv(find_dotenv(usecwd=True))
     jar = os.environ.get("AIRCO_GROUNDWATER_MCP_JAR")

@@ -178,15 +178,19 @@ def test_subsurface_result_uses_real_result_and_png():
     def call(i, payload, content=None, error=None):
         name = "subsurface-models_section-plot"
         return [
-            ChatMessageAssistant(content="", tool_calls=[ToolCall(id=str(i), function=name, arguments={"points": []})]),
+            ChatMessageAssistant(content="", tool_calls=[ToolCall(id=str(i), function=name, arguments={"path": {"type": "LineString", "coordinates": []}})]),
             ChatMessageTool(
                 content=content or json.dumps(payload), tool_call_id=str(i), function=name, error=ToolCallError("unknown", error) if error else None
             ),
         ]
 
-    content = [ContentText(text='{"plot": {}, "path": []}'), ContentImage(image="data:image/png;base64,AA==")]
+    payload = {"result": {"plot": {}, "path": []}, "georeference": {"inputs": [], "modelPositions": []}}
+    content = [ContentText(text=json.dumps(payload)), ContentImage(image="data:image/png;base64,AA==")]
     first = call(1, {}, content)
-    assert json.loads(subsurface_result(first, "section-plot"))["image"] is True
+    extracted = json.loads(subsurface_result(first, "section-plot"))
+    assert extracted["image"] is True
+    assert extracted["result"] == payload
+    assert extracted["arguments"] == {"path": {"type": "LineString", "coordinates": []}}
     assert subsurface_result([*first, *call(2, {}, error="failed")], "section-plot") == subsurface_result(first, "section-plot")
     assert subsurface_result([*first, *call(2, {"code": "INVALID_LOCATION"})], "section-plot") == ""
     assert subsurface_result([], "trace") == ""
