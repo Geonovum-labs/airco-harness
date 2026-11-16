@@ -2,6 +2,7 @@
 
 import json
 import re
+from copy import deepcopy
 
 import pytest
 import shapely
@@ -61,22 +62,40 @@ SERIES = {
     "connect_gaps": False,
 }
 SECTION = {
-    "arguments": {"modelId": "GEOTOP-v01r6s1-001", "points": [{"x": 153000, "y": 463000}, {"x": 157000, "y": 463000}]},
+    "arguments": {
+        "modelId": "GEOTOP-v01r6s1-001",
+        "path": {"type": "LineString", "coordinates": [[5.357978578690, 52.155169223947], [5.416428999442, 52.155169119284]]},
+    },
     "result": {
-        "path": [{"x": 153000, "y": 463000}, {"x": 157000, "y": 463000}],
-        "plot": {"modelId": "GEOTOP-v01r6s1-001", "colorBy": "unit", "pathLengthMetres": 4000, "formations": [{"rectangleCount": 211}]},
+        "result": {
+            "path": [{"x": 153000.01, "y": 462999.99}, {"x": 157000.01, "y": 462999.99}],
+            "plot": {"modelId": "GEOTOP-v01r6s1-001", "colorBy": "unit", "pathLengthMetres": 4000, "formations": [{"rectangleCount": 211}]},
+        },
+        "georeference": {
+            "inputs": [
+                {"longitude": 5.357978578690, "latitude": 52.155169223947},
+                {"longitude": 5.416428999442, "latitude": 52.155169119284},
+            ],
+            "modelPositions": [{"x": 153000.01, "y": 462999.99}, {"x": 157000.01, "y": 462999.99}],
+        },
     },
     "image": True,
 }
 TRACE = {
-    "arguments": {"modelId": "GEOTOP-v01r6s1-001", "x": 155000, "y": 463000},
+    "arguments": {"modelId": "GEOTOP-v01r6s1-001", "point": {"type": "Point", "coordinates": [5.387203796145, 52.155172797528]}},
     "result": {
-        "location": {"x": 155000, "y": 463000},
-        "column": {
-            "modelId": "GEOTOP-v01r6s1-001",
-            "verticalDatum": "NAP",
-            "surfaceElevationNap": 4.369999885559082,
-            "layers": [{"unitCode": "NUAAOP" if i < 4 else "NUBX", "top": 4.5 - i * 0.5, "base": 4 - i * 0.5} for i in range(109)],
+        "result": {
+            "location": {"x": 155000.01, "y": 462999.99},
+            "column": {
+                "modelId": "GEOTOP-v01r6s1-001",
+                "verticalDatum": "NAP",
+                "surfaceElevationNap": 4.369999885559082,
+                "layers": [{"unitCode": "NUAAOP" if i < 4 else "NUBX", "top": 4.5 - i * 0.5, "base": 4 - i * 0.5} for i in range(109)],
+            },
+        },
+        "georeference": {
+            "inputs": [{"longitude": 5.387203796145, "latitude": 52.155172797528}],
+            "modelPositions": [{"x": 155000.01, "y": 462999.99}],
         },
     },
 }
@@ -216,31 +235,67 @@ def test_series_scores_dates_values_gaps_and_metadata():
 
 
 def test_subsurface_plot_and_trace_check_result_not_just_call():
-    from copy import deepcopy
-
     section = Case.load(TARGETS["dsfl-13"])
     assert not rules.assess("", section).parseable
     for edit in (
         lambda d: d.update(image=False),
         lambda d: d["arguments"].update(modelId="REGIS-v02r2s3-001"),
-        lambda d: d["result"]["plot"].update(pathLengthMetres=3999),
-        lambda d: d["result"]["plot"].update(colorBy="lithoClass"),
-        lambda d: d["result"]["plot"].update(formations=[]),
-        lambda d: d["result"]["path"][0].update(y=463100),
+        lambda d: d["result"]["result"]["plot"].update(pathLengthMetres=3999),
+        lambda d: d["result"]["result"]["plot"].update(colorBy="lithoClass"),
+        lambda d: d["result"]["result"]["plot"].update(formations=[]),
+        lambda d: d["result"]["result"]["path"][0].update(y=463100),
+        lambda d: d["arguments"]["path"]["coordinates"].reverse(),
+        lambda d: d["arguments"].update(path={"type": "LineString", "coordinates": [[153000, 463000], [157000, 463000]]}),
+        lambda d: d["result"]["georeference"]["modelPositions"].reverse(),
     ):
         data = deepcopy(SECTION)
         edit(data)
         assert not rules.assess(json.dumps(data), section).correct
     trace = Case.load(TARGETS["dsfl-14"])
     for edit in (
-        lambda d: d["arguments"].update(x=155001),
-        lambda d: d["result"]["column"].update(verticalDatum="maaiveld"),
-        lambda d: d["result"]["column"]["layers"].pop(),
-        lambda d: d["result"]["column"]["layers"][3].update(base=1),
+        lambda d: d["arguments"]["point"]["coordinates"].reverse(),
+        lambda d: d["result"]["result"]["location"].update(x=155001),
+        lambda d: d["result"]["georeference"]["modelPositions"][0].update(x=155001),
+        lambda d: d["result"]["result"]["column"].update(verticalDatum="maaiveld"),
+        lambda d: d["result"]["result"]["column"]["layers"].pop(),
+        lambda d: d["result"]["result"]["column"]["layers"][3].update(base=1),
     ):
         data = deepcopy(TRACE)
         edit(data)
         assert not rules.assess(json.dumps(data), trace).correct
+
+
+@pytest.mark.parametrize(("sample_id", "payload", "argument"), [("dsfl-13", SECTION, "path"), ("dsfl-14", TRACE, "point")])
+@pytest.mark.parametrize("value", [None, [], {}, {"type": "Point", "coordinates": [True, 52]}, {"type": "Point", "coordinates": [5, float("nan")]}])
+def test_subsurface_malformed_geojson_is_unparseable(sample_id, payload, argument, value):
+    data = deepcopy(payload)
+    data["arguments"][argument] = value
+    assert not rules.assess(json.dumps(data), Case.load(TARGETS[sample_id])).parseable
+
+
+@pytest.mark.parametrize(("sample_id", "payload"), [("dsfl-13", SECTION), ("dsfl-14", TRACE)])
+@pytest.mark.parametrize("reference", [None, {}, {"inputs": [], "modelPositions": []}, {"inputs": [None], "modelPositions": [{"x": 1, "y": 2}]}])
+def test_subsurface_requires_matching_georeference(sample_id, payload, reference):
+    data = deepcopy(payload)
+    data["result"]["georeference"] = reference
+    assert not rules.assess(json.dumps(data), Case.load(TARGETS[sample_id])).parseable
+
+
+def test_subsurface_allows_coordinate_roundoff_and_intermediate_path_vertices():
+    data = deepcopy(TRACE)
+    data["arguments"]["point"]["coordinates"] = [round(c, 9) for c in data["arguments"]["point"]["coordinates"]]
+    data["result"]["result"]["location"]["x"] += 0.001
+    assert rules.assess(json.dumps(data), Case.load(TARGETS["dsfl-14"])).correct
+
+    data = deepcopy(SECTION)
+    data["arguments"]["path"]["coordinates"].insert(1, [5.387203796145, 52.155172797528])
+    data["result"]["georeference"]["inputs"].insert(1, {"longitude": 5.387203796145, "latitude": 52.155172797528})
+    data["result"]["georeference"]["modelPositions"].insert(1, {"x": 155000.01, "y": 462999.99})
+    data["result"]["result"]["path"].insert(1, {"x": 155000.01, "y": 462999.99})
+    assert rules.assess(json.dumps(data), Case.load(TARGETS["dsfl-13"])).correct
+    data["result"]["result"]["path"][1]["y"] += 100
+    data["result"]["georeference"]["modelPositions"][1]["y"] += 100
+    assert not rules.assess(json.dumps(data), Case.load(TARGETS["dsfl-13"])).correct
 
 
 def test_point_map_can_score_a_zero_result_selection():

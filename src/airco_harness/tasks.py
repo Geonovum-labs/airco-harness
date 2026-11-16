@@ -43,8 +43,8 @@ class Variant:
     tags: tuple[str, ...] = ()
 
 
-# Revision d712dcc of 13 November 2026. The image is built for linux/amd64 only, and its default profile serves HTTP; prod speaks stdio.
-GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:ebbce9d90a7bdefca2e19178ccb108dae54c9894d2ae38cace38270187434344"
+# Revision 34a84eb of 13 November 2026: GeoJSON/WGS84 contract. The default profile serves HTTP; prod speaks stdio.
+GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring:34a84ebadb6a2876f4d7d5bc565d289301502e79"
 VARIANTS = {
     "0": Variant("The question alone: the agent finds the standard as it is published today, or not."),
     "mcp-groundwater-monitoring": Variant(

@@ -207,8 +207,8 @@ def test_local_groundwater_server_uses_utf8_and_records_resolved_command(tmp_pat
 def test_the_groundwater_variant_runs_a_pinned_image():
     command = tasks.VARIANTS[GROUNDWATER].mcp
     assert command[:-1] == ("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod")
-    assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", command[-1])
-    assert command[-1].endswith("sha256:ebbce9d90a7bdefca2e19178ccb108dae54c9894d2ae38cace38270187434344")
+    assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring:[0-9a-f]{40}", command[-1])
+    assert command[-1].endswith(":34a84ebadb6a2876f4d7d5bc565d289301502e79")
 
 
 def test_the_bag_variant_reaches_its_server_over_http_and_runs_the_bag_samples():
