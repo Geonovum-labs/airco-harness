@@ -1,0 +1,74 @@
+{
+  "2026-11-19T13-38-27-00-00_airco_9S8UTncusTFygJU9iXuFo7.eval": {
+    "eval_id": "TCRGhyYDruuHamVgyUE2qv",
+    "run_id": "MXVhLzePyrF6s6CaK3FfnZ",
+    "task": "airco_harness/airco",
+    "task_id": "9S8UTncusTFygJU9iXuFo7",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-19T13:38:27+00:00",
+    "completed_at": "2026-11-19T13:44:04+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-19T13-38-27-00-00_airco_4mBtMuPp8hEFgxCp2DDNz9.eval": {
+    "eval_id": "MH46K6YVfChjJZGGWTV9z9",
+    "run_id": "MXVhLzePyrF6s6CaK3FfnZ",
+    "task": "airco_harness/airco",
+    "task_id": "4mBtMuPp8hEFgxCp2DDNz9",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-19T13:38:27+00:00",
+    "completed_at": "2026-11-19T13:43:58+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-19T13-38-27-00-00_airco_45dKUL3bhmy8HhL8da54vS.eval": {
+    "eval_id": "CamtvKxTLgdP7UxkHw3PZj",
+    "run_id": "MXVhLzePyrF6s6CaK3FfnZ",
+    "task": "airco_harness/airco",
+    "task_id": "45dKUL3bhmy8HhL8da54vS",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-19T13:38:27+00:00",
+    "completed_at": "2026-11-19T13:43:13+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-19T13-38-27-00-00_airco_LMnaXAFBCdZkjLzXnk4Moz.eval": {
+    "eval_id": "feQ8fCvZ7PvaVhKLFXVoim",
+    "run_id": "MXVhLzePyrF6s6CaK3FfnZ",
+    "task": "airco_harness/airco",
+    "task_id": "LMnaXAFBCdZkjLzXnk4Moz",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-19T13:38:27+00:00",
+    "completed_at": "2026-11-19T13:41:28+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  }
+}
