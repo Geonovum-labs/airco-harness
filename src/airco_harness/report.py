@@ -24,7 +24,6 @@ import argparse
 import json
 import math
 import re
-import urllib.parse
 from pathlib import Path
 
 import pandas as pd
@@ -35,7 +34,7 @@ from inspect_ai.model import ContentToolUse
 
 from validators import rules, sources
 
-from . import tooltokens
+from . import scorers, tooltokens
 from .models import Price, load_prices
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
@@ -113,7 +112,9 @@ def _hosts(value: object) -> str:
     """The hosts of the retrieved URLs, each once with its class, in the order of first retrieval: `host (class)` joined with `, `."""
     hosts = {}
     for url, cls in _classes(value).items():
-        hosts.setdefault(urllib.parse.urlsplit(url).netloc, cls)
+        # A log scored before the scorer checked hosts can hold a "URL" that has none, such as https://[^ from code.
+        if host := scorers._host(url):
+            hosts.setdefault(host, cls)
     return ", ".join(f"{host} ({cls})" for host, cls in hosts.items())
 
 

@@ -308,6 +308,7 @@ def test_hosts_are_listed_once_with_their_class():
     retrieved = {"https://api.pdok.nl/a": "authoritative", "https://nominatim.openstreetmap.org/x": "other", "https://api.pdok.nl/b": "authoritative"}
     assert report._hosts(retrieved) == "api.pdok.nl (authoritative), nominatim.openstreetmap.org (other)"
     assert report._hosts(None) == ""
+    assert report._hosts({"https://[^": "other", "https://api.pdok.nl/a": "authoritative"}) == "api.pdok.nl (authoritative)"
 
 
 def test_cost_prices_each_call_by_its_prompt_length_not_by_what_inspect_logged(tmp_path, monkeypatch):

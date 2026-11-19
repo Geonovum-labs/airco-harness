@@ -142,7 +142,23 @@ def _urls(use: dict) -> list[str]:
     if isinstance(url, str):
         return [url]
     code = " ".join(v for k, v in use["arguments"].items() if k in CODE_ARGUMENTS and isinstance(v, str))
-    return [m[0].rstrip(".,;:)]}") for m in URL_IN_CODE.finditer(code) if not NAMESPACE_BEFORE.search(code[max(0, m.start() - 40) : m.start()])]
+    found = [m[0].rstrip(".,;:)]}") for m in URL_IN_CODE.finditer(code) if not NAMESPACE_BEFORE.search(code[max(0, m.start() - 40) : m.start()])]
+    return [url for url in found if _host(url)]
+
+
+# A host name or an IPv4 address with an optional port. Code also holds things that start like a URL and are none,
+# such as the pattern https://[^"]+ in a regular expression.
+HOST = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*(?::\d+)?")
+
+
+def _host(url: str) -> str:
+    """The host of a URL, or "" when it has none that a request could go to."""
+    try:
+        netloc = urllib.parse.urlsplit(url).netloc
+    except ValueError:
+        return ""
+    host = netloc.rpartition("@")[2]
+    return host if HOST.fullmatch(host) else ""
 
 
 HTTP_STATUS = re.compile(r"\b(?:HTTP|status code)[: ]+([1-5]\d\d)\b")

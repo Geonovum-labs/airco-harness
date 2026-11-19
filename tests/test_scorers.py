@@ -77,6 +77,13 @@ def test_source_explains_which_urls_it_saw(tmp_path):
     }
 
 
+def test_a_url_pattern_in_code_is_no_retrieval():
+    from airco_harness.scorers import _urls
+
+    code = "urls = re.findall(r'https://[^\\s\"]+', text); requests.get('https://api.pdok.nl/bgt/ogc/v1')"
+    assert _urls({"arguments": {"code": code}}) == ["https://api.pdok.nl/bgt/ogc/v1"]
+
+
 def test_server_side_tools_count_as_tool_uses_and_a_server_fetch_as_a_retrieval():
     """Anthropic and Mistral run web search, and Anthropic web fetch and code execution, on their own servers; Inspect keeps them as content blocks."""
     from inspect_ai.model import ContentToolUse
