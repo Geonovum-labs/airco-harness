@@ -67,6 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--max-samples", type=int, default=8, help="samples that run at the same time")
     parser.add_argument("--cost-limit", type=float, default=2.0, help="cost limit per run in dollars")
+    parser.add_argument("--token-limit", type=int, default=600_000, help="token limit per run; it counts the input of every model call, cached or not")
     parser.add_argument("--plan", action="store_true", help="show the number of runs and the maximum cost, then stop")
     parser.add_argument("--yes", action="store_true", help="confirm a run against paid models")
     return parser
@@ -126,7 +127,10 @@ def main() -> None:
         print(f"paid models {', '.join(paid)}: rerun with --yes to start", file=sys.stderr)
         sys.exit(2)
 
-    tasks = [airco(testset=args.testset, variant=v, agent=a, model=m, ids=ids, tags=tags, cost_limit=args.cost_limit) for v, a, m in combos]
+    tasks = [
+        airco(testset=args.testset, variant=v, agent=a, model=m, ids=ids, tags=tags, cost_limit=args.cost_limit, token_limit=args.token_limit)
+        for v, a, m in combos
+    ]
     log_dir = Path("logs") / args.name
     bundle_dir = Path("reports") / args.name / "logs"
     success, _ = eval_set(

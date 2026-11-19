@@ -54,26 +54,39 @@ A variant is what the agent gets besides the question, chosen with `-T variant=`
 | Variant | What the agent gets | Samples by default |
 | --- | --- | --- |
 | `0` (default) | The question alone | All |
-| `mcp-groundwater-monitoring` | Variant 0 plus the groundwater monitoring MCP server on BRO data, for the agent `inspect` only | Those tagged `groundwater` |
+| `mcp-groundwater-monitoring` | Variant 0 plus the groundwater monitoring MCP server on BRO data, on the host, for the agents `inspect` and `claude-code` | Those tagged `groundwater` |
 | `mcp-bag-ldproxy` | Variant 0 plus the MCP server of the BAG API on bag.ldproxy.net, for the agents `inspect` and `claude-code` | Those tagged `bag` |
+| `mcp-bgt-wijkenbuurten-subsurface` | Variant 0 plus three MCP servers: the BGT and the CBS wijken en buurten on bag.ldproxy.net, and the subsurface models server on the host, for the agents `inspect` and `claude-code` | Those tagged `bgt` |
 
 `mcp-bag-ldproxy` reaches a public server over Streamable HTTP, without a key. Claude Code gets it as the MCP server `bag` in its own configuration, reaches it from the sandbox, and passes the server's instructions to the model itself. The agent `model` has no tools, so the matrix skips it for every variant with an MCP server. That server is not pinned: the log records the tools it offered, but if it changes its data or tools, a later measurement measures another server. It offers 18 tools whose definitions take about 91,000 tokens, and the token limit of a run counts them with every model call, cached or not (13 November 2026).
 
-`mcp-groundwater-monitoring` runs its server with `docker run` from an image pinned by digest in `tasks.py`, one container per sample. The image is built from server revision `d712dcc` and includes the bounded-series and MCP content changes. The server reports version `1.0-SNAPSHOT` in every build (13 November 2026), so the digest, not the `mcp_server` column, identifies it. It is private: log in to `ghcr.io` with a token with package access. It runs on linux/amd64.
+`mcp-bgt-wijkenbuurten-subsurface` gives the agent the servers `bgt`, `wijkenbuurten` and `subsurface-models`. The first two are public, like the BAG server. The subsurface models image holds the GeoTOP and REGIS tiles of Amersfoort; outside them it refuses with `OUT_OF_SAMPLE_EXTENT`.
 
-To develop against a locally packaged server instead:
+### Servers on the host
 
-1. In the server checkout, build with `mvn -pl groundwater-monitoring-mcp -am package -DskipTests`.
-2. Set `AIRCO_GROUNDWATER_MCP_JAR` in `.env` to the absolute path of `groundwater-monitoring-mcp/target/quarkus-app/quarkus-run.jar`. The harness runs `java -Dstdout.encoding=UTF-8 -jar <path>`; the UTF-8 JVM option is needed on Windows. The JAR and its adjacent `quarkus-app` files must remain together.
-3. Run the opt-in live contract smoke test with `AIRCO_GROUNDWATER_MCP_LIVE=1 uv run pytest -q tests/test_groundwater_mcp_live.py` (in PowerShell, set `$env:AIRCO_GROUNDWATER_MCP_LIVE = "1"` first). It queries BRO for tube 1 of `GMW000000024250`, checks response caps and a plot covering more than 90 days, and writes the plot to a temporary directory.
+The groundwater monitoring and subsurface models servers (github.com/sjaakd) answer over HTTP only, for linux/amd64, so they run on the host from the images pinned in `tasks.py`. Start them before a run of their variant:
 
-The actual launch command is recorded in `eval.metadata.variant_form`, including the local JAR path. A local JAR is not pinned by the harness checkout: record its server revision separately for reproducibility and check logs for local paths before publication. The server names tools like `groundwater-monitoring.tubes.search`; the model APIs accept no dot, so the agent sees `groundwater-monitoring_tubes_search`, while the server instructions retain the original names.
+```bash
+docker run -d --name airco-groundwater --platform linux/amd64 -p 18081:8080 -e GROUNDWATER_MONITORING_CONCEPTS_BASE_URI=https://example.org/ ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:13ba5702da61d81e76421061e52f3ef416f43d7f390667c8a036282fdf4bf9d0
+docker run -d --name airco-subsurface --platform linux/amd64 -p 18082:8080 -e SUBSURFACE_MODELS_CONCEPTS_BASE_URI=https://example.org/ ghcr.io/sjaakd/mcp-subsurface-models@sha256:40af69780274dcc5c4b8c4ce99cf4b540c07ac72bb241127911954cf8466b6ae
+```
+
+| Server | Revision | `serverInfo.version` | Host URL | Variable |
+| --- | --- | --- | --- | --- |
+| `groundwater-monitoring` | `74482ac` | `1.0.9` | `http://localhost:18081/mcp` | `AIRCO_GROUNDWATER_MONITORING_URL` |
+| `subsurface-models` | `caed3d4` | `1.0.10` | `http://localhost:18082/mcp` | `AIRCO_SUBSURFACE_MODELS_URL` |
+
+The agent `inspect` reaches a server at its host URL, and Claude Code from its sandbox at `host.docker.internal` on the same port. The variable sets another host URL, for example for a server you build and run yourself. Each image reports its version in `serverInfo.version` (MAJOR.MINOR from the pom, the patch from the CI run), and the harness checks it when it connects: a server that reports another version than its pin fails the run, so a run cannot meet an image other than the pinned one. The `mcp_server` column records the version of every server a run met; the ldproxy servers report the time of their deployment and are not pinned. The groundwater image is private: log in to `ghcr.io` with a token with package access.
+
+The opt-in live contract smoke test `AIRCO_GROUNDWATER_MCP_LIVE=1 uv run pytest -q tests/test_groundwater_mcp_live.py` (in PowerShell, set `$env:AIRCO_GROUNDWATER_MCP_LIVE = "1"` first) needs the groundwater server running. It checks its version, queries BRO for tube 1 of `GMW000000024250`, checks response caps and a plot covering more than 90 days, and runs the agent `inspect` against the server.
+
+The groundwater server names tools like `groundwater-monitoring.tubes.search`; the model APIs accept no dot, so the agent `inspect` sees `groundwater-monitoring_tubes_search`, while the server instructions retain the original names.
 
 The updated server sends the same JSON in MCP `content` and `structuredContent`; Inspect uses the text content. `series.get` takes `gldBroId` and returns at most 500 observations, while `series.daily` takes `wellBroId` and `tubeNumber` and returns at most 90 days. Both accept inclusive `from` and `to` ISO dates in Europe/Amsterdam and report `window.total`, `returned`, and `truncated`: use explicit periods and split them if truncated. Without dates, `get` uses the last 90 days up to the dossier's latest measurement; `daily` uses the last 90 days up to the tube's latest research date. `series.plot` takes a tube and the same period arguments, defaults to 365 days, and is not subject to the 90-day daily response cap. Malformed or reversed dates return `INVALID_PERIOD`; more than 200,000 readings in a requested period can return `LIMIT_EXCEEDED`, so narrow it. `series.assess` reads the years it needs independently.
 
 The server's `series.daily` chooses an eligible reading closest to noon by its priority rule; it does **not** calculate a daily mean. The `dsfl-06` and `dsfl-08` questions ask for means of provisional readings, so an agent must use bounded `series.get` calls for the appropriate GLD, check truncation, and calculate the mean itself. Missing days remain gaps. Server-side full-range access and moving `unit` and `referencePlane` to the series level remain open.
 
-`--ids` or `--tags` choose other samples than a variant's default, also for a variant with an MCP server. In `dsfl`, `--tags groundwater` selects the three groundwater questions; `--tags bag,groundwater` selects the original eight questions without the subsurface drafts. `--tags subsurface` selects the seven subsurface questions, whose MCP integration is not configured yet. `--tags bro` includes both groundwater and subsurface questions, on every variant.
+`--ids` or `--tags` choose other samples than a variant's default, also for a variant with an MCP server. In `dsfl`, `--tags groundwater` selects the three groundwater questions; `--tags bag,groundwater` selects the original eight questions without the subsurface drafts. `--tags subsurface` selects the eight subsurface questions; `dsfl-16` is the one a variant serves, with `--tags bgt`. `--tags bro` includes both groundwater and subsurface questions, on every variant.
 
 Claude Code sends a system prompt of tens of thousands of tokens per call, so a run costs more than with the agent `model`, and `message_limit` counts two messages per tool call. The defaults of 60 messages, 600,000 tokens, 900 seconds and $2 are a starting point; the report shows which limits a measurement hit. The cost limit was $0.50 until a map question in the dsfl test set stopped every Opus run before it showed the map: reading the BAG costs 200,000 to 400,000 tokens.
 
@@ -96,7 +109,7 @@ The matrix runs a test set across variants, models and epochs with one agent, as
 	paid models anthropic/claude-haiku-5-5, mistral/mistral-small-2603: rerun with --yes to start
 	```
 
-	The matrix runs the test set `imgeo` unless you add `--testset <name>`. `--agents model,inspect,claude-code` runs all agents in one matrix, so that one bundle holds the whole measurement; `--variants`, `--ids`, `--tags` and `--cost-limit` narrow it down; `--help` lists all options.
+	The matrix runs the test set `imgeo` unless you add `--testset <name>`. `--agents model,inspect,claude-code` runs all agents in one matrix, so that one bundle holds the whole measurement; `--variants`, `--ids`, `--tags`, `--cost-limit` and `--token-limit` narrow it down; `--help` lists all options.
 
 2. Commit first, so that the log records a commit that holds everything the run used. Then start the matrix with the same command plus `--yes`. The matrix is named after its start time, such as `2026-10-19T21-06-14`, so that bundles sort by time; `--name` overrides that. The logs go to `logs/<name>/` and the log bundle to `reports/<name>/logs/`.
 
@@ -134,7 +147,7 @@ The report averages each sample over its epochs first, then takes the mean and s
 | `hosts` | The hosts of those URLs, each once with its class, joined with `, ` |
 | `rule` | The scoring rule of the sample, such as `fields` or `map` |
 | `explanation` | What the rule found, such as the wrong fields or how many required panden the map shows |
-| `mcp_server` | The MCP server the run met, as `<name> <version>`; empty for a run without one |
+| `mcp_server` | The MCP servers the run met, each as `<name> <version>`, separated by commas; empty for a run without one |
 | `correct`, `complete`, `invented`, `parseable`, `source` | The quality metrics |
 
 `airco-logcheck` searches the logs for keys, e-mail addresses and home directories. If it finds something, it exits with code 1: publish nothing and find the cause. An email address that an agent read on a web page, such as the contact address of a sports club, is not a leak of ours but still personal data, and so is the user name in a home directory that a traceback names: `airco-logcheck --mask reports/<name>` replaces each address with `[email removed]` and each home directory with `~` in the logs, prints where it found the home directories, and then scans again. The scores do not change; `airco-rescore` confirms that. Then commit `reports/<name>/`. Keep `logs/` out of git; the bundle holds the same `.eval` files, and `.gitignore` leaves out the viewer files of the bundle.

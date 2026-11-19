@@ -1,6 +1,6 @@
 # Test set dsfl
 
-Questions for the Dataspace Fysieke Leefomgeving, as a citizen asks them about the environment: in plain words, without knowing which registration holds the answer. `dsfl-01` to `dsfl-05` are the questions of scenario 1, "Look back at my surroundings", from the deck "Use case questions" of the use case group (14 October 2026). All of them need the BAG. `dsfl-06` to `dsfl-08` are groundwater questions.
+Questions for the Dataspace Fysieke Leefomgeving, as a citizen asks them about the environment: in plain words, without knowing which registration holds the answer. `dsfl-01` to `dsfl-05` are the questions of scenario 1, "Look back at my surroundings", from the deck "Use case questions" of the use case group (14 October 2026). All of them need the BAG. `dsfl-06` to `dsfl-08` are groundwater questions. `dsfl-16` combines the BGT and GeoTOP per buurt; see [Water accumulation per buurt](#water-accumulation-per-buurt).
 
 | Sample | Question | Rule |
 | --- | --- | --- |
@@ -19,6 +19,7 @@ Questions for the Dataspace Fysieke Leefomgeving, as a citizen asks them about t
 | `dsfl-13` | GeoTOP cross-section picture | `section` |
 | `dsfl-14` | GeoTOP vertical column for an Appelboor | `trace` |
 | `dsfl-15` | Limits of line-of-sight evidence for confinement | `fields` |
+| `dsfl-16` | Buurten most sensitive to water accumulation, on the map, with borehole columns | `ranking` |
 
 The deck leaves the place open ("the city I live in", "the municipality") or names Vlaardingen. Every sample uses Amersfoort. The deck wording of each BAG question is in the `note` of its `expected.json`, with the choices the sample makes where the question is open: a definition of "building", "construction" or "house", and a time window fixed at 12 November 2026.
 
@@ -34,10 +35,32 @@ The BRO questions are a first check that the mechanism works, using the public B
 
 The cross-section is scored from the successful `section-plot` call and its JSON and PNG result, not by inspecting the picture. That tool produces a complete plot and has no pagination; `section` is a different, paginated data tool. The vertical-column question scores a `trace` result, not an Appelboor drawing, because the server does not draw one. The scores check selected properties, not all cells or the geological interpretation.
 
-The harness does not yet start the subsurface server, connect Claude Code to it, attribute its calls as an authoritative source, or report response-size metrics. The reference values and the server's behavior need review before approving the samples.
+The harness connects the subsurface server only in variant `mcp-bgt-wijkenbuurten-subsurface`, for `dsfl-16`. It does not attribute the server's calls as an authoritative source or report response-size metrics. The reference values and the server's behavior need review before approving the samples. The current image (revision `caed3d4`, version `1.0.10`) takes a WGS84 point and puts the column under `result`, unlike the trace these samples were written for; at RD (155000, 463000) it gives a surface of 3.80 m NAP where `dsfl-09` expects 4.37.
 
 ### Selecting questions with tags
 
-Use `--testset dsfl --tags bag,groundwater` with `airco-matrix` to run the existing eight questions without the subsurface drafts. Use `--tags subsurface` to select the seven new questions when their integration is ready. Tags select any matching sample: `bro` includes both groundwater and subsurface questions. A DSFL run without a tag or id filter includes all fifteen samples.
+Use `--testset dsfl --tags bag,groundwater` with `airco-matrix` to run the existing eight questions without the subsurface drafts. Use `--tags subsurface` to select the eight subsurface questions, `dsfl-09` to `dsfl-16`. Tags select any matching sample: `bro` includes both groundwater and subsurface questions. A DSFL run without a tag or id filter includes all sixteen samples.
 
-The groundwater MCP variant defaults to the `groundwater` tag, so it still selects only `dsfl-06` to `dsfl-08`. No subsurface MCP variant is configured yet. Tags select questions; they do not launch a server. The tool-dependent subsurface samples cannot pass without their server; the `fields` samples can still be parseable without tools.
+The groundwater MCP variant defaults to the `groundwater` tag, so it still selects only `dsfl-06` to `dsfl-08`. Variant `mcp-bgt-wijkenbuurten-subsurface` selects `dsfl-16` by its tag `bgt` and gives it the BGT, the CBS buurten and the subsurface server; [Running](../../docs/running.md) says how to start that server. No variant serves `dsfl-09` to `dsfl-15` yet. Tags select questions; they do not launch a server. The tool-dependent subsurface samples cannot pass without their server; the `fields` samples can still be parseable without tools.
+
+## Water accumulation per buurt
+
+`dsfl-16` asks which CBS buurten are most sensitive to water accumulation after heavy rain, with the formula in the question: the paved share times the share of GeoTOP voxels in the upper 5 m with P(klei) > 10%. The agent ranks the buurten, shows the top three on the map and gives per buurt the two shares, the score and a 5 m borehole column near the centroid. It is scored with the rule `ranking` ([Test sets and scoring](../../docs/test-sets.md#the-rule-ranking)). The readings below are a draft of 19 November 2026 for the working group:
+
+- **Buurt.** The CBS Wijk- en Buurtkaart 2026, as bag.ldproxy.net/wijkenbuurten serves it: 145 buurten in Amersfoort.
+- **Paved share.** The area of all current BGT panden and of the wegdelen with gesloten verharding, open verharding or half verhard, per buurt as bag.ldproxy.net/bgt assigns them (by a point on the object), over the area of the buurt.
+- **Clay share.** Of each GeoTOP v01r6s1 column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column); the share of those voxels with kans op klei (lithoclass K) above 10%. Kleiig zand (KZ) does not count.
+- **Borehole.** The 10 upper voxels of a `subsurface-models.trace` within 250 m of the centroid, inside the buurt.
+
+| Rank | Buurt | Paved | Clay | Score |
+| --- | --- | --- | --- | --- |
+| 1 | Isselt-Oost | 0.519 | 0.089 | 0.0462 |
+| 2 | Schuilenburg-Zuid | 0.432 | 0.079 | 0.0342 |
+| 3 | De Baken | 0.490 | 0.063 | 0.0306 |
+| 4 | Laakse Tuinen | 0.473 | 0.064 | 0.0301 |
+
+Only Isselt-Oost is first under every reading tried. Places 2 to 4 trade places when the cells are taken by their lower left corner instead of their centre, or with 9 voxels instead of 10, so ranks 2 and 3 accept any two of Schuilenburg-Zuid, De Baken and Laakse Tuinen. Isselt-West follows with 0.0260.
+
+The subsurface MCP answers per point or line and has no sum per area: a buurt of 50 columns takes 50 traces, Amersfoort about 6,400. The expected clay shares come from the OPeNDAP server at dinodata.nl, which serves the same GeoTOP version: at the centroids of the four buurten its kans_2 equals the server's P(K) in each of the upper 10 voxels.
+
+The buurten (in RD and in WGS84), the BGT areas per buurt and the clay probabilities of the upper 12 voxels of each column are in `sources/dsfl/` and recorded in `sources/sources.lock.json`; the GeoTOP block (25 MB) is reduced at fetch time and not kept. `tests/test_dsfl_sources.py` derives the ranking and the values again.

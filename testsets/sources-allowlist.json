@@ -16,7 +16,7 @@
     ]
   },
   "dsfl": {
-    "note": "The registrations the dsfl questions need: the BAG and the BRO groundwater monitoring wells. bag.ldproxy.net republishes the BAG 2.0 Extract with history, which the PDOK WFS lacks; the working group still has to confirm that it counts as authoritative. publiek.broservices.nl is the public service of the BRO and broloket.nl its public viewer.",
+    "note": "The registrations the dsfl questions need: the BAG, the BGT, the CBS buurten, and the BRO groundwater monitoring wells and GeoTOP. bag.ldproxy.net republishes the BAG 2.0 Extract with history, which the PDOK WFS lacks; the working group still has to confirm that it counts as authoritative. publiek.broservices.nl is the public service of the BRO and broloket.nl its public viewer. PDOK publishes the BGT and the CBS wijken en buurten; dinodata.nl serves GeoTOP over OPeNDAP and dinoloket.nl is its viewer.",
     "authoritative": [
       "^https?://service\\.pdok\\.nl/(lv|kadaster)/bag/",
       "^https?://api\\.pdok\\.nl/(lv|kadaster)/bag/",
@@ -25,7 +25,11 @@
       "^https?://bag\\.basisregistraties\\.overheid\\.nl/",
       "^https?://bag\\.ldproxy\\.net/",
       "^https?://publiek\\.broservices\\.nl/",
-      "^https?://(www\\.)?broloket\\.nl/"
+      "^https?://(www\\.)?broloket\\.nl/",
+      "^https?://(api|service)\\.pdok\\.nl/lv/bgt/",
+      "^https?://(api|service)\\.pdok\\.nl/cbs/",
+      "^https?://(www\\.)?dinodata\\.nl/opendap/",
+      "^https?://(www\\.)?dinoloket\\.nl/"
     ],
     "non_authoritative": []
   }

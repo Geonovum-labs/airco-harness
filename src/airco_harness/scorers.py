@@ -84,16 +84,16 @@ def series_shown(messages: list[ChatMessage]) -> str:
     return shown[-1] if isinstance(shown[-1], str) else json.dumps(shown[-1], ensure_ascii=False)
 
 
-def subsurface_result(messages: list[ChatMessage], tool: str) -> str:
-    """The last successful matching tool call and its returned JSON and image, if present."""
+def subsurface_results(messages: list[ChatMessage], tool: str) -> list[dict | None]:
+    """Each matching tool call in order: its arguments, returned JSON and whether it returned an image, or None when it failed or returned no JSON object."""
     results = {m.tool_call_id: m for m in messages if m.role == "tool"}
-    found = ""
     names = {
         f"subsurface-models.{tool}",
         f"subsurface-models_{tool}",
         f"mcp__subsurface-models__subsurface-models.{tool}",
         f"mcp__subsurface-models__subsurface-models_{tool}",
     }
+    found: list[dict | None] = []
     for message in messages:
         if message.role != "assistant":
             continue
@@ -104,14 +104,28 @@ def subsurface_result(messages: list[ChatMessage], tool: str) -> str:
             try:
                 payload = json.loads(result.text)
             except ValueError:
-                found = ""
+                found.append(None)
                 continue
             if not isinstance(payload, dict) or "code" in payload:
-                found = ""
+                found.append(None)
                 continue
             image = isinstance(result.content, list) and any(isinstance(c, ContentImage) for c in result.content)
-            found = json.dumps({"arguments": call.arguments or {}, "result": payload, "image": image}, ensure_ascii=False)
+            found.append({"arguments": call.arguments or {}, "result": payload, "image": image})
     return found
+
+
+def subsurface_result(messages: list[ChatMessage], tool: str) -> str:
+    """The last successful matching tool call and its returned JSON and image, or "" when the last one returned no JSON object."""
+    found = subsurface_results(messages, tool)
+    return json.dumps(found[-1], ensure_ascii=False) if found and found[-1] else ""
+
+
+def ranking_answer(state: TaskState) -> str:
+    """The last message, the map and every trace that returned JSON, together, for the rule ranking."""
+    traces = [t for t in subsurface_results(state.messages, "trace") if t]
+    return json.dumps(
+        {"message": state.output.completion, "map": map_shown(state.messages, state.store.get(MAP_STORE, {})), "traces": traces}, ensure_ascii=False
+    )
 
 
 URL_IN_CODE = re.compile(r"https?://[^\s'\"<>`|\\]+")
@@ -190,7 +204,7 @@ def retrievals(messages: list[ChatMessage]) -> list[dict]:
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})
 def quality():
     """correct, complete, invented and parseable from the rule named in the sample's expected.json.
-    The answer is the last message, map or series data, or a subsurface tool call and result."""
+    The answer is the last message, map or series data, a subsurface tool call and result, or for a ranking all three."""
 
     async def score(state: TaskState, target: Target) -> Score:
         case = rules.Case.load(target.text)
@@ -198,6 +212,8 @@ def quality():
             answer = map_shown(state.messages, state.store.get(MAP_STORE, {}))
         elif case.rule == "series":
             answer = series_shown(state.messages)
+        elif case.rule == "ranking":
+            answer = ranking_answer(state)
         elif case.rule in ("section", "trace"):
             answer = subsurface_result(state.messages, "section-plot" if case.rule == "section" else "trace")
         else:

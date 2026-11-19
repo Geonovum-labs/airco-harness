@@ -1,36 +1,34 @@
-"""Opt-in live MCP contract smoke test; requires a packaged server and public BRO access."""
+"""Opt-in live MCP contract smoke test; requires the pinned server running on the host and public BRO access."""
 
 import asyncio
 import json
 import os
-from pathlib import Path
 
 import pytest
 from dotenv import find_dotenv, load_dotenv
 from inspect_ai import eval
 from inspect_ai.model import ModelOutput, get_model
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
 
 from airco_harness import tasks
 
 pytestmark = pytest.mark.skipif(os.environ.get("AIRCO_GROUNDWATER_MCP_LIVE") != "1", reason="live BRO MCP smoke test is opt-in")
 
 
-def test_real_tube_bounded_series_and_plot(tmp_path, monkeypatch):
+def server_url() -> str:
     load_dotenv(find_dotenv(usecwd=True))
-    jar = os.environ.get("AIRCO_GROUNDWATER_MCP_JAR")
-    if not jar:
-        pytest.fail("Set AIRCO_GROUNDWATER_MCP_JAR to the updated packaged server")
-    monkeypatch.setenv("AIRCO_GROUNDWATER_MCP_JAR", jar)
-    command = tasks.variant_form("mcp-groundwater-monitoring").mcp
-    plot_dir = tmp_path / "plots"
-    args = [*command[1:2], f"-Dgroundwater-monitoring.plot.directory={plot_dir}", *command[2:]]
+    return tasks.variant_form("mcp-groundwater-monitoring").mcp[0].url
+
+
+def test_real_tube_bounded_series_and_plot():
+    url = server_url()
 
     async def exercise():
-        async with stdio_client(StdioServerParameters(command=command[0], args=args)) as (read, write):
+        async with streamable_http_client(url) as (read, write):
             async with ClientSession(read, write) as session:
-                await session.initialize()
+                info = await session.initialize()
+                assert info.server_info.version == tasks.VARIANTS["mcp-groundwater-monitoring"].mcp[0].version
                 names = {t.name for t in (await session.list_tools()).tools}
                 assert {"groundwater-monitoring.series.get", "groundwater-monitoring.series.daily", "groundwater-monitoring.series.plot"} <= names
 
@@ -66,15 +64,13 @@ def test_real_tube_bounded_series_and_plot(tmp_path, monkeypatch):
                 plot = await call("plot", {**tube, "from": "2026-01-01", "to": "2026-10-29"})
                 assert plot["dayCount"] > 90
                 assert "2026-01-01" <= plot["firstDate"] <= plot["lastDate"] <= "2026-10-29"
-                assert Path(plot["path"]).is_file()
+                assert plot["resourceUri"].startswith("groundwater://plots/")
 
     asyncio.run(exercise())
 
 
 def test_inspect_reads_actual_server_text_content(tmp_path):
-    load_dotenv(find_dotenv(usecwd=True))
-    if not os.environ.get("AIRCO_GROUNDWATER_MCP_JAR"):
-        pytest.fail("Set AIRCO_GROUNDWATER_MCP_JAR to the updated packaged server")
+    server_url()
     arguments = {"wellBroId": "GMW000000024250", "tubeNumber": 1, "from": "2026-10-01", "to": "2026-10-29"}
     outputs = [
         ModelOutput.for_tool_call("mockllm/model", "groundwater-monitoring_series_daily", arguments),

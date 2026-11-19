@@ -51,6 +51,10 @@ class Reference:
         distance, identifier = min((p.distance(here), i) for i, p in self.features.items())
         return identifier if distance <= tolerance_m else None
 
+    def centroid_distance(self, identifier: str, point: Point) -> float:
+        """Meters from the point to the centroid of a reference geometry."""
+        return self.features[identifier].centroid.distance(_metric(point, self.lat0))
+
     def assign_points(self, places: list[Point], tolerance_m: float, allowed: set[str]) -> list[str | None]:
         """Maximum one-to-one matching of places to allowed point features, with nearest candidates first."""
         candidates = []

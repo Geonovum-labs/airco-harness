@@ -15,15 +15,14 @@ a proxy does too.
 
 In a test set with a map question, show_on_map runs on the host and reaches
 Claude Code through the bridge as the MCP tool mcp__map__show_on_map. A
-variant's HTTP MCP server is configured in Claude Code itself, which reaches it
-from the sandbox and passes the server's instructions to the model as it does
-for a user. For a series question, plot_series is bridged as mcp__plot__plot_series.
+variant's HTTP MCP servers are configured in Claude Code itself, which reaches them
+from the sandbox and passes their instructions to the model as it does for a
+user; a server on the host is reached at host.docker.internal. For a series question, plot_series is bridged as mcp__plot__plot_series.
 """
 
 from __future__ import annotations
 
 import json
-from urllib.parse import urlparse
 
 from inspect_ai.agent import Agent, BridgedToolsSpec
 from inspect_ai.solver import Generate, Solver, TaskState, solver
@@ -51,16 +50,12 @@ def claude_code_setup() -> Solver:
     return solve
 
 
-def claude_code_agent(map_tool: bool = False, series_tool: bool = False, mcp_url: str | None = None) -> Agent:
+def claude_code_agent(map_tool: bool = False, series_tool: bool = False, mcp_servers: list[tuple[str, str]] | None = None) -> Agent:
+    """Claude Code with the bridged tools and the HTTP MCP servers, each (name, URL from the sandbox)."""
     bridged = []
     if map_tool:
         bridged.append(BridgedToolsSpec(name="map", tools=[show_on_map()]))
     if series_tool:
         bridged.append(BridgedToolsSpec(name="plot", tools=[plot_series()]))
-    mcp = [MCPServerConfigHTTP(type="http", name=server_name(mcp_url), url=mcp_url)] if mcp_url else None
+    mcp = [MCPServerConfigHTTP(type="http", name=name, url=url) for name, url in mcp_servers or []] or None
     return claude_code(version=CLAUDE_CODE_VERSION, permission_mode="bypassPermissions", cwd=WORKDIR, bridged_tools=bridged or None, mcp_servers=mcp)
-
-
-def server_name(url: str) -> str:
-    """The name a user would give the server: the first segment of its path, such as bag for https://bag.ldproxy.net/bag/mcp."""
-    return urlparse(url).path.strip("/").split("/")[0]

@@ -1,0 +1,18 @@
+{
+  "task": "query",
+  "standard": "dsfl",
+  "tags": [
+    "bgt",
+    "geotop",
+    "bro",
+    "subsurface"
+  ],
+  "input": "Welke CBS-buurten in Amersfoort zijn het meest gevoelig voor wateraccumulatie na hevige neerslag, waarbij gevoeligheid wordt berekend als het aandeel verhard oppervlak uit BGT-pandgeometrie en verharde BGT-wegdelen vermenigvuldigd met het aandeel GeoTOP-voxels in de bovenste 5 meter waarvoor de kans op klei groter is dan 10%?\n\nRangschik de CBS-buurten op basis van de berekende relatieve gevoeligheidsscore en toon de top drie op een kaart. Geef per buurt het aandeel verhard oppervlak, het aandeel GeoTOP-voxels met P(klei) > 10%, de resulterende score en een 5 m diepe virtuele GeoTOP-boorkolom nabij het centroïde van de buurt.\n\nAntwoord na de kaart met alleen een JSON-object met de sleutel \"buurten\": de drie buurten, de gevoeligste eerst, elk met \"code\" (de CBS-buurtcode), \"naam\", \"verhard\" en \"klei\" (de twee aandelen, tussen 0 en 1), \"score\" en \"boorkolom\": de voxels van de bovenste 5 meter van boven naar beneden, elk met \"top\" en \"basis\" in m NAP, \"lithoklasse\" (de code van de meest waarschijnlijke lithoklasse) en \"kans_klei\" (tussen 0 en 1).",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The answer needs an area sum per buurt from the BGT and a voxel count per buurt from GeoTOP, and no service gives the latter: the subsurface MCP answers per point or line, so a buurt of 50 columns takes 50 traces, and Amersfoort about 6,400. Likely failures: a klei share from one trace at the centroid or a few, which swings between 0 and 0.3; the upper 5 m counted from 0 m NAP instead of from the top of the column; the share of columns instead of voxels; kleiig zand (KZ) counted as klei; the paved share over another area than the buurt; or a map that shows other buurten than the answer.",
+    "expected_variant": 1,
+    "location": "BGT panden and wegdelen per CBS buurt (Wijk- en Buurtkaart 2026) at bag.ldproxy.net; GeoTOP v01r6s1 kans op klei under each buurt",
+    "absence": false
+  }
+}

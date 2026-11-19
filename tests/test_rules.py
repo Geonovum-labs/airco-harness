@@ -94,6 +94,52 @@ def point(lon: float, lat: float) -> dict:
     return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, lat]}, "properties": {"name": "place"}}
 
 
+BUURTEN = {f["properties"]["naam"]: f for f in vendored("cbs-buurten-amersfoort-2026-wgs84.geojson")}
+RANKING = Case.load(TARGETS["dsfl-16"]).expected
+
+
+def ranking(names: list[str], shown: list[str] | None = None, klei: dict | None = None, trace_off: dict | None = None, traces: bool = True) -> str:
+    """An answer to dsfl-16: the buurten with their expected values, a map of `shown` and a trace near each centroid, with deviations by name."""
+    values = {v["naam"]: v for v in RANKING["values"].values()}
+    layers = [
+        {"top": 2.0 - i * 0.5, "base": 1.5 - i * 0.5, "lithoClassCode": "ZM" if i % 3 else "K", "lithoClassProbabilities": {"K": 0.05 * i}} for i in range(108)
+    ]
+    buurten, calls = [], []
+    for name in names:
+        f = BUURTEN.get(name)
+        v = values.get(name, {"verhard": 0.4, "klei": 0.05, "score": 0.02})
+        centre = shapely.geometry.shape(f["geometry"]).centroid if f else shapely.Point(5.39, 52.15)
+        lon = centre.x + (trace_off or {}).get(name, 0) / (geo.METERS_PER_DEGREE * 0.613)
+        boorkolom = [
+            {"top": layer["top"], "basis": layer["base"], "lithoklasse": layer["lithoClassCode"], "kans_klei": layer["lithoClassProbabilities"]["K"]}
+            for layer in layers[:10]
+        ]
+        buurten.append(
+            {
+                "code": f["id"] if f else "BU03079999",
+                "naam": name,
+                "verhard": v["verhard"],
+                "klei": (klei or {}).get(name, v["klei"]),
+                "score": v["score"],
+                "boorkolom": boorkolom,
+            }
+        )
+        point = {"type": "Point", "coordinates": [lon, centre.y]}
+        calls.append(
+            {
+                "arguments": {"modelId": "GEOTOP-v01r6s1-001", "point": point},
+                "result": {"result": {"column": {"modelId": "GEOTOP-v01r6s1-001", "layers": layers}}},
+                "image": False,
+            }
+        )
+    features = [
+        {"type": "Feature", "properties": {"naam": n}, "geometry": BUURTEN[n]["geometry"]} for n in (shown if shown is not None else names) if n in BUURTEN
+    ]
+    return json.dumps(
+        {"message": as_json({"buurten": buurten}), "map": json.dumps({"type": "FeatureCollection", "features": features}), "traces": calls if traces else []}
+    )
+
+
 CASES = [
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk", "type": "bassin"}), full()),
     ("imgeo-G04-03", as_json({"objecttype": "Overig bouwwerk", "type": "Bassin"}, fenced=False), full()),
@@ -177,6 +223,16 @@ CASES = [
     ("dsfl-11", as_json({"present": False}), full(0, 0, 0)),
     ("dsfl-12", as_json({"available": True, "probability": 0.62}), full(0, 0, 1)),
     ("dsfl-15", as_json({"line_of_sight_only": True, "proves_no_connection": True}), full(0, 0.5, 0)),
+    ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "De Baken"]), full()),
+    ("dsfl-16", ranking(["Isselt-Oost", "Laakse Tuinen", "Schuilenburg-Zuid"]), full()),
+    ("dsfl-16", ranking(["Schuilenburg-Zuid", "Isselt-Oost", "De Baken"]), full(0, 0.875, 0)),
+    ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "Isselt-West"]), full(0, 0.75, 0)),
+    ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "De Baken"], shown=["Isselt-Oost", "Schuilenburg-Zuid"]), full(0, 0.9375, 0)),
+    ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "De Baken"], klei={"De Baken": 0.3}), full(0, 0.9375, 0)),
+    ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "De Baken"], trace_off={"De Baken": 400}), full(0, 0.9375, 0)),
+    ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "De Baken"], traces=False), full(0, 0.8125, 0)),
+    ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "Eemhaven"]), full(0, 0.625, 1)),
+    ("dsfl-16", json.dumps({"message": as_json({"buurten": []}), "map": "", "traces": []}), full(0, 0, 0, 0)),
 ]
 
 

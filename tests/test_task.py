@@ -63,17 +63,17 @@ def test_unknown_variant_agent_sample_or_test_set():
     assert [s.id for s in airco(ids=" imgeo-G04-03 ,").dataset] == ["imgeo-G04-03"]
     with pytest.raises(ValueError, match="unknown sample ids: imgeo-G99-01"):
         airco(ids="imgeo-G04-03,imgeo-G99-01")
-    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-{n:02}" for n in range(1, 16)]
+    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-{n:02}" for n in range(1, 17)]
     with pytest.raises(ValueError, match="unknown test set 'nl-sbb'; choose from dsfl, imgeo"):
         airco(testset="nl-sbb")
 
 
 def test_tags_select_the_samples_with_one_of_them():
-    assert [s.id for s in airco(testset="dsfl", tags="bro").dataset] == [f"dsfl-{n:02}" for n in range(6, 16)]
-    assert [s.id for s in airco(testset="dsfl", tags="bro,bag").dataset] == [f"dsfl-{n:02}" for n in range(1, 16)]
+    assert [s.id for s in airco(testset="dsfl", tags="bro").dataset] == [f"dsfl-{n:02}" for n in range(6, 17)]
+    assert [s.id for s in airco(testset="dsfl", tags="bro,bag").dataset] == [f"dsfl-{n:02}" for n in range(1, 17)]
     assert [s.id for s in airco(testset="dsfl", tags="bro", ids="dsfl-01,dsfl-06").dataset] == ["dsfl-06"]
     assert airco(testset="dsfl", tags="bro").dataset[0].metadata["tags"] == ["bro", "groundwater"]
-    assert [s.id for s in airco(testset="dsfl", tags="subsurface").dataset] == [f"dsfl-{n:02}" for n in range(9, 16)]
+    assert [s.id for s in airco(testset="dsfl", tags="subsurface").dataset] == [f"dsfl-{n:02}" for n in range(9, 17)]
     assert [s.id for s in airco(testset="dsfl", tags="groundwater").dataset] == ["dsfl-06", "dsfl-07", "dsfl-08"]
     assert [s.id for s in airco(testset="dsfl", tags="bag,groundwater").dataset] == [f"dsfl-{n:02}" for n in range(1, 9)]
 
@@ -89,24 +89,24 @@ def test_a_variant_runs_the_samples_it_is_made_for_unless_ids_or_tags_choose_oth
         airco(variant=GROUNDWATER, agent="inspect")
 
 
-@pytest.mark.parametrize(("variant", "agent"), [(GROUNDWATER, "model"), (GROUNDWATER, "claude-code"), ("mcp-bag-ldproxy", "model")])
+@pytest.mark.parametrize(("variant", "agent"), [(GROUNDWATER, "model"), ("mcp-bag-ldproxy", "model"), ("mcp-bgt-wijkenbuurten-subsurface", "model")])
 def test_an_mcp_variant_refuses_an_agent_that_cannot_reach_its_server(variant, agent):
     with pytest.raises(ValueError, match=f"the agent {agent} does not take the MCP server of variant {variant}"):
         airco(testset="dsfl", variant=variant, agent=agent)
 
 
 def test_claude_code_reaches_an_http_server_under_the_name_a_user_would_give_it():
-    from airco_harness import claude_code
-
-    assert tasks.takes("mcp-bag-ldproxy", "claude-code") and not tasks.takes(GROUNDWATER, "claude-code")
-    assert claude_code.server_name("https://bag.ldproxy.net/bag/mcp") == "bag"
+    assert tasks.takes("mcp-bag-ldproxy", "claude-code") and tasks.takes(GROUNDWATER, "claude-code")
+    assert [s.name for s in tasks.VARIANTS["mcp-bag-ldproxy"].mcp] == ["bag"]
     assert len(airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="claude-code").dataset) == 5
 
 
 def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept(tmp_path, monkeypatch):
     """The stub server names its tool groundwater-monitoring.series.get, as the real one does; Anthropic refuses a dot in a tool name."""
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
-    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    monkeypatch.setitem(
+        tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(tasks.McpServer("groundwater-monitoring", command=(sys.executable, str(stub))),), tags=("bro",))
+    )
     outputs = [
         ModelOutput.for_tool_call(
             "mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}
@@ -122,7 +122,11 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     assert payload["segments"][0]["gldBroId"] == "GLD000000025798"
     assert payload["window"] == {"from": "2026-09-21", "to": "2026-09-21", "total": 1, "returned": 1, "truncated": False}
     assert sample.scores["quality"].value["correct"] == 1
-    assert log.eval.metadata["variant_form"] == {"about": "stub", "mcp": [sys.executable, str(stub)], "tags": ["bro"]}
+    assert log.eval.metadata["variant_form"] == {
+        "about": "stub",
+        "mcp": [{"name": "groundwater-monitoring", "url": "", "command": [sys.executable, str(stub)], "sandbox_url": "", "image": "", "version": ""}],
+        "tags": ["bro"],
+    }
     [system] = [m for m in sample.messages if m.role == "system"]
     assert "## stub-groundwater-monitoring\nCall groundwater-monitoring.series.get for a level." in system.text
     assert "You are a helpful assistant attempting to submit the best possible answer" in system.text
@@ -130,12 +134,14 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
 
 def test_an_mcp_run_records_the_server_that_answered_initialize(tmp_path, monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
-    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    monkeypatch.setitem(
+        tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(tasks.McpServer("groundwater-monitoring", command=(sys.executable, str(stub))),), tags=("bro",))
+    )
     submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
     [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[submit]), log_dir=str(tmp_path), display="none")
     [sample] = log.samples
-    recorded = sample.store["mcp_server"]
+    [recorded] = sample.store["mcp_server"]
     assert recorded["name"] == "stub-groundwater-monitoring"
     assert recorded["version"] == "1.2.3"
 
@@ -146,12 +152,16 @@ def test_variant_0_records_no_server(tmp_path):
 
 
 def test_a_server_without_instructions_leaves_the_prompt_of_variant_0():
-    assert tasks.server_instructions("bag", None) is None and tasks.server_instructions("bag", "") is None
+    assert tasks.server_instructions([("bag", None)]) is None and tasks.server_instructions([("bag", ""), ("bgt", None)]) is None
+    both = tasks.server_instructions([("bgt", "Use the BGT."), ("wijkenbuurten", None), ("subsurface-models", "Use GeoTOP.")])
+    assert both.endswith("## bgt\nUse the BGT.\n\n## subsurface-models\nUse GeoTOP.")
 
 
 def test_plot_tool_is_available_alongside_the_mcp_server(tmp_path, monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
-    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    monkeypatch.setitem(
+        tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(tasks.McpServer("groundwater-monitoring", command=(sys.executable, str(stub))),), tags=("bro",))
+    )
     expected = json.loads((tasks.dataset.TESTSETS_DIR / "dsfl/samples/dsfl-08/expected.json").read_text(encoding="utf-8"))
     data = {
         "points": [{"date": date, "value": value} for date, value in expected["points"].items()],
@@ -175,7 +185,9 @@ def test_plot_tool_is_available_alongside_the_mcp_server(tmp_path, monkeypatch):
 
 def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
-    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    monkeypatch.setitem(
+        tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(tasks.McpServer("groundwater-monitoring", command=(sys.executable, str(stub))),), tags=("bro",))
+    )
     call = ModelOutput.for_tool_call(
         "mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}
     )
@@ -193,27 +205,55 @@ def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, m
     assert all(r[0]["window"]["truncated"] is False for r in results)
 
 
-def test_local_groundwater_server_uses_utf8_and_records_resolved_command(tmp_path, monkeypatch):
-    jar = tmp_path / "server.jar"
-    jar.touch()
-    monkeypatch.setenv("AIRCO_GROUNDWATER_MCP_JAR", str(jar))
+def test_a_stdio_server_reaches_the_agent_inspect_only(monkeypatch):
+    stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
+    monkeypatch.setitem(tasks.VARIANTS, "stub", tasks.Variant("stub", mcp=(tasks.McpServer("stub", command=(sys.executable, str(stub))),)))
+    assert tasks.takes("stub", "inspect") and not tasks.takes("stub", "claude-code")
+
+
+def test_the_groundwater_variant_reaches_a_pinned_image_on_the_host_and_its_variable_moves_it(monkeypatch):
+    [server] = tasks.VARIANTS[GROUNDWATER].mcp
+    assert (server.url, server.sandbox_url) == ("http://localhost:18081/mcp", "http://host.docker.internal:18081/mcp")
+    assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", server.image)
+    assert server.image.endswith("sha256:13ba5702da61d81e76421061e52f3ef416f43d7f390667c8a036282fdf4bf9d0") and server.version == "1.0.9"
+    monkeypatch.setenv("AIRCO_GROUNDWATER_MONITORING_URL", "http://localhost:9001/mcp")
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
-    assert task.metadata["variant_form"]["mcp"] == ("java", "-Dstdout.encoding=UTF-8", "-jar", str(jar))
-    monkeypatch.setenv("AIRCO_GROUNDWATER_MCP_JAR", str(tmp_path / "missing.jar"))
-    with pytest.raises(ValueError, match="AIRCO_GROUNDWATER_MCP_JAR is not a file"):
-        airco(testset="dsfl", variant=GROUNDWATER, agent="inspect")
+    [moved] = task.metadata["variant_form"]["mcp"]
+    assert (moved["url"], moved["sandbox_url"], moved["version"]) == ("http://localhost:9001/mcp", "http://host.docker.internal:9001/mcp", "1.0.9")
 
 
-def test_the_groundwater_variant_runs_a_pinned_image():
-    command = tasks.VARIANTS[GROUNDWATER].mcp
-    assert command[:-1] == ("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod")
-    assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", command[-1])
-    assert command[-1].endswith("sha256:ebbce9d90a7bdefca2e19178ccb108dae54c9894d2ae38cace38270187434344")
+def test_a_server_that_reports_another_version_than_its_pin_fails_the_run(tmp_path, monkeypatch):
+    stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
+    pinned = tasks.McpServer("groundwater-monitoring", command=(sys.executable, str(stub)), image="stub", version="9.9.9")
+    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(pinned,), tags=("bro",)))
+    submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
+    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
+    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=[submit]), log_dir=str(tmp_path), display="none")
+    [sample] = log.samples
+    assert "reports version 1.2.3, not 9.9.9 of stub" in sample.error.message
 
 
 def test_the_bag_variant_reaches_its_server_over_http_and_runs_the_bag_samples():
-    assert tasks.VARIANTS["mcp-bag-ldproxy"].mcp == "https://bag.ldproxy.net/bag/mcp"
+    assert tasks.VARIANTS["mcp-bag-ldproxy"].mcp == (tasks.McpServer("bag", url="https://bag.ldproxy.net/bag/mcp"),)
     assert [s.id for s in airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="inspect").dataset] == [f"dsfl-0{n}" for n in range(1, 6)]
+
+
+def test_the_bgt_variant_gives_three_named_servers_and_claude_code_reaches_the_host_one_from_its_sandbox(monkeypatch):
+    variant = "mcp-bgt-wijkenbuurten-subsurface"
+    servers = tasks.VARIANTS[variant].mcp
+    assert [(s.name, s.url) for s in servers] == [
+        ("bgt", "https://bag.ldproxy.net/bgt/mcp"),
+        ("wijkenbuurten", "https://bag.ldproxy.net/wijkenbuurten/mcp"),
+        ("subsurface-models", "http://localhost:18082/mcp"),
+    ]
+    assert servers[2].sandbox_url == "http://host.docker.internal:18082/mcp"
+    assert servers[2].image.endswith("sha256:40af69780274dcc5c4b8c4ce99cf4b540c07ac72bb241127911954cf8466b6ae") and servers[2].version == "1.0.10"
+    assert not servers[0].version and not servers[1].version
+    assert tasks.takes(variant, "claude-code") and tasks.takes(variant, "inspect") and not tasks.takes(variant, "model")
+    assert [s.id for s in airco(testset="dsfl", variant=variant, agent="inspect").dataset] == ["dsfl-16"]
+    monkeypatch.setenv("AIRCO_SUBSURFACE_MODELS_URL", "http://localhost:9000/mcp")
+    moved = tasks.variant_form(variant).mcp[2]
+    assert (moved.url, moved.sandbox_url) == ("http://localhost:9000/mcp", "http://host.docker.internal:9000/mcp")
 
 
 def test_price_file_registers_a_model_inspect_does_not_know(tmp_path):
@@ -247,6 +287,7 @@ def test_claude_code_sandbox_has_the_network_on_and_the_fetch_preflight_off():
 
     service = yaml.safe_load(SANDBOX_COMPOSE.read_text(encoding="utf-8"))["services"]["default"]
     assert (service["image"], service["network_mode"]) == ("aisiuk/inspect-tool-support", "bridge")
+    assert service["extra_hosts"] == ["host.docker.internal:host-gateway"]
     assert claude_code.SETTINGS == {"skipWebFetchPreflight": True}
     assert claude_code.CLAUDE_CODE_VERSION.count(".") == 2
 

@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-12T13:52:37Z",
+  "fetched": "2026-11-19T11:04:54Z",
   "files": [
     {
       "path": "dsfl/bag-amersfoort-bouw-gestart.json",
@@ -47,6 +47,22 @@
       "bytes": 220948
     },
     {
+      "path": "dsfl/bgt-amersfoort-panden-per-buurt.json",
+      "url": "https://bag.ldproxy.net/bgt/processes/aggregate-features/execution",
+      "method": "POST",
+      "body_sha256": "3fee80d3cc7a162ca70942d97805385f16984475a16ad596d7519982acf94012",
+      "sha256": "aef973683e3e0978c917b5327cfd34e8fbe12f6e2fa8da0aba6656610996f075",
+      "bytes": 10255
+    },
+    {
+      "path": "dsfl/bgt-amersfoort-verharde-wegdelen-per-buurt.json",
+      "url": "https://bag.ldproxy.net/bgt/processes/aggregate-features/execution",
+      "method": "POST",
+      "body_sha256": "d271d030b239aecd2582ed7525bc9fa515e0dc165bdfb71c8caa966c367828b8",
+      "sha256": "85338258cb8064a4d04e38297a991c75c2ba0e6e8b8eefe3121e14c83b79559e",
+      "bytes": 10257
+    },
+    {
       "path": "dsfl/bro-gld000000025798.csv",
       "url": "https://publiek.broservices.nl/gm/gld/v1/seriesAsCsv/GLD000000025798",
       "sha256": "9a9a5a71f27653efa4bff58e4c9c76a07485867c9bde83d394fd842656a1405c",
@@ -79,6 +95,25 @@
       "url": "https://publiek.broservices.nl/gm/gmw/v1/objects/GMW000000009441",
       "sha256": "d4fc1976dee41221084942446a2221c3c703493b51b0dd687797705e1b9e6955",
       "bytes": 4373
+    },
+    {
+      "path": "dsfl/cbs-buurten-amersfoort-2026-wgs84.geojson",
+      "url": "https://bag.ldproxy.net/wijkenbuurten/collections/buurt/items?f=json&limit=1000&gemeente=0307",
+      "sha256": "6b1c14dd8e542aa2cd92852d9b52a384d2a8038359ddc46a1117f71fa5659f7f",
+      "bytes": 371019
+    },
+    {
+      "path": "dsfl/cbs-buurten-amersfoort-2026.geojson",
+      "url": "https://bag.ldproxy.net/wijkenbuurten/collections/buurt/items?f=json&limit=1000&gemeente=0307&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+      "sha256": "95081356c1a28e11cc78a77977ee02591034c4815252ee4af1c19fdb753d3c0d",
+      "bytes": 358566
+    },
+    {
+      "path": "dsfl/geotop-amersfoort-klei-per-buurt.json",
+      "url": "https://www.dinodata.nl/opendap/GeoTOP/geotop.nc.ascii?kans_2[1358:1:1480][1192:1:1316][0:1:312]",
+      "method": "GET, reduced",
+      "sha256": "0163d0f6c2f666216fc16b487828f5e6fd7235ba246f76ef42c16c431f547f1d",
+      "bytes": 720880
     },
     {
       "path": "imgeo-2.2/catalog-bgt.html",

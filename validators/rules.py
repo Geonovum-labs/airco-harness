@@ -4,8 +4,9 @@ Each rule fills four of the five score keys (`source` comes from the tool log, s
 airco_harness.scorers). A rule never raises on a malformed answer: it reports
 parseable 0 and correct 0 instead. Rules are selected by the "rule" key in a
 case's expected.json: `fields` for a JSON answer, `map` for what the agent
-showed on the map, `series` for data passed to a plot, and `section` and
-`trace` for selected properties of subsurface tool results.
+showed on the map, `series` for data passed to a plot, `section` and
+`trace` for selected properties of subsurface tool results, and `ranking` for
+ranked areas with their values, map and boreholes.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ from pathlib import Path
 
 from jsonschema import validators
 
-from . import answers, geo, series
+from . import answers, geo, series, sources
 from .refmodel import ReferenceModel, normalize
 
 TESTSETS_DIR = Path(__file__).resolve().parent.parent / "testsets"
@@ -296,12 +297,90 @@ def rule_trace(answer: str, case: Case) -> Assessment:
     return Assessment(not wrong, (len(checks) - len(wrong)) / len(checks), 0, True, f"trace checks failed: {wrong}", {"wrong": wrong})
 
 
+@cache
+def _buurt_names(source: str) -> dict[str, str]:
+    """Normalized name and code of each buurt of the reference, to the code."""
+    features = json.loads(sources.path(source).read_text(encoding="utf-8"))["features"]
+    return {normalize(key): f["id"] for f in features for key in (f["id"], f["properties"]["naam"])}
+
+
+def _trace_near(traces: list[dict], reference: geo.Reference, code: str, want: dict) -> dict | None:
+    """The last trace of the model at a point in the buurt and near its centroid."""
+    found = None
+    for trace in traces:
+        args, payload = trace.get("arguments") or {}, trace.get("result") or {}
+        column = (payload.get("result") or payload).get("column")
+        coordinates = (args.get("point") or {}).get("coordinates")
+        if args.get("modelId") != want["model_id"] or not isinstance(column, dict) or not isinstance(coordinates, list) or len(coordinates) != 2:
+            continue
+        place = geo.Point(coordinates)
+        if reference.nearest(place, 0) == code and reference.centroid_distance(code, place) <= want["max_distance_m"]:
+            found = column
+    return found
+
+
+def _column_matches(given: list, column: dict, want: dict) -> bool:
+    layers = column.get("layers") or []
+    n = want["voxels"]
+    if len(given) != n or len(layers) < n:
+        return False
+    return all(
+        _number(g.get("top")) and _number(g.get("basis")) and _number(g.get("kans_klei"))
+        and abs(g["top"] - layer["top"]) < 1e-6 and abs(g["basis"] - layer["base"]) < 1e-6
+        and g.get("lithoklasse") == layer.get("lithoClassCode")
+        and abs(g["kans_klei"] - (layer.get("lithoClassProbabilities") or {}).get("K", 0.0)) <= want["probability_tolerance"]
+        for g, layer in zip(given, layers[:n])
+    )  # fmt: skip
+
+
+def rule_ranking(answer: str, case: Case) -> Assessment:
+    """Ranked buurten with their values, the same buurten on the map, and per buurt the voxels of a GeoTOP trace near its centroid.
+
+    `answer` is JSON: the last message ("message"), the GeoJSON of the map ("map", "" without one) and every successful trace call ("traces").
+    A position takes any of its accepted buurten once. Values are checked for a buurt that has expected values.
+    """
+    try:
+        parts = json.loads(answer)
+    except ValueError:
+        return unparseable("no answer")
+    data, failure, details = _json_answer(parts.get("message", ""), case)
+    if failure:
+        return failure
+    want = case.expected
+    names = _buurt_names(want["buurten"])
+    reference = geo.Reference.load(want["buurten"])
+    given = data["buurten"]
+    codes = [names.get(normalize(str(b.get("code", "")))) or names.get(normalize(str(b.get("naam", "")))) for b in given]
+    checks: dict[str, bool] = {}
+    for position, (code, accepted) in enumerate(zip(codes, want["ranking"]), 1):
+        checks[f"rank {position}"] = code in accepted and codes.index(code) == position - 1
+    for position, (code, b) in enumerate(zip(codes, given), 1):
+        values = want["values"].get(code)
+        for key, tolerance in want["tolerance"].items():
+            checks[f"{key} {position}"] = values is not None and _matches(b.get(key), {"value": values[key], "tolerance": tolerance})
+        column = _trace_near(parts.get("traces") or [], reference, code, want["boorkolom"]) if code else None
+        checks[f"boorkolom {position}"] = column is not None and _column_matches(b.get("boorkolom") or [], column, want["boorkolom"])
+    try:
+        places = geo.points(json.loads(parts["map"])) if parts.get("map") else []
+    except ValueError:
+        places = []
+    shown = [reference.nearest(place, 0) for place in places]
+    checks["map"] = bool(places) and set(shown) == set(codes) and None not in codes
+    unknown = [b.get("naam") or b.get("code") for code, b in zip(codes, given) if code is None]
+    invented = len(unknown) + sum(identifier is None for identifier in shown)
+    wrong = [key for key, ok in checks.items() if not ok]
+    details |= {"buurten": codes, "wrong": wrong, "unknown": unknown, "map_shown": sorted({s for s in shown if s}), "unmatched_places": shown.count(None)}
+    return Assessment(not wrong and not invented, (len(checks) - len(wrong)) / len(checks), invented, True,
+                      f"wrong: {wrong}; unknown buurten: {unknown}; map places outside the buurten: {shown.count(None)}", details)  # fmt: skip
+
+
 RULES: dict[str, Callable[[str, Case], Assessment]] = {
     "fields": rule_fields,
     "map": rule_map,
     "series": rule_series,
     "section": rule_section,
     "trace": rule_trace,
+    "ranking": rule_ranking,
 }
 
 

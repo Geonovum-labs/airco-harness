@@ -9,7 +9,9 @@ GitHub is pinned to a commit in its URL. A source whose query is too long for
 a GET is a POST, with a body built from a file fetched before it; the lock
 then records the method and the sha256 of the body. A source that is too big
 to keep is an Aggregate: its pages are fetched one by one, reduced to a small
-JSON file, and the lock records method "GET, paged". A Derived file is computed
+JSON file, and the lock records method "GET, paged". A Reduced source is one
+GET too big to keep, reduced to a small JSON file, and the lock records method
+"GET, reduced". A Derived file is computed
 from another source file, and the lock records method "derived". The lock records the sha256 and size
 of each file, and Last-Modified and ETag when the server sends them. The MIM
 XSD and the schemas it imports are stored under schemas/<host>/<path>, where
@@ -34,6 +36,8 @@ from pathlib import Path
 from typing import NamedTuple
 
 from lxml import etree
+
+from validators import area_sources
 
 SOURCES_DIR = Path(__file__).resolve().parent.parent / "sources"
 LOCK_FILE = SOURCES_DIR / "sources.lock.json"
@@ -175,8 +179,46 @@ def _wells_geojson(search: bytes) -> bytes:
     return (json.dumps({"type": "FeatureCollection", "features": wells}, indent=1) + "\n").encode("utf-8")
 
 
-# Path under sources/ to a URL, an Aggregate, a Derived, or a function that gives the Post (URL, body, content type). Fetched in this order.
-SOURCES: dict[str, str | Aggregate | Derived | Callable[[], Post]] = {
+class Reduced(NamedTuple):
+    """A GET too big to keep, reduced to one small JSON object; the lock records method "GET, reduced"."""
+
+    url: str
+    reduce: Callable[[bytes], dict]
+
+
+DSFL_BUURTEN = "dsfl/cbs-buurten-amersfoort-2026.geojson"
+DSFL_BUURTEN_WGS84 = "dsfl/cbs-buurten-amersfoort-2026-wgs84.geojson"
+DSFL_BGT_PANDEN = "dsfl/bgt-amersfoort-panden-per-buurt.json"
+DSFL_BGT_WEGDELEN = "dsfl/bgt-amersfoort-verharde-wegdelen-per-buurt.json"
+DSFL_GEOTOP_KLEI = "dsfl/geotop-amersfoort-klei-per-buurt.json"
+LDPROXY = "https://bag.ldproxy.net"
+PAVED = ("gesloten verharding", "open verharding", "half verhard")
+# A rectangle in RD (EPSG:28992) around gemeente Amersfoort, on whole hectometres so it matches the GeoTOP grid.
+AMERSFOORT_RD = (149400, 457700, 161700, 470200)
+# GeoTOP v01r6s1 at DINO's OPeNDAP server. x and y label the lower left corner of each 100 m cell, from (13600, 338500); z runs from -50 m NAP in 313 steps of 0.5 m.
+GEOTOP_OPENDAP = "https://www.dinodata.nl/opendap/GeoTOP/geotop.nc"
+
+
+def _bgt_area_per_buurt(collection: str, **parameters: str) -> Callable[[], Post]:
+    """The number and area of the current objects of a BGT collection in gemeente Amersfoort, per buurt the API assigns them to."""
+    inputs = {
+        "source": {"collection": collection, "parameters": {"gemeentecode": AMERSFOORT, **parameters}},
+        "groupBy": ["buurtcode"],
+        "aggregates": ["count", {"function": "sum", "property": "$area"}],
+        "limit": 1000,
+    }
+    body = json.dumps({"inputs": inputs}, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return lambda: Post(f"{LDPROXY}/bgt/processes/aggregate-features/execution", body, "application/json")
+
+
+def _geotop_clay_url() -> str:
+    x0, y0, x1, y1 = AMERSFOORT_RD
+    xs, ys = f"{(x0 - 13600) // 100}:1:{(x1 - 13600) // 100 - 1}", f"{(y0 - 338500) // 100}:1:{(y1 - 338500) // 100 - 1}"
+    return f"{GEOTOP_OPENDAP}.ascii?kans_2[{xs}][{ys}][0:1:312]"
+
+
+# Path under sources/ to a URL, an Aggregate, a Reduced, a Derived, or a function that gives the Post (URL, body, content type). Fetched in this order.
+SOURCES: dict[str, str | Aggregate | Reduced | Derived | Callable[[], Post]] = {
     "imgeo-2.2/imgeo2.2-mim-logisch.xml": "https://raw.githubusercontent.com/Geonovum/IMGeo-dev/30d750029fc4b81998d30a95185f78ff2c314ced/mim/imgeo2.2-mim-logisch.xml",
     "imgeo-2.2/catalog-bgt.html": "https://docs.geostandaarden.nl/imgeo/catalogus/bgt/",
     "imgeo-2.2/catalog-imgeo.html": "https://docs.geostandaarden.nl/imgeo/catalogus/imgeo/",
@@ -200,6 +242,11 @@ SOURCES: dict[str, str | Aggregate | Derived | Callable[[], Post]] = {
     DSFL_GMW_OBJECT: f"{BRO}/gm/gmw/v1/objects/GMW000000009441",
     DSFL_GMW_RELATIONS: f"{BRO}/gm/v1/gmw-relations/GMW000000009441",
     DSFL_GLD_SERIES: f"{BRO}/gm/gld/v1/seriesAsCsv/GLD000000025798",
+    DSFL_BUURTEN: f"{LDPROXY}/wijkenbuurten/collections/buurt/items?f=json&limit=1000&gemeente={AMERSFOORT}&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+    DSFL_BUURTEN_WGS84: f"{LDPROXY}/wijkenbuurten/collections/buurt/items?f=json&limit=1000&gemeente={AMERSFOORT}",
+    DSFL_BGT_PANDEN: _bgt_area_per_buurt("pand"),
+    DSFL_BGT_WEGDELEN: _bgt_area_per_buurt("wegdeel", filter="bgtFysiekVoorkomen IN (" + ",".join(f"'{v}'" for v in PAVED) + ")"),
+    DSFL_GEOTOP_KLEI: Reduced(_geotop_clay_url(), lambda raw: area_sources.geotop_clay_per_buurt(raw.decode("utf-8"), path(DSFL_BUURTEN).read_bytes())),
 }
 
 
@@ -291,6 +338,10 @@ def _get_paged(aggregate: Aggregate) -> bytes:
     return (json.dumps(aggregate.reduce(list(features.values())), indent=1, ensure_ascii=False) + "\n").encode("utf-8")
 
 
+def _get_reduced(reduced: Reduced) -> bytes:
+    return (json.dumps(reduced.reduce(_get(reduced.url)[0]), indent=1, ensure_ascii=False) + "\n").encode("utf-8")
+
+
 def fetch(prefix: str = "") -> None:
     """Fetch the sources whose path starts with `prefix`, and keep the lock records of the others."""
     kept = [r for r in json.loads(LOCK_FILE.read_text(encoding="utf-8"))["files"] if not r["path"].startswith(prefix)] if prefix else []
@@ -306,6 +357,9 @@ def fetch(prefix: str = "") -> None:
             case Aggregate(source_url, _):
                 method, headers = {"method": "GET, paged"}, {}
                 data = _get_paged(source)
+            case Reduced(source_url, _):
+                method, headers = {"method": "GET, reduced"}, {}
+                data = _get_reduced(source)
             case Derived(origin, build):
                 source_url, method, headers = urls[origin], {"method": "derived", "derived_from": origin}, {}
                 data = build(path(origin).read_bytes())

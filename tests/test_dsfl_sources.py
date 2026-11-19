@@ -164,3 +164,54 @@ def test_dsfl_08_daily_means_and_gaps_are_from_the_same_tube():
 def test_every_dsfl_sample_names_its_origin_and_its_source(sample_id):
     data = expected(sample_id)
     assert data["note"].startswith("Deck wording: " if sample_id < "dsfl-06" else "Origin: ") and "sources/dsfl/" in data["source"]
+
+
+UPPER_VOXELS = 10  # 5 m of GeoTOP voxels of 0.5 m
+CLAY_PERCENT = 10
+
+
+def bgt_area(name: str) -> dict[str, float]:
+    return {g["key"]["buurtcode"]: g["sum($area)"] for g in vendored(name)["groups"]}
+
+
+def sensitivity(upper_voxels: int = UPPER_VOXELS) -> dict[str, dict]:
+    """Per buurt: paved share (BGT panden and paved wegdelen per buurt area), share of upper voxels with P(klei) > 10%, and their product."""
+    panden, wegdelen = bgt_area("bgt-amersfoort-panden-per-buurt.json"), bgt_area("bgt-amersfoort-verharde-wegdelen-per-buurt.json")
+    clay = vendored("geotop-amersfoort-klei-per-buurt.json")
+    out = {}
+    for f in vendored("cbs-buurten-amersfoort-2026.geojson")["features"]:
+        code = f["id"]
+        voxels = [v for column in clay[code]["kolommen"].values() for v in column[:upper_voxels]]
+        paved = (panden.get(code, 0) + wegdelen.get(code, 0)) / shapely.geometry.shape(f["geometry"]).area
+        share = sum(v > CLAY_PERCENT for v in voxels) / len(voxels)
+        out[code] = {"naam": f["properties"]["naam"], "verhard": paved, "klei": share, "score": paved * share}
+    return out
+
+
+def ranked(values: dict[str, dict]) -> list[str]:
+    return sorted(values, key=lambda c: -values[c]["score"])
+
+
+def test_dsfl_16_every_buurt_has_geotop_columns_and_the_bgt_objects_of_amersfoort_fall_in_its_buurten():
+    clay = vendored("geotop-amersfoort-klei-per-buurt.json")
+    assert len(clay) == 145 and all(len(b["kolommen"]) > 0 for b in clay.values())
+    assert all(len(column) == 12 for b in clay.values() for column in b["kolommen"].values())
+    for name in ("bgt-amersfoort-panden-per-buurt.json", "bgt-amersfoort-verharde-wegdelen-per-buurt.json"):
+        data = vendored(name)
+        assert not data["groupsTruncated"] and set(bgt_area(name)) <= set(clay)
+        assert sum(g["count"] for g in data["groups"]) == data["total"]["count"]
+
+
+def test_dsfl_16_ranking_and_values_of_the_expected_buurten():
+    values = sensitivity()
+    want = expected("dsfl-16")
+    top = ranked(values)
+    assert [top[0]] == want["ranking"][0]
+    assert set(top[1:4]) == set(want["ranking"][1]) == set(want["ranking"][2])
+    for code, v in want["values"].items():
+        assert v == {"naam": values[code]["naam"], **{k: round(values[code][k], 4) for k in ("verhard", "klei", "score")}}
+
+
+def test_dsfl_16_places_two_to_four_trade_places_with_one_voxel_less():
+    names = [sensitivity(UPPER_VOXELS - 1)[c]["naam"] for c in ranked(sensitivity(UPPER_VOXELS - 1))[:4]]
+    assert names == ["Isselt-Oost", "De Baken", "Laakse Tuinen", "Schuilenburg-Zuid"]

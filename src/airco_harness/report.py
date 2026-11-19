@@ -160,9 +160,10 @@ def _column(df: pd.DataFrame, name: str, default: object = "") -> pd.Series:
 
 
 def _mcp_server(value: object) -> str:
-    """`name version` of the MCP server a run met, as the task stored it; empty for a run without one."""
-    info = json.loads(value) if isinstance(value, str) else value if isinstance(value, dict) else {}
-    return f"{info['name']} {info['version']}" if info else ""
+    """`name version` of each MCP server a run met, as the task stored it (one object in older logs); empty for a run without one."""
+    info = json.loads(value) if isinstance(value, str) else value
+    servers = [info] if isinstance(info, dict) else info if isinstance(info, list) else []
+    return ", ".join(f"{s['name']} {s['version']}" for s in servers)
 
 
 def runs(log_dir: str) -> pd.DataFrame:

@@ -64,7 +64,9 @@ def test_runs_table(log_dir):
 
 def test_runs_name_the_mcp_server_version_of_a_run_and_leave_it_empty_without_one(log_dir, tmp_path, monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
-    monkeypatch.setitem(tasks.VARIANTS, "stub", tasks.Variant("stub", mcp=(sys.executable, str(stub)), tags=("bro",)))
+    monkeypatch.setitem(
+        tasks.VARIANTS, "stub", tasks.Variant("stub", mcp=(tasks.McpServer("groundwater-monitoring", command=(sys.executable, str(stub))),), tags=("bro",))
+    )
     submit = ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})
     task = airco(testset="dsfl", variant="stub", agent="inspect", ids="dsfl-06", cost_limit=None)
     eval(task, model=get_model("mockllm/model", custom_outputs=[submit]), log_dir=str(tmp_path), display="none")
@@ -189,21 +191,38 @@ def test_matrix_plan_shows_runs_and_cost_for_paid_models_without_running(monkeyp
     assert "rerun with --yes" not in out.err
 
 
+def test_matrix_passes_its_limits_to_every_task(monkeypatch):
+    limits = []
+
+    def record(tasks, **kwargs):
+        limits.extend((t.token_limit, t.cost_limit) for t in tasks)
+        return True, []
+
+    monkeypatch.setattr(matrix, "eval_set", record)
+    monkeypatch.setattr(matrix, "strip_absolute_log_dir", lambda *args: None)
+    argv = ["airco-matrix", "--models", "mockllm/model", "--ids", SAMPLE, "--token-limit", "3000000", "--cost-limit", "1.5"]
+    monkeypatch.setattr(sys, "argv", argv)
+    with pytest.raises(SystemExit) as stop:
+        matrix.main()
+    assert stop.value.code == 0
+    assert limits == [(3_000_000, 1.5)]
+
+
 def test_matrix_counts_the_runs_of_each_variant_on_its_own_samples(monkeypatch, capsys):
     argv = ["airco-matrix", "--testset", "dsfl", "--models", "mockllm/model", "--agents", "model,inspect", "--epochs", "2", "--plan"]
     monkeypatch.setattr(sys, "argv", [*argv, "--variants", "0,mcp-groundwater-monitoring"])
     matrix.main()
     out = capsys.readouterr().out
-    assert "variant 0: 15 samples x 2 agent-model pairs x 2 epochs = 60 runs" in out
+    assert "variant 0: 16 samples x 2 agent-model pairs x 2 epochs = 64 runs" in out
     assert "variant mcp-groundwater-monitoring: 3 samples x 1 agent-model pairs x 2 epochs = 6 runs" in out
-    assert "66 runs (2 variants, 2 agents, 1 models)" in out
+    assert "70 runs (2 variants, 2 agents, 1 models)" in out
     assert "variant mcp-groundwater-monitoring has an MCP server that the agent model does not take; skipped" in out
 
 
 def test_matrix_tags_narrow_every_variant(monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["airco-matrix", "--testset", "dsfl", "--models", "mockllm/model", "--tags", "bro", "--epochs", "1", "--plan"])
     matrix.main()
-    assert "variant 0: 10 samples x 1 agent-model pairs x 1 epochs = 10 runs" in capsys.readouterr().out
+    assert "variant 0: 11 samples x 1 agent-model pairs x 1 epochs = 11 runs" in capsys.readouterr().out
 
 
 def test_matrix_stops_when_no_variant_has_samples(monkeypatch, capsys):
