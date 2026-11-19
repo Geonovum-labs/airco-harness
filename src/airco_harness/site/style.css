@@ -283,8 +283,6 @@ ul.legend .mark.key::before { content: none; }
 ul.legend .mark.key.limit, ul.legend .mark.key.error { border-radius: 1px; }
 ul.legend .mark.key.hollow { background: var(--card); }
 td small.change { display: block; color: var(--muted); font-size: 0.78rem; white-space: normal; }
-.tableview { margin: 0.6rem 0 0.2rem; }
-.tableview > summary { font-weight: 500; font-size: 0.85rem; color: var(--accent); }
 
 /* The detail of one run, under the marks of its question */
 .detail { margin: 0.75rem 0 0.25rem; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px; padding: 0.7rem 0.9rem; background: var(--bg); scroll-margin-top: 1rem; }
@@ -328,3 +326,136 @@ dl.scores dd.ok { color: var(--good); }
   td.who span { display: block; }
 }
 @media (max-width: 40rem) { header .tagline { display: none; } .kpi .value { font-size: 1.3rem; } }
+
+.calls { margin-top: 1rem; padding: 0.85rem 1rem 0.9rem; border: 1px solid var(--line); border-radius: 8px; background: var(--card); display: flex; flex-direction: column; gap: 0.6rem; }
+.calls h4 { margin: 0; font-size: 1rem; }
+.calls > p { margin: 0; max-width: 72ch; }
+.calls .tablewrap { margin: 0; }
+.calls table { width: 100%; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+table.calllist td { vertical-align: middle; }
+table.calllist tr.call { cursor: pointer; }
+table.calllist tr.call:hover td, table.calllist tr.call.open td { background: var(--chip); }
+table.calllist td.tools { color: var(--muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+.tokbar { position: relative; flex: none; display: flex; gap: 1px; height: 0.8rem; min-width: 3px; border-radius: 2px; overflow: hidden; }
+.tokbar span { display: block; min-width: 2px; height: 100%; }
+.tokbar span:first-child { border-radius: 2px 0 0 2px; }
+.tokbar span:last-child { border-radius: 0 2px 2px 0; }
+button.callrow { font: inherit; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 0 0.15rem; cursor: pointer; }
+button.callrow::after { content: " ▸"; font-weight: 400; color: var(--muted); }
+button.callrow[aria-expanded="true"]::after { content: " ▾"; }
+tr.calldetailrow > td { padding: 0 0 0.6rem; background: var(--chip); }
+.calldetail { margin: 0 0.4rem; padding: 0.7rem 0.85rem; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px; background: var(--bg); display: flex; flex-direction: column; gap: 0.6rem; }
+.callcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 0.8rem 1.2rem; }
+.callcols section { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+.calldetail h5 { margin: 0; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.calldetail details.item { margin: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
+.calldetail details.item > summary .small { white-space: nowrap; }
+.calldetail details.item > summary { display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.3rem 0.55rem; cursor: pointer; font-size: 0.82rem; }
+.calldetail details.item > summary .label { font-weight: 600; overflow-wrap: anywhere; }
+.calldetail details.item[open] > summary { border-bottom: 1px solid var(--line); }
+.calldetail details.item > p { margin: 0.3rem 0.55rem 0.4rem; }
+.calldetail pre { margin: 0; max-height: 16rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 0.8rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 0.5rem 0.6rem; }
+.calldetail details.item pre { background: var(--head); border-radius: 0 0 6px 6px; }
+.calldetail pre.said { background: var(--head); border: 1px solid var(--line); border-radius: 6px; font-family: inherit; font-size: 0.85rem; }
+
+.runs { margin-top: 1rem; }
+.runs h4 { margin: 0; font-size: 1rem; }
+.runs > p { margin: 0.2rem 0 0; }
+details.runs { margin: 1rem 0 0; }
+details.runs > summary { list-style: none; font-weight: 400; }
+details.runs > summary::-webkit-details-marker { display: none; }
+details.runs[open] > summary .btn { display: none; }
+table.runlist > tbody > tr.runrow { cursor: pointer; }
+table.runlist > tbody > tr.runrow > td { vertical-align: middle; }
+table.runlist > tbody > tr.runrow:hover > td, table.runlist > tbody > tr.runrow.open > td { background: var(--chip); }
+table.runlist > tbody > tr > td.markcell { width: 1.5rem; padding-right: 0; }
+table.runlist .mark.key { position: relative; display: inline-block; top: auto; margin: 0; vertical-align: middle; box-shadow: none; }
+table.runlist { font-size: 0.88rem; }
+table.runlist > tbody > tr > td.variant { font-size: 0.85rem; }
+table.runlist > tbody > tr > td.outcome { min-width: 9rem; }
+span.nowrap { white-space: nowrap; }
+table.runlist > tbody > tr > td.chev { width: 1rem; color: var(--muted); font-size: 1.1rem; line-height: 1; }
+table.runlist > tbody > tr.rundetailrow > td { padding: 0 0.5rem 0.75rem; background: var(--chip); }
+table.runlist > tbody > tr.rundetailrow .detail { margin-top: 0; }
+.mark:hover { outline: 2px solid var(--muted); outline-offset: 2px; }
+.mark.hot { outline: 2px solid var(--fg); outline-offset: 3px; z-index: 2; }
+.callbody { display: flex; flex-direction: column; gap: 0.45rem; }
+.callbody > h5 { margin: 0.5rem 0 0; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.callbody > h5:first-child { margin-top: 0; }
+
+/* The run detail inside the runs table, and the call detail inside the calls table: one card each, with room around. */
+.detail .detailhead { align-items: center; }
+.detail .detailhead .outcome { font-size: 1rem; }
+.detailnav { display: flex; gap: 0.1rem; }
+.detail .stats { display: flex; flex-wrap: wrap; gap: 0.6rem 2.5rem; margin: 0.7rem 0 0.2rem; padding: 0.6rem 0.8rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+.detail dl.scores { gap: 0.3rem 1.6rem; margin: 0; }
+.detail dl.scores dt { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.detail dl.scores dd { font-size: 0.95rem; }
+.detail dl.scores.effort { padding-left: 2.5rem; border-left: 1px solid var(--line); }
+.detail dl.scores.effort dd { font-weight: 500; }
+.detail > p.small { margin: 0.3rem 0 0.6rem; }
+table.runlist > tbody > tr.rundetailrow > td { padding: 0.5rem 0.75rem 1rem; }
+table.runlist > tbody > tr.rundetailrow .detail { margin: 0; border-left: 1px solid var(--line); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.tag { display: inline-block; font-size: 0.72rem; font-weight: 600; line-height: 1.5; padding: 0 0.5rem; border-radius: 999px; background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--fg); white-space: nowrap; }
+table.calllist td.tools .tag { margin-right: 0.35rem; }
+tr.calldetailrow > td { padding: 0.3rem 0.5rem 0.8rem; }
+.calldetail { margin: 0; padding: 0.8rem 1rem 0.9rem; border-left: 1px solid var(--line); box-shadow: 0 1px 3px rgba(0,0,0,0.06); gap: 0.75rem; }
+.calldetail .callhead { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+.calldetail .callhead .btn { margin-left: auto; }
+.calldetail > p.small { margin: -0.4rem 0 0; }
+dl.callfacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: 0.4rem 1.2rem; margin: 0; padding: 0.55rem 0.75rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+dl.callfacts dt { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+dl.callfacts dd { margin: 0; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .detail dl.scores.effort { padding-left: 0; border-left: 0; } }
+
+/* Fixed columns, so that a run opened below its row fits the card; a wider table inside it scrolls in its own frame. */
+table.runlist { table-layout: fixed; min-width: 46rem; }
+table.runlist col.c-mark { width: 2rem; }
+table.runlist col.c-setup { width: 18%; }
+table.runlist col.c-variant { width: 17%; }
+table.runlist col.c-epoch { width: 4.8rem; }
+table.runlist col.c-outcome { width: 17%; }
+table.runlist col.c-complete { width: 6.2rem; }
+table.runlist col.c-calls { width: 7.8rem; }
+table.runlist col.c-tokens { width: 5rem; }
+table.runlist col.c-cost { width: 5rem; }
+table.runlist col.c-chev { width: 2rem; }
+table.runlist > tbody > tr.rundetailrow > td { overflow: hidden; }
+table.runlist > tbody > tr > td, table.runlist > thead > tr > th { overflow-wrap: anywhere; }
+table.runlist > thead > tr > th { white-space: normal; }
+
+/* The tokens of a run: a few numbers, one bar by kind with the tool definitions hatched, and its legend. */
+.callsum { display: flex; flex-direction: column; gap: 0.65rem; }
+dl.callstats { display: flex; flex-wrap: wrap; gap: 0.5rem 2.2rem; margin: 0; }
+dl.callstats dt { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+dl.callstats dd { margin: 0; font-size: 1.05rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+dl.callstats dd .muted { font-size: 0.8rem; font-weight: 400; }
+.compbar { position: relative; display: flex; gap: 2px; height: 1.1rem; border-radius: 4px; overflow: hidden; }
+.compbar > span:not(.hatch), .tokbar > span:not(.hatch) { display: block; min-width: 2px; height: 100%; }
+.hatch { position: absolute; left: 0; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--card) 80%, transparent) 0 2px, transparent 2px 6px); }
+ul.complegend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 0.55rem 1.5rem; font-size: 0.82rem; line-height: 1.4; }
+ul.complegend li { display: flex; gap: 0.5rem; align-items: flex-start; }
+ul.complegend .key.sq { flex: none; display: inline-block; width: 0.8rem; height: 0.8rem; margin-top: 0.18rem; border-radius: 2px; border: 0; }
+ul.complegend .key.hatchkey { background: repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 5px); border: 1px solid var(--muted); }
+ul.complegend .num { font-variant-numeric: tabular-nums; }
+table.calllist > tbody > tr > td { padding: 0.45rem 0.6rem; }
+table.calllist td.barcell { width: 48%; }
+.toktrack { display: flex; align-items: center; gap: 0.5rem; }
+.tokarea { flex: 1 1 auto; min-width: 0; }
+.toklabel { flex: none; width: 3rem; text-align: right; font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* A tool as a label: a badge for what it is (an MCP server's, a skill, the harness's), then its name; the agent's own tools have no badge. */
+.tooltag { display: inline-flex; max-width: 100%; vertical-align: middle; font-size: 0.74rem; line-height: 1.55; margin: 0.1rem 0.25rem 0.1rem 0; border: 1px solid var(--line); border-radius: 4px; background: var(--card); overflow: hidden; }
+.tooltag .tkind { flex: none; padding: 0 0.4rem; font-weight: 600; white-space: nowrap; }
+.tooltag .tname { padding: 0 0.45rem; overflow-wrap: anywhere; }
+.tooltag .tname:empty { display: none; }
+.tooltag.mcp { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.tooltag.mcp .tkind { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.tooltag.skill { border-color: color-mix(in srgb, var(--series-5) 55%, var(--line)); }
+.tooltag.skill .tkind { background: color-mix(in srgb, var(--series-5) 16%, transparent); color: var(--fg); }
+.tooltag.harness { border-style: dashed; }
+.tooltag.harness .tkind { color: var(--muted); }
+.tooltag.builtin { background: var(--chip); }
+.perhead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.3rem 1rem; margin-top: 0.5rem; }
+.perhead h5 { margin: 0; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.kindlegend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem; }
+.calldetail details.item > summary .label .tooltag { margin: 0 0 0 0.2rem; }

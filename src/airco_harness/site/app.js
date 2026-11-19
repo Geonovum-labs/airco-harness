@@ -712,13 +712,6 @@ function questionCard(d, m, sample, n, selected, onPick) {
       h("div", {}, lanes.map(([s, ls]) => h("div", {class: "qrow"}, h("div", {class: "aname", text: s.agent === ALONE ? "no tools" : s.agent}),
         h("div", {class: "strip"}, gridlines(), ls.map(rs => lane(d, m, rs, selected, onPick))), means(s)))));
   });
-  const chosen = selected ? data.runs.find(r => r.m === m.name && r.sample === sample && runKey(r) === selected) : null;
-  const epochs = rs => rs.map(r => `${r.failed ? "error" : pct(r.complete)}${r.limit ? "*" : ""}`).join(", ") || "not run";
-  const tableView = h("details", {class: "tableview"}, h("summary", {text: "Table view"}),
-    table(["Model", "Agent", ...d.variants.map(v => `Variant ${v}, per epoch`)],
-      d.setups.filter(s => [...s.byVariant.values()].flat().some(r => r.sample === sample)).map(s => h("tr", {}, h("td", {class: "nowrap", text: s.model}), h("td", {text: s.agent}),
-        d.variants.map(v => h("td", {class: "num", text: epochs((s.byVariant.get(v) || []).filter(r => r.sample === sample).sort((a, b) => a.epoch - b.epoch))}))))),
-    h("p", {class: "muted small", text: "* stopped at a limit"}));
   return h("section", {class: "card question", id: `q-${sample}`, "aria-labelledby": `h-${sample}`},
     h("div", {class: "qnum"}, `Question ${n} `, h("span", {class: "chip", text: sample})),
     h("h3", {id: `h-${sample}`, text: ask}),
@@ -726,16 +719,245 @@ function questionCard(d, m, sample, n, selected, onPick) {
     h("ul", {class: "why"}, summaryLines(d, m, sample)),
     h("div", {class: "qplot"}, h("div", {class: "qrow axisrow", "aria-hidden": "true"}, h("div", {class: "aname"}),
       h("div", {class: "qaxis"}, [0, 0.5, 1].map(t => h("span", {style: `left:${x(t)}`, text: pct(t)}))), h("div", {class: "rvals muted", text: "Mean"})), groups),
-    chosen ? runDetail(d, m, chosen, () => onPick(null)) : null,
-    tableView);
+    runsTable(d, m, sample, selected, onPick));
+}
+
+// A question with more runs than this shows its runs table folded, so that a page of many questions stays short.
+const RUNS_SHOWN = 12;
+
+/** The outcome of a run in a few words, for a table cell. */
+function outcomeShort(r) {
+  if (r.failed) return "error";
+  const what = r.correct === 1 ? "correct" : r.parseable === 0 ? "no usable answer" : "not fully right";
+  return r.limit ? `${what} · ${r.limit} limit` : what;
+}
+
+/** The runs of a question, a row each with the mark it has in the plot; a row opens the run below it, as its mark does. */
+function runsTable(d, m, sample, selected, onPick) {
+  const runs = d.setups.flatMap(s => d.variants.flatMap(v => (s.byVariant.get(v) || []).filter(r => r.sample === sample).sort((a, b) => a.epoch - b.epoch)));
+  if (!runs.length) return null;
+  const markOf = key => document.querySelector(`.lane [data-run="${CSS.escape(key)}"]`);
+  const rows = runs.flatMap(r => {
+    const key = runKey(r), open = key === selected;
+    const toggle = h("button", {class: `mark key ${shapeOf(r)}`, type: "button", style: `--c:${d.style.get(r.variant).color}`,
+      "aria-expanded": String(open), "aria-label": `${open ? "Close" : "Open"} the run: ${markLines(d, m, r).join(". ")}`});
+    const tr = h("tr", {class: `runrow${open ? " open" : ""}`},
+      h("td", {class: "markcell"}, toggle),
+      h("td", {}, h("span", {class: "nowrap", text: modelName(r.model)}), h("span", {class: "muted", text: ` · ${r.agent === ALONE ? "no tools" : r.agent}`})),
+      // Break a long variant name only at its hyphens.
+      h("td", {class: "variant"}, r.variant.split("-").flatMap((part, i) => (i ? ["-", h("wbr"), part] : [part]))), h("td", {class: "num", text: String(r.epoch)}),
+      h("td", {class: "outcome", text: outcomeShort(r)}), h("td", {class: "num", text: r.failed ? "n/a" : pct(r.complete)}),
+      h("td", {class: "num", text: `${r.model_calls ?? "n/a"} / ${r.tool_calls ?? 0}`}),
+      h("td", {class: "num", text: compact(r.tokens)}), h("td", {class: "num", text: dollars(r.cost)}),
+      h("td", {class: "chev", text: open ? "▾" : "▸", "aria-hidden": "true"}));
+    tr.addEventListener("click", () => onPick(r));
+    tr.addEventListener("pointerenter", () => markOf(key)?.classList.add("hot"));
+    tr.addEventListener("pointerleave", () => markOf(key)?.classList.remove("hot"));
+    return open ? [tr, h("tr", {class: "rundetailrow"}, h("td", {colspan: "10"}, runDetail(d, m, r, () => onPick(null))))] : [tr];
+  });
+  const list = h("div", {class: "tablewrap"}, h("table", {class: "runlist"},
+    h("colgroup", {}, ["mark", "setup", "variant", "epoch", "outcome", "complete", "calls", "tokens", "cost", "chev"].map(c => h("col", {class: `c-${c}`}))),
+    h("thead", {}, h("tr", {}, ["", "Model · agent", "Variant", "Epoch", "Outcome", "Complete", "Model / tool calls", "Tokens", "Cost", ""].map((t, i) =>
+      h("th", {scope: "col", class: [3, 5, 6, 7, 8].includes(i) ? "num" : null, text: t})))),
+    h("tbody", {}, rows)));
+  const title = `Runs (${runs.length})`;
+  const hint = "Choose a run, here or by its mark in the plot, for its outcome, sources, model calls and log.";
+  return runs.length > RUNS_SHOWN
+    ? h("details", {class: "runs", open: !!selected}, h("summary", {}, h("span", {class: "btn", text: `Show all ${runs.length} runs`})), h("p", {class: "muted small", text: hint}), list)
+    : h("div", {class: "runs"}, h("h4", {text: title}), h("p", {class: "muted small", text: hint}), list);
 }
 
 function cardsLegend(d, m) {
   const shapes = Object.entries(SHAPES).filter(([k]) => k !== "error" || data.runs.some(r => r.m === m.name && r.failed));
   return h("div", {class: "marklegend"},
-    h("p", {text: "Each mark is one run: its position is complete, the share of the expected content in the answer. Choose a mark for the run's outcome, its sources and its log."}),
+    h("p", {text: "Each mark is one run: its position is complete, the share of the expected content in the answer. Choose a mark, or a row in the runs table under the question, to open the run."}),
     h("ul", {class: "legend"}, d.variants.map(v => h("li", {}, dotKey(d, v), d.style.get(v).label)),
       shapes.map(([k, label]) => h("li", {}, h("span", {class: `mark key ${k}`, "aria-hidden": "true"}), label))));
+}
+
+// ---------- the model calls of one run ----------
+
+// The kinds of tokens of a model call, in the order of the bar from the left, each with a fixed series colour; the
+// index is where the log keeps the count: [new input, cache read, cache write, output].
+const TOKEN_KINDS = [["Cache read", "--series-1", 1], ["Cache write", "--series-4", 2], ["New input", "--series-7", 0], ["Output", "--series-2", 3]];
+const STOP = {tool_calls: "to call tools", stop: "with an answer", max_tokens: "at its output limit", model_length: "at its context limit", content_filter: "by a content filter"};
+const number = n => Number(n).toLocaleString("en-US");
+const callPrice = v => (v === null || v === undefined ? "n/a" : `$${v.toFixed(4)}`);
+const callTotal = c => c.tokens.reduce((a, b) => a + b, 0);
+// An MCP tool as "server · tool": Claude Code's mcp__<server>__<tool>, without the server's name again at the start of the tool's.
+// What a tool is, as sitedata classifies it: an MCP server's, a skill, the harness's, or the agent's own.
+const TOOL_KINDS = {mcp: "MCP", skill: "Skill", harness: "Harness", builtin: "Built-in"};
+/** A tool as a label: its kind (with the MCP server's name) as a small badge, then its name; repeats counted. */
+function toolTag(t, n = 1) {
+  const badge = t.kind === "builtin" ? null : h("span", {class: "tkind", text: t.kind === "mcp" && t.server ? `MCP · ${t.server}` : TOOL_KINDS[t.kind]});
+  return h("span", {class: `tooltag ${t.kind}`, title: `${TOOL_KINDS[t.kind]}${t.server ? ` server ${t.server}` : ""}: ${t.name}`},
+    badge, h("span", {class: "tname", text: n > 1 ? `${t.name} ×${n}` : t.name}));
+}
+const swatchOf = colour => h("span", {class: "key sq", style: `background:var(${colour});border-color:var(${colour})`, "aria-hidden": "true"});
+const callFiles = new Map();
+
+/** A run's model calls, each with its tokens, price, tools and what it read and wrote; fetched once per run. */
+function callsOf(run) {
+  const path = `${root}${encodeURIComponent(run.m)}/calls/${encodeURIComponent(run.log.replace(/\.eval$/, ""))}/${encodeURIComponent(`${run.sample}-${run.epoch}`)}.json`;
+  if (!callFiles.has(path)) callFiles.set(path, fetch(path).then(r => (r.ok ? r.json() : [])).catch(() => []));
+  return callFiles.get(path);
+}
+
+const defsOf = c => (c.definitions ? c.definitions.tokens.reduce((a, b) => a + b, 0) : 0);
+// "≈" before a count of tool definitions that is estimated from their length rather than counted.
+const about = exact => (exact ? "" : "≈ ");
+const share = (part, whole) => (whole ? `${Math.round((100 * part) / whole)}%` : "n/a");
+// What each kind of token is, for the legend of the run's composition.
+const KIND_NOTES = {
+  "Cache read": "the part of the input the provider still had from an earlier call; for Claude a tenth of the input price",
+  "Cache write": "the part it stores now, so that a next call can read it; for Claude a quarter above the input price",
+  "New input": "the rest of the input, neither read from nor written to the cache",
+  "Output": "what the model wrote: text and tool calls",
+};
+
+/** The run's calls in a few numbers, then all their tokens as one bar by kind, with the tool definitions hatched. */
+function callsSummary(calls) {
+  const total = calls.reduce((a, c) => a + callTotal(c), 0);
+  const price = calls.reduce((a, c) => a + (c.price || 0), 0);
+  const largest = calls.reduce((a, c) => (callTotal(c) > callTotal(a) ? c : a));
+  const defs = calls.reduce((a, c) => a + defsOf(c), 0);
+  const counted = calls.every(c => !c.definitions || c.definitions.exact);
+  const defsPrice = calls.reduce((a, c) => a + (c.definitions?.price || 0), 0);
+  const stat = (label, value, note) => h("div", {}, h("dt", {text: label}), h("dd", {}, value, note ? h("span", {class: "muted", text: ` ${note}`}) : null));
+  const kinds = TOKEN_KINDS.map(([label, colour, i]) => ({label, colour, tokens: calls.reduce((a, c) => a + c.tokens[i], 0)}));
+  const bar = h("div", {class: "compbar", role: "img", "aria-label": kinds.map(k => `${k.label} ${share(k.tokens, total)}`).join(", ")},
+    kinds.filter(k => k.tokens).map(k => {
+      const segment = h("span", {style: `flex-grow:${k.tokens};background:var(${k.colour})`});
+      tip(segment, () => [k.label, `${number(k.tokens)} tokens, ${share(k.tokens, total)}`]);
+      return segment;
+    }),
+    defs ? h("span", {class: "hatch", style: `width:${(100 * defs) / total}%`}) : null);
+  return h("div", {class: "callsum"},
+    h("dl", {class: "callstats"},
+      stat("Calls", String(calls.length)), stat("Tokens", compact(total)), stat("Price", dollars(price)),
+      stat("Largest call", compact(callTotal(largest)), `(call ${calls.indexOf(largest) + 1})`),
+      defs ? stat(`Tool definitions${counted ? "" : " ≈"}`, compact(defs), `${share(defs, total)} of the tokens, ${dollars(defsPrice)}`) : null),
+    bar,
+    h("ul", {class: "complegend"},
+      kinds.map(k => h("li", {}, swatchOf(k.colour),
+        h("span", {}, h("b", {text: k.label}), h("span", {class: "num", text: ` ${number(k.tokens)} · ${share(k.tokens, total)}`}), h("br"), h("span", {class: "muted", text: KIND_NOTES[k.label]})))),
+      defs ? h("li", {}, h("span", {class: "key sq hatchkey", "aria-hidden": "true"}),
+        h("span", {}, h("b", {text: `Tool definitions${counted ? "" : " ≈"}`}), h("span", {class: "num", text: ` ${number(defs)} · ${share(defs, total)}`}), h("br"),
+          h("span", {class: "muted", text: counted
+            ? "the description of every tool the model may call, with the text the provider adds for tools, sent with every call and mostly read from the cache; counted with the provider's token counter"
+            : "the description of every tool the model may call, sent with every call and mostly read from the cache; estimated from their length, which can be far off (no count in tool-tokens.json)"}))) : null));
+}
+
+/** One call's tokens as a bar on the scale of the largest call, each kind a segment, the tool definitions hatched, its total beside it. */
+function tokenBar(c, scale) {
+  const total = callTotal(c), defs = defsOf(c);
+  const bar = h("div", {class: "tokbar", style: `width:${(100 * total) / scale}%`},
+    TOKEN_KINDS.filter(k => c.tokens[k[2]] > 0).map(([label, colour, i]) => {
+      const segment = h("span", {style: `flex-grow:${c.tokens[i]};background:var(${colour})`});
+      tip(segment, () => [label, `${number(c.tokens[i])} tokens`]);
+      return segment;
+    }),
+    defs ? h("span", {class: "hatch", style: `width:${(100 * defs) / total}%`}) : null);
+  if (defs) tip(bar.lastChild, () => [`Tool definitions${c.definitions.exact ? "" : " ≈"}`, `${number(defs)} tokens, ${callPrice(c.definitions.price)}`]);
+  // The bars share the width left of the totals, so that the largest bar ends where the totals start.
+  return h("div", {class: "toktrack"}, h("div", {class: "tokarea"}, bar), h("span", {class: "toklabel", text: compact(total)}));
+}
+
+/** The tools a call called as labels by kind, repeats counted. */
+function toolTags(tools) {
+  const counts = new Map();
+  for (const t of tools) {
+    const k = [t.kind, t.server, t.name].join("|");
+    counts.set(k, [t, (counts.get(k)?.[1] || 0) + 1]);
+  }
+  return [...counts.values()].map(([t, n]) => toolTag(t, n));
+}
+
+/** An item of what a call read or wrote: its label and size on one line, its text when opened. */
+function callItem(label, x) {
+  const size = x.chars || x.text.length;
+  return h("details", {class: "item"},
+    h("summary", {}, h("span", {class: "label"}, label), h("span", {class: "muted small", text: `${number(size)} characters`})),
+    h("pre", {text: x.text || "(empty)"}),
+    x.chars ? h("p", {class: "muted small", text: `The first ${number(x.text.length)} of ${number(x.chars)} characters; the log viewer shows all of it.`}) : null);
+}
+
+function callDetail(run, calls, i) {
+  const c = calls[i];
+  const since = c.start && calls[0].start ? Math.round((Date.parse(c.start) - Date.parse(calls[0].start)) / 1000) : null;
+  const read = c.new.map(m => callItem(m.role === "tool" ? ["Tool result ", m.tool ? toolTag(m.tool) : null] : m.role === "system" ? "System message" : "User message", m));
+  const fact = (label, value) => h("div", {}, h("dt", {text: label}), h("dd", {text: value}));
+  const wrote = [
+    ...(c.output.text ? [h("pre", {class: "said", text: c.output.text}), c.output.chars ? h("p", {class: "muted small", text: `The first ${number(c.output.text.length)} of ${number(c.output.chars)} characters.`}) : null] : []),
+    ...c.output.tool_calls.map(t => callItem(["Tool call ", toolTag(t.tool)], t)),
+  ];
+  return h("div", {class: "calldetail"},
+    h("div", {class: "callhead"},
+      h("strong", {text: `Call ${i + 1}`}), c.side ? h("span", {class: "tag", text: "separate conversation"}) : null,
+      h("a", {class: "btn", href: `${viewerLink(run)}event?event=${encodeURIComponent(c.event)}`, text: "Exact request and response"})),
+    c.side ? h("p", {class: "muted small", text: "Not the agent's own conversation: a model call one of its tools makes, such as Claude Code's web search, with a prompt of its own."}) : null,
+    h("dl", {class: "callfacts"},
+      fact("Started", since === null ? "n/a" : `${number(since)} s into the run`), fact("Took", `${fmt(c.seconds, 1)} s`),
+      fact("Stopped", STOP[c.stop] || c.stop), fact("Input", `${plural(c.messages, "message")}, ${plural(c.tool_definitions, "tool definition")}`),
+      fact("Tokens", number(callTotal(c))), fact("Price", callPrice(c.price)),
+      c.definitions ? fact("Tool definitions", `${about(c.definitions.exact)}${number(defsOf(c))} tokens, ${about(c.definitions.exact)}${callPrice(c.definitions.price)}`) : null),
+    h("div", {class: "callcols"},
+      h("section", {}, h("h5", {text: `New in its input (${read.length})`}), read.length ? read : h("p", {class: "muted small", text: "Nothing but the model's own previous output."})),
+      h("section", {}, h("h5", {text: `Wrote (${c.output.tool_calls.length ? plural(c.output.tool_calls.length, "tool call") : "text only"})`}),
+        wrote.length ? wrote : h("p", {class: "muted small", text: "Nothing."}))));
+}
+
+/** A run's model calls: a summary per kind of token, then one row per call with its tokens as a bar; a row opens below it what the call read and wrote. */
+function callsSection(run) {
+  const body = h("div", {}, h("p", {class: "muted small", text: "Loading the model calls…"}));
+  const section = h("div", {class: "calls"}, h("h4", {text: "Model calls"}),
+    h("p", {class: "muted small", text: "Each model call is one request to the model. It sends the whole conversation so far again, so every call reads more than the one before; the token limit counts every call's tokens. Choose a call to see what was new in its input and what the model wrote."}),
+    body);
+  callsOf(run).then(calls => {
+    if (!calls.length) {
+      body.replaceChildren(h("p", {class: "muted small", text: "This run's model calls are not in the site's data."}));
+      return;
+    }
+    const scale = Math.max(...calls.map(callTotal));
+    const start = Date.parse(calls[0].start);
+    let open = null;
+    const rows = calls.map((c, i) => {
+      const toggle = h("button", {class: "callrow", type: "button", "aria-expanded": "false", text: String(i + 1), "aria-label": `Call ${i + 1}: show what it read and wrote`});
+      const tr = h("tr", {class: "call"},
+        h("td", {class: "num"}, toggle),
+        h("td", {class: "num muted", text: Number.isNaN(start) ? "" : `${number(Math.round((Date.parse(c.start) - start) / 1000))} s`}),
+        h("td", {class: "barcell"}, tokenBar(c, scale)),
+        h("td", {class: "num", text: callPrice(c.price)}),
+        h("td", {class: "tools"}, c.side ? h("span", {class: "tag", text: "separate conversation"}) : null,
+          c.tools.length ? toolTags(c.tools) : c.side ? null : h("span", {class: "muted", text: "none: it answered"})));
+      tr.addEventListener("click", e => (e.target.closest("a, details") ? null : select(i)));
+      return {tr, toggle, detail: h("tr", {class: "calldetailrow", hidden: true}, h("td", {colspan: "5"}))};
+    });
+    const select = i => {
+      open = i === open ? null : i;
+      rows.forEach((r, j) => {
+        const shown = j === open;
+        r.tr.classList.toggle("open", shown);
+        r.toggle.setAttribute("aria-expanded", String(shown));
+        r.detail.hidden = !shown;
+        r.detail.firstChild.replaceChildren(...(shown ? [callDetail(run, calls, j)] : []));
+      });
+      setParams({call: open === null ? null : open + 1});
+    };
+    body.className = "callbody";
+    body.replaceChildren(
+      h("h5", {text: "Totals"}), callsSummary(calls),
+      h("div", {class: "perhead"}, h("h5", {text: "Per call"}),
+        h("span", {class: "kindlegend muted small"}, "Tools: ", ["mcp", "skill", "harness", "builtin"].map(k => toolTag({kind: k, name: k === "builtin" ? "Built-in" : ""})))),
+      h("div", {class: "tablewrap"}, h("table", {class: "calllist"},
+        h("thead", {}, h("tr", {}, ["Call", "Start", "Tokens, tool definitions hatched", "Price", "Tools called"].map((t, i) =>
+          h("th", {scope: "col", class: [0, 1, 3].includes(i) ? "num" : null, text: t})))),
+        h("tbody", {}, rows.flatMap(r => [r.tr, r.detail])))));
+    // A link can name a call of the open run, as #run=…&call=3.
+    const linked = Number(params().get("call"));
+    if (Number.isInteger(linked) && linked >= 1 && linked <= calls.length) select(linked - 1);
+  });
+  return section;
 }
 
 // ---------- the detail of one run ----------
@@ -752,18 +974,21 @@ function runDetail(d, m, run, onClose) {
   const yes = (v, ok, no) => (run.failed ? "error" : v === 1 ? ok : no);
   const score = (label, value, good) => h("div", {}, h("dt", {text: label}), h("dd", {class: good === undefined || run.failed ? "" : good ? "ok" : "bad", text: value}));
   const close = h("button", {class: "btn", type: "button", text: "Close", onclick: onClose});
-  const section = h("div", {class: "detail", id: "detail", role: "region", "aria-label": "Run detail"},
-    h("div", {class: "detailhead"}, h("strong", {text: `${setupName(run)} · variant ${run.variant} · epoch ${run.epoch}`}),
-      h("span", {}, h("a", {class: "btn", href: viewerLink(run), text: "Log"}), close)),
-    h("p", {class: "outcome", text: outcomeLine(run, m.limits)}),
-    h("dl", {class: "scores"},
-      score("complete", run.failed ? "error" : pct(run.complete)), score("correct", yes(run.correct, "yes", "no"), run.correct === 1),
-      score("parseable", yes(run.parseable, "usable", "not usable"), run.parseable === 1), score("source", yes(run.source, "yes", "no"), run.source === 1),
-      score("invented", run.failed ? "error" : String(run.invented ?? "n/a"), run.invented === 0)),
+  const section = h("div", {class: "detail", id: "detail", role: "region", "aria-label": `Run detail: ${setupName(run)}, variant ${run.variant}, epoch ${run.epoch}`},
+    h("div", {class: "detailhead"}, h("strong", {class: "outcome", text: outcomeLine(run, m.limits)}),
+      h("span", {class: "detailnav"}, h("a", {class: "btn", href: viewerLink(run), text: "Log"}), close)),
+    h("div", {class: "stats"},
+      h("dl", {class: "scores"},
+        score("complete", run.failed ? "error" : pct(run.complete)), score("correct", yes(run.correct, "yes", "no"), run.correct === 1),
+        score("parseable", yes(run.parseable, "usable", "not usable"), run.parseable === 1), score("source", yes(run.source, "yes", "no"), run.source === 1),
+        score("invented", run.failed ? "error" : String(run.invented ?? "n/a"), run.invented === 0)),
+      h("dl", {class: "scores effort"},
+        score("cost", dollars(run.cost)), score("tokens", compact(run.tokens)), score("model / tool calls", `${run.model_calls ?? "n/a"} / ${run.tool_calls ?? 0}`),
+        score("time", `${fmt(run.total_time_s, 0)} s`))),
     h("p", {class: "muted small", text: `${SOURCE_NOTE[0].toUpperCase()}${SOURCE_NOTE.slice(1)}`}),
-    h("p", {class: "effort", text: [dollars(run.cost), `${compact(run.tokens)} tokens`, plural(run.tool_calls ?? 0, "tool call"), `${fmt(run.total_time_s, 0)} s`].join(" · ")}),
     h("div", {class: "sources"}, h("span", {class: "k", text: "Retrieved from"}), h("div", {class: "hosts"}, hostList(run))),
-    run.mcp_server ? h("p", {class: "muted small", text: `MCP server available: ${run.mcp_server}.`}) : null);
+    run.mcp_server ? h("div", {class: "sources"}, h("span", {class: "k", text: "MCP servers"}), h("span", {class: "small", text: run.mcp_server})) : null,
+    callsSection(run));
   const sample = mapOf(run);
   if (sample) {
     const counts = h("ul", {class: "legend"});
@@ -809,7 +1034,7 @@ function measurementPage() {
     tooltip.hidden = true;
     const before = runOf(selected), key = r ? runKey(r) : null;
     selected = key === selected ? null : key;
-    setParams({run: selected});
+    setParams({run: selected, call: null});
     for (const sample of new Set([before?.sample, r?.sample].filter(Boolean))) document.getElementById(`q-${sample}`)?.replaceWith(card(sample));
     const focus = key || (before && runKey(before));
     if (focus) document.querySelector(`[data-run="${CSS.escape(focus)}"]`)?.focus({preventScroll: true});

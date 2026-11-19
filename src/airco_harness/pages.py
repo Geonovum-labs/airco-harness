@@ -10,7 +10,8 @@ The site is a dashboard over all measurements under reports/<name>/logs/logs:
 - <name>/report.html, a measurement: its main finding, correct or complete per
   model and agent with the gain of each variant over variant 0, the questions that fail,
   the cost per correct answer, and per question every run as a mark that opens
-  the run with a link into the log and, for a map question, its map on the BRT
+  the run with a link into the log, its model calls with their tokens (<name>/calls/)
+  and, for a map question, its map on the BRT
   achtergrondkaart of PDOK in RD (EPSG:28992);
 - compare.html: measurements over time, variants, models or agents side by side,
   each group scored on the samples all groups have;
@@ -40,7 +41,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import sitedata
+from . import sitedata, tooltokens
 from .matrix import strip_absolute_log_dir
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -146,7 +147,10 @@ def build(reports: Path, out: Path, cache: Path | None = None) -> list[dict]:
     out.mkdir(parents=True)
     found = measurements(reports)
     code = digest(ROOT, [ROOT / p for p in CODE]) if cache else ""
-    entries = {m: cache / f"{m.name}-{hashlib.sha256((code + digest(m, [m / 'logs' / 'logs'])).encode()).hexdigest()[:20]}" if cache else None for m in found}
+    entries = {
+        m: cache / f"{m.name}-{hashlib.sha256((code + digest(m, [m / 'logs' / 'logs', m / tooltokens.FILE])).encode()).hexdigest()[:20]}" if cache else None
+        for m in found
+    }
     data = sitedata.dataset([part(m, out, entries[m]) for m in found])
     if cache and cache.is_dir():
         for stale in set(cache.iterdir()) - set(entries.values()):

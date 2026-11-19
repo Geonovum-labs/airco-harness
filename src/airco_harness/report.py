@@ -28,12 +28,14 @@ import urllib.parse
 from pathlib import Path
 
 import pandas as pd
+from dotenv import find_dotenv, load_dotenv
 from inspect_ai.analysis import EvalInfo, EvalModel, EvalTask, SampleColumn, SampleSummary, messages_df, samples_df
 from inspect_ai.log import read_eval_log_samples
 from inspect_ai.model import ContentToolUse
 
 from validators import rules, sources
 
+from . import tooltokens
 from .models import Price, load_prices
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
@@ -377,4 +379,6 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     table.to_csv(out / "runs.csv", index=False)
     (out / "report.md").write_text(markdown(table, args.log_dir), encoding="utf-8")
+    load_dotenv(find_dotenv(usecwd=True))
+    tooltokens.write(Path(args.log_dir), out)
     print(f"{len(table)} run{'' if len(table) == 1 else 's'}; {out / 'report.md'}")

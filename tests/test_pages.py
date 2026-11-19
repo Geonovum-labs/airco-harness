@@ -254,3 +254,88 @@ def test_a_build_from_the_cache_reads_no_log_and_gives_the_same_site(tmp_path, m
     (log_dir / "notes.txt").write_text("a changed log folder", encoding="utf-8")
     with pytest.raises(AssertionError, match="read again"):
         pages.build(reports, tmp_path / "again", cache)
+
+
+def test_the_model_calls_of_a_run_reach_its_measurement_with_their_tokens_and_tools(tmp_path):
+    """Each model call of the run in a file of its own run, not in data.json: tokens and tools, what it read for the first time and what it wrote."""
+    from inspect_ai.model import ModelUsage
+
+    steps = [
+        ModelOutput.for_tool_call("mockllm/model", "fetch", {"url": "http://127.0.0.1:9/nothing"}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": GOOD}),
+    ]
+    usages = [ModelUsage(input_tokens=1200, input_tokens_cache_read=0, input_tokens_cache_write=800, output_tokens=40, total_tokens=2040),
+              ModelUsage(input_tokens=300, input_tokens_cache_read=2000, input_tokens_cache_write=0, output_tokens=25, total_tokens=2325)]  # fmt: skip
+    for step, usage in zip(steps, usages):
+        step.usage = usage
+    log_dir = tmp_path / "reports" / "2026-11-19T12-00-00" / "logs" / "logs"
+    eval(
+        airco(agent="inspect", ids="imgeo-G04-03", cost_limit=None),
+        model=get_model("mockllm/model", custom_outputs=steps),
+        log_dir=str(log_dir),
+        display="none",
+    )
+
+    pages.build(tmp_path / "reports", tmp_path / "site")
+
+    [run] = strict(tmp_path / "site" / "data.json")["runs"]
+    assert "calls" not in run and run["model_calls"] == 2
+    first, second = strict(tmp_path / "site" / "2026-11-19T12-00-00" / sitedata.calls_file(run))
+    assert [(c["tokens"], c["price"], c["tools"], c["stop"]) for c in (first, second)] == [
+        ([1200, 0, 800, 40], 0.0, [{"kind": "builtin", "name": "fetch"}], "tool_calls"),
+        ([300, 2000, 0, 25], 0.0, [{"kind": "harness", "name": "submit"}], "tool_calls"),
+    ]
+    assert sum(sum(c["tokens"]) for c in (first, second)) == run["tokens"]
+    assert first["output"]["tool_calls"] == [{"tool": {"kind": "builtin", "name": "fetch"}, "text": '{"url": "http://127.0.0.1:9/nothing"}'}]
+    assert [m["role"] for m in first["new"]][-1] == "user" and first["new"][-1]["text"].startswith("Een openluchtzwembad")
+    [result] = second["new"]
+    assert (result["role"], result["tool"]) == ("tool", {"kind": "builtin", "name": "fetch"}) and result["text"]
+    assert second["messages"] == first["messages"] + 2 and first["event"] != second["event"]
+    assert (first["side"], second["side"]) == (False, False)
+    for call in (first, second):
+        definitions = sum(call["definitions"]["tokens"])
+        assert 0 < definitions <= sum(call["tokens"][:3]) and call["definitions"]["tokens"][3] == 0 and call["definitions"]["price"] == 0.0
+        assert call["definitions"]["exact"] is False, "without tool-tokens.json the count is an estimate"
+    viewer = (tmp_path / "site" / "2026-11-19T12-00-00" / "viewer" / "logs" / run["log"]).exists()
+    assert viewer, "the event ids point into the log the viewer bundles"
+
+
+@pytest.mark.parametrize(
+    ("name", "servers", "with_mcp", "tool"),
+    [
+        ("mcp__bgt__process_aggregate-features", [], True, {"kind": "mcp", "server": "bgt", "name": "process_aggregate-features"}),
+        ("mcp__subsurface-models__subsurface-models_trace", [], True, {"kind": "mcp", "server": "subsurface-models", "name": "trace"}),
+        ("mcp__map__show_on_map", [], False, {"kind": "harness", "name": "show_on_map"}),
+        ("subsurface-models_trace", ["bgt", "subsurface-models"], True, {"kind": "mcp", "server": "subsurface-models", "name": "trace"}),
+        ("process_aggregate-features", ["bgt"], True, {"kind": "mcp", "name": "process_aggregate-features"}),
+        ("fetch", ["bgt"], True, {"kind": "builtin", "name": "fetch"}),
+        ("Bash", ["bgt"], True, {"kind": "builtin", "name": "Bash"}),
+        ("Skill", [], False, {"kind": "skill", "name": "Skill"}),
+        ("process_aggregate-features", [], False, {"kind": "builtin", "name": "process_aggregate-features"}),
+    ],
+)
+def test_a_tool_is_an_mcp_servers_a_skill_the_harnesss_or_the_agents_own(name, servers, with_mcp, tool):
+    assert sitedata.tool_kind(name, servers, with_mcp) == tool
+
+
+def test_the_servers_of_a_run_come_from_its_variant_in_every_form_the_logs_have_had():
+    form = {"mcp": [{"name": "bgt", "url": "https://bag.ldproxy.net/bgt/mcp"}, {"name": "subsurface-models", "url": "http://localhost:18082/mcp"}]}
+    assert sitedata.mcp_servers({"variant_form": form}) == (["bgt", "subsurface-models"], True)
+    assert sitedata.mcp_servers({"variant_form": {"mcp": "https://bag.ldproxy.net/bag/mcp"}}) == (["bag"], True)
+    assert sitedata.mcp_servers({"variant_form": {"mcp": ["docker", "run", "image"]}}) == ([], True)
+    assert sitedata.mcp_servers({"variant_form": {"mcp": None}}) == ([], False)
+
+
+def test_a_tool_set_is_read_from_the_request_with_its_attachments_and_keyed_whatever_its_order():
+    from types import SimpleNamespace
+
+    from airco_harness import tooltokens
+
+    long = "a" * 32
+    tools = [{"name": "fetch", "description": f"attachment://{'0' * 32}", "input_schema": {"type": "object", "properties": {"url": {"type": "string"}}}}]
+    event = SimpleNamespace(call=SimpleNamespace(request={"tools": tools}))
+    [tool] = tooltokens.tools_of(event, {"0" * 32: f'Fetch a "page" {long}'})
+    assert tool["description"] == f'Fetch a "page" {long}'
+    reordered = [{"input_schema": tool["input_schema"], "description": tool["description"], "name": "fetch"}]
+    assert tooltokens.key("anthropic/claude-haiku-5-5", [tool]) == tooltokens.key("anthropic/claude-haiku-5-5", reordered)
+    assert tooltokens.tools_of(SimpleNamespace(call=None), {}) is None

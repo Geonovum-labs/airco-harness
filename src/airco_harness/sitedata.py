@@ -19,10 +19,12 @@ from pathlib import Path
 import pandas as pd
 from inspect_ai.analysis import SampleSummary, samples_df
 from inspect_ai.log import read_eval_log
+from inspect_ai.model import ModelUsage, compute_model_cost
 
 from validators import geo, source_check, sources
 
-from . import report, scorers
+from . import report, scorers, tooltokens
+from .models import Price, load_prices
 from .tools import MAP_STORE
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
@@ -143,15 +145,162 @@ def places(messages: list, expected: dict, maps: dict) -> list[dict]:
     return out
 
 
-def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str, str, int], dict[str, list[dict]]]:
+CALL_TEXT = 600  # characters of a message or of the arguments of a tool call
+# Tokens per character of the JSON of a call's tool definitions, for an estimate where tool-tokens.json has no count.
+# Anthropic's count_tokens gave 0.36 to 0.48 for the function tools of measurement smoke-dsfl-16-3m (19 November 2026),
+# but a provider's own tools, such as its web search, cost thousands of tokens in a few characters: a rough estimate.
+TOKENS_PER_TOOL_CHAR = 0.42
+# The harness's own tools, which Claude Code reaches through a bridge named mcp__map or mcp__plot; and the inspect agent's.
+HARNESS_TOOLS = {"show_on_map", "plot_series", "submit"}
+AGENT_TOOLS = {"web_search", "fetch"}
+
+
+def tool_kind(name: str, servers: list[str], with_mcp: bool) -> dict:
+    """What a tool is: an MCP server's (with the server's name when it is known), a skill, the harness's, or the agent's own.
+
+    Claude Code names an MCP tool mcp__<server>__<tool>. The inspect agent names it as the server does, with dots made
+    underscores, which often starts with the server's name; one that does not, and is none of the agent's own tools, is
+    an MCP tool of an unnamed server when the run had a server. The agents' own tools are capitalized in Claude Code."""
+    if m := re.fullmatch(r"mcp__(.+?)__(.+)", name):
+        server, tool = m[1], m[2]
+        if tool in HARNESS_TOOLS:
+            return {"kind": "harness", "name": tool}
+        rest = tool[len(server) :].lstrip("._") if tool.startswith(server) else ""
+        return {"kind": "mcp", "server": server, "name": rest or tool}
+    if name in HARNESS_TOOLS:
+        return {"kind": "harness", "name": name}
+    if name == "Skill":
+        return {"kind": "skill", "name": "Skill"}
+    for server in servers:
+        if name.startswith(server) and name[len(server) : len(server) + 1] in (".", "_"):
+            return {"kind": "mcp", "server": server, "name": name[len(server) + 1 :]}
+    if with_mcp and name not in AGENT_TOOLS and not name[:1].isupper():
+        return {"kind": "mcp", "name": name}
+    return {"kind": "builtin", "name": name}
+
+
+def mcp_servers(metadata: dict) -> tuple[list[str], bool]:
+    """The names of the MCP servers a run's variant gave, and whether it gave any, from the log's variant_form."""
+    mcp = (metadata.get("variant_form") or {}).get("mcp")
+    if isinstance(mcp, str):
+        return [mcp.rstrip("/").split("/")[-2]] if "/" in mcp else [], True
+    if isinstance(mcp, list) and mcp and isinstance(mcp[0], dict):
+        return [s["name"] for s in mcp if s.get("name")], True
+    return [], bool(mcp)
+
+
+CALL_OUTPUT = 2000  # characters of what the model wrote
+
+
+ATTACHMENT = re.compile(r"attachment://([0-9a-f]{32})")
+
+
+def _clip(text: str, limit: int, attachments: dict[str, str]) -> dict:
+    """The text, cut at `limit` characters, with its full length when it was cut. A log keeps a long or repeated text
+    once, as an attachment, and refers to it from where it occurs; every reference is resolved first."""
+    text = ATTACHMENT.sub(lambda m: attachments.get(m[1], m[0]), text)
+    return {"text": text[:limit], "chars": len(text)} if len(text) > limit else {"text": text}
+
+
+def _message(message, attachments: dict[str, str], kind) -> dict:
+    """A message new in the call's input: its role, the tool it answers and what that tool is, and its text or error, clipped."""
+    error = getattr(message, "error", None)
+    text = error.message if error else message.text
+    function = getattr(message, "function", None)
+    return {"role": message.role, "tool": kind(function) if function else None, **_clip(text, CALL_TEXT, attachments)}
+
+
+def tool_definitions(tokens: int, exact: bool, usage: ModelUsage, price: Price | None) -> dict:
+    """The estimated tokens of a call's tool definitions, split as the provider billed them, and their price.
+
+    The definitions open the prompt, so they are the first part a cache holds: they count as cache read as far as the
+    call read from the cache, then as cache write, then as new input; [new input, cache read, cache write, output]."""
+    read = min(tokens, usage.input_tokens_cache_read or 0)
+    write = min(tokens - read, usage.input_tokens_cache_write or 0)
+    rest = min(tokens - read - write, usage.input_tokens)
+    part = ModelUsage(input_tokens=rest, input_tokens_cache_read=read, input_tokens_cache_write=write, output_tokens=0, total_tokens=rest + read + write)
+    if price is None:
+        return {"tokens": [rest, read, write, 0], "price": None, "exact": exact}
+    prompt = usage.input_tokens + (usage.input_tokens_cache_read or 0) + (usage.input_tokens_cache_write or 0)
+    rates = price.long_prompt if price.long_prompt and prompt > price.long_prompt.above else price
+    return {"tokens": [rest, read, write, 0], "price": round(compute_model_cost(rates.cost(), part, price.cache_ttl(usage)), 6), "exact": exact}
+
+
+def model_calls(
+    events: list, prices: dict[str, Price], attachments: dict[str, str] | None = None, counts: dict | None = None, servers: tuple[list[str], bool] = ([], False)
+) -> list[dict]:
+    """Per model call of one run, in order: its event id (for the viewer), when it started and how long it took, why it
+    stopped, how many messages and tool definitions it read, its tokens [new input, cache read, cache write, output] and
+    exact price as the report counts it (null without a price), the messages new in its input, and its output.
+    A message is new when no earlier call read it, by its id; the model's own earlier output is left out. A call whose
+    conversation starts with another message than the first call's is "side": a separate conversation, such as the one
+    Claude Code's web search runs."""
+    calls, seen, attachments, counts = [], set(), attachments or {}, counts or {}
+    kind = lambda name: tool_kind(name, *servers)  # noqa: E731
+    # A log keeps the request of a model call for the first calls only; a later call with the same tools, by name, has their count.
+    by_names: dict[tuple, dict] = {}
+    main = None
+    for event in events:
+        if event.event != "model" or not event.output or not event.output.usage:
+            continue
+        usage, price = event.output.usage, prices.get(event.model)
+        first = event.input[0].id if event.input else None
+        main = main or first
+        new = [m for m in event.input if (m.id or id(m)) not in seen]
+        seen |= {m.id or id(m) for m in event.input}
+        message = event.output.message
+        tool_calls = (message.tool_calls or []) if message else []
+        sent = tooltokens.tools_of(event, attachments)
+        names = (event.model, tuple(t.name for t in event.tools))
+        counted = counts.get(tooltokens.key(event.model, sent)) if sent else by_names.get(names)
+        if sent and counted:
+            by_names[names] = counted
+        estimate = (
+            round(TOKENS_PER_TOOL_CHAR * len(json.dumps(sent, ensure_ascii=False)))
+            if sent
+            else round(TOKENS_PER_TOOL_CHAR * sum(len(t.model_dump_json(exclude_none=True)) for t in event.tools))
+        )
+        calls.append({
+            "event": event.uuid,
+            "start": event.timestamp.isoformat() if event.timestamp else None,
+            "seconds": round(event.working_time if event.working_time is not None else event.output.time or 0, 2),
+            "stop": event.output.stop_reason,
+            "messages": len(event.input),
+            "tool_definitions": len(event.tools),
+            "definitions": tool_definitions(counted["tokens"] if counted else estimate, counted is not None, usage, price),
+            "tokens": [usage.input_tokens, usage.input_tokens_cache_read or 0, usage.input_tokens_cache_write or 0, usage.output_tokens],
+            "price": round(price.call(usage, price.cache_ttl(usage)), 6) if price else None,
+            "tools": [_called(c, kind) for c in tool_calls],
+            "side": first != main,
+            "new": [_message(m, attachments, kind) for m in new if m.role != "assistant"],
+            "output": {**_clip(message.text if message else "", CALL_OUTPUT, attachments),
+                       "tool_calls": [{"tool": _called(c, kind), **_clip(json.dumps(c.arguments, ensure_ascii=False), CALL_TEXT, attachments)} for c in tool_calls]},
+        })  # fmt: skip
+    return calls
+
+
+def _called(call, kind) -> dict:
+    """What a tool call called; for Claude Code's Skill tool, the skill it named."""
+    tool = kind(call.function)
+    if tool["kind"] == "skill":
+        arguments = call.arguments or {}
+        tool["name"] = str(arguments.get("skill") or arguments.get("command") or "Skill")
+    return tool
+
+
+def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str, str, int], dict[str, list]]:
     """Per run (log file, sample, epoch), what the conversation shows, read with the harness's current rules:
     "retrieved", the URLs that worked with their class for source; "errors", the ones that failed with their HTTP
     status when known and the line that says why; and for a map question "places", what the agent put on the map,
     matched to the reference extract at the commit of the log. A log scored under older retrieval rules therefore
-    shows what they would find now; its scores are the ones in the log."""
-    out: dict[tuple[str, str, int], dict[str, list[dict]]] = {}
+    shows what they would find now; its scores are the ones in the log. "calls" are its model calls (model_calls)."""
+    out: dict[tuple[str, str, int], dict[str, list]] = {}
+    prices = load_prices()
+    counts = tooltokens.read(log_dir.parent.parent)
     for path in sorted(log_dir.glob("*.eval")):
-        for sample in read_eval_log(str(path)).samples or []:
+        log = read_eval_log(str(path))
+        servers = mcp_servers(log.eval.metadata or {})
+        for sample in log.samples or []:
             standard = (sample.metadata or {}).get("standard", "")
             ok: dict[str, dict] = {}
             failed: dict[tuple, dict] = {}
@@ -165,7 +314,11 @@ def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str
                 if output and output != error:
                     entry["output"] = output[:1500]
                 failed.setdefault((r["url"], r["status"], error), entry)["times"] += 1
-            run = {"retrieved": list(ok.values()), "errors": list(failed.values())}
+            run = {
+                "retrieved": list(ok.values()),
+                "errors": list(failed.values()),
+                "calls": model_calls(sample.events, prices, sample.attachments, counts, servers),
+            }
             if str(sample.id) in map_samples:
                 run["places"] = places(sample.messages, map_samples[str(sample.id)], sample.store.get(MAP_STORE, {}))
             out[(path.name, str(sample.id), sample.epoch)] = run
@@ -207,6 +360,7 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     for row in table.to_dict("records"):
         seen = fetched.get((row["log"], row["sample"], row["epoch"]), {})
         run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, "retrieved": seen.get("retrieved", []), "errors": seen.get("errors", [])}
+        run["calls"] = seen.get("calls", [])
         found = on_map.get((row["model"], row["agent"], row["variant"], row["sample"], row["epoch"]))
         if found:
             run["map"] = {k: found[k] for k in ("shown", "missing", "unmatched")} | {"places": seen.get("places", [])}
@@ -242,18 +396,33 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     return facts, runs, maps
 
 
+def calls_file(run: dict) -> str:
+    """Where the site keeps a run's model calls, relative to its measurement's folder, as app.js builds the path."""
+    return f"calls/{Path(run['log']).stem}/{run['sample']}-{run['epoch']}.json"
+
+
 def dataset(parts: list[tuple[dict, list[dict], dict]]) -> dict:
-    """All measurements, newest first, with their runs and the map questions of each, from what measurement() gives."""
-    out = {"measurements": [], "runs": [], "maps": {}}
+    """All measurements, newest first, with their runs and the map questions of each, from what measurement() gives.
+    The model calls of the runs go into "calls", per measurement and file, so that data.json stays small."""
+    out = {"measurements": [], "runs": [], "maps": {}, "calls": {}}
     for facts, runs, maps in parts:
         out["measurements"].append(facts)
-        out["runs"] += runs
+        for run in runs:
+            out["calls"].setdefault(run["m"], {})[calls_file(run)] = run.get("calls", [])
+            out["runs"].append({k: v for k, v in run.items() if k != "calls"} | {"model_calls": len(run.get("calls", []))})
         out["maps"] |= maps
     return _clean(out)
 
 
 def write(data: dict, out: Path) -> None:
-    (out / "data.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    """data.json, and per run its model calls (calls_file), which a page fetches only when it shows the run."""
+    shown = {k: v for k, v in data.items() if k != "calls"}
+    (out / "data.json").write_text(json.dumps(shown, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    for name, files in data.get("calls", {}).items():
+        for file, calls in files.items():
+            target = out / name / file
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(calls, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for entry in data["maps"].values():
         target = out / entry["panden"]
         target.parent.mkdir(parents=True, exist_ok=True)
