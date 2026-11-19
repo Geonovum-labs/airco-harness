@@ -1,0 +1,74 @@
+{
+  "2026-11-19T11-55-57-00-00_airco_gNJdxu8MQLtmRAerF9UsdB.eval": {
+    "eval_id": "jLvfLjD6ZhmTiFR44asK8W",
+    "run_id": "iEFH52ejrXdmKdjdf6fmsW",
+    "task": "airco_harness/airco",
+    "task_id": "gNJdxu8MQLtmRAerF9UsdB",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-19T11:55:57+00:00",
+    "completed_at": "2026-11-19T12:09:03+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-19T11-55-57-00-00_airco_MKGyQe4tf2hHDEWUjiyGyB.eval": {
+    "eval_id": "GbrF2tXoxtqnhr5WEWS4BG",
+    "run_id": "iEFH52ejrXdmKdjdf6fmsW",
+    "task": "airco_harness/airco",
+    "task_id": "MKGyQe4tf2hHDEWUjiyGyB",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-19T11:55:57+00:00",
+    "completed_at": "2026-11-19T12:00:50+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-19T11-55-57-00-00_airco_hhAK928ysTqPYNLZBujBKs.eval": {
+    "eval_id": "9S54LJmoTDgCgkUEUPn8md",
+    "run_id": "iEFH52ejrXdmKdjdf6fmsW",
+    "task": "airco_harness/airco",
+    "task_id": "hhAK928ysTqPYNLZBujBKs",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-19T11:55:57+00:00",
+    "completed_at": "2026-11-19T11:58:00+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-19T11-55-57-00-00_airco_Uy5NMou2ZvNU5uYBAfWaUg.eval": {
+    "eval_id": "6gpzxwscNqZ38qbY4Vx83h",
+    "run_id": "iEFH52ejrXdmKdjdf6fmsW",
+    "task": "airco_harness/airco",
+    "task_id": "Uy5NMou2ZvNU5uYBAfWaUg",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-19T11:55:57+00:00",
+    "completed_at": "2026-11-19T11:56:23+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  }
+}

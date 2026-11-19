@@ -1,0 +1,81 @@
+{
+  "eval_set_id": "6tQgEt8nd8riTvdnf5kaDn",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "Uy5NMou2ZvNU5uYBAfWaUg",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "token_limit": 3000000,
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "gNJdxu8MQLtmRAerF9UsdB",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "token_limit": 3000000,
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "hhAK928ysTqPYNLZBujBKs",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "token_limit": 3000000,
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "MKGyQe4tf2hHDEWUjiyGyB",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-haiku-5-5",
+        "token_limit": 3000000,
+        "cost_limit": 2.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 3
+    }
+  ]
+}
