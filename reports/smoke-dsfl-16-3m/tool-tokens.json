@@ -1,0 +1,22 @@
+{
+ "737d19bcfa68f61eb81e14ff": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 80809,
+  "tools": 40
+ },
+ "9f208fafbda37838473ad3b8": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 7180,
+  "tools": 6
+ },
+ "b0f1c1d74ae212a0e40becb9": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 17551,
+  "tools": 22
+ },
+ "b96af1a935871677f6a77760": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 92220,
+  "tools": 59
+ }
+}
