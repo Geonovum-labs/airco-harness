@@ -195,17 +195,31 @@ def test_matrix_passes_its_limits_to_every_task(monkeypatch):
     limits = []
 
     def record(tasks, **kwargs):
-        limits.extend((t.token_limit, t.message_limit, t.cost_limit) for t in tasks)
+        limits.extend((t.token_limit, t.message_limit, t.time_limit, t.cost_limit) for t in tasks)
         return True, []
 
     monkeypatch.setattr(matrix, "eval_set", record)
     monkeypatch.setattr(matrix, "strip_absolute_log_dir", lambda *args: None)
-    argv = ["airco-matrix", "--models", "mockllm/model", "--ids", SAMPLE, "--token-limit", "3000000", "--message-limit", "150", "--cost-limit", "1.5"]
+    argv = [
+        "airco-matrix",
+        "--models",
+        "mockllm/model",
+        "--ids",
+        SAMPLE,
+        "--token-limit",
+        "3000000",
+        "--message-limit",
+        "150",
+        "--time-limit",
+        "2400",
+        "--cost-limit",
+        "1.5",
+    ]
     monkeypatch.setattr(sys, "argv", argv)
     with pytest.raises(SystemExit) as stop:
         matrix.main()
     assert stop.value.code == 0
-    assert limits == [(3_000_000, 150, 1.5)]
+    assert limits == [(3_000_000, 150, 2400, 1.5)]
 
 
 def test_matrix_counts_the_runs_of_each_variant_on_its_own_samples(monkeypatch, capsys):

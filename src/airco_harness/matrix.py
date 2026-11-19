@@ -69,6 +69,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cost-limit", type=float, default=2.0, help="cost limit per run in dollars")
     parser.add_argument("--token-limit", type=int, default=600_000, help="token limit per run; it counts the input of every model call, cached or not")
     parser.add_argument("--message-limit", type=int, default=60, help="message limit per run")
+    parser.add_argument("--time-limit", type=int, default=900, help="time limit per run in seconds")
     parser.add_argument("--plan", action="store_true", help="show the number of runs and the maximum cost, then stop")
     parser.add_argument("--yes", action="store_true", help="confirm a run against paid models")
     return parser
@@ -139,6 +140,7 @@ def main() -> None:
             cost_limit=args.cost_limit,
             token_limit=args.token_limit,
             message_limit=args.message_limit,
+            time_limit=args.time_limit,
         )
         for v, a, m in combos
     ]
