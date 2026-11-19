@@ -1,0 +1,22 @@
+{
+ "55dadd38be705406b53061ba": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 80802,
+  "tools": 40
+ },
+ "5f9e00bab00ed4061669a58a": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 92220,
+  "tools": 59
+ },
+ "830b347b6996c1b9ba638fb7": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 17551,
+  "tools": 22
+ },
+ "849dd0456c87d251f8191776": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 7173,
+  "tools": 6
+ }
+}

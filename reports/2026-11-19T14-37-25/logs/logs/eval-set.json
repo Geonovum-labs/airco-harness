@@ -1,0 +1,85 @@
+{
+  "eval_set_id": "fr7cXbseokNxqp2UexKJuN",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "9S8UTncusTFygJU9iXuFo7",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 60,
+        "token_limit": 3000000,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "LMnaXAFBCdZkjLzXnk4Moz",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 60,
+        "token_limit": 3000000,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "45dKUL3bhmy8HhL8da54vS",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 60,
+        "token_limit": 3000000,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "4mBtMuPp8hEFgxCp2DDNz9",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 60,
+        "token_limit": 3000000,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 3
+    }
+  ]
+}
