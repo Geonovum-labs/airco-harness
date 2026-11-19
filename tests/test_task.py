@@ -89,7 +89,7 @@ def test_a_variant_runs_the_samples_it_is_made_for_unless_ids_or_tags_choose_oth
         airco(variant=GROUNDWATER, agent="inspect")
 
 
-@pytest.mark.parametrize(("variant", "agent"), [(GROUNDWATER, "model"), (GROUNDWATER, "claude-code"), ("mcp-bag-ldproxy", "model")])
+@pytest.mark.parametrize(("variant", "agent"), [(GROUNDWATER, "model"), ("mcp-bag-ldproxy", "model")])
 def test_an_mcp_variant_refuses_an_agent_that_cannot_reach_its_server(variant, agent):
     with pytest.raises(ValueError, match=f"the agent {agent} does not take the MCP server of variant {variant}"):
         airco(testset="dsfl", variant=variant, agent=agent)
@@ -98,7 +98,7 @@ def test_an_mcp_variant_refuses_an_agent_that_cannot_reach_its_server(variant, a
 def test_claude_code_reaches_an_http_server_under_the_name_a_user_would_give_it():
     from airco_harness import claude_code
 
-    assert tasks.takes("mcp-bag-ldproxy", "claude-code") and not tasks.takes(GROUNDWATER, "claude-code")
+    assert tasks.takes("mcp-bag-ldproxy", "claude-code") and tasks.takes(GROUNDWATER, "claude-code")
     assert claude_code.server_name("https://bag.ldproxy.net/bag/mcp") == "bag"
     assert len(airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="claude-code").dataset) == 5
 
@@ -122,7 +122,7 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     assert payload["segments"][0]["gldBroId"] == "GLD000000025798"
     assert payload["window"] == {"from": "2026-09-21", "to": "2026-09-21", "total": 1, "returned": 1, "truncated": False}
     assert sample.scores["quality"].value["correct"] == 1
-    assert log.eval.metadata["variant_form"] == {"about": "stub", "mcp": [sys.executable, str(stub)], "tags": ["bro"]}
+    assert log.eval.metadata["variant_form"] == {"about": "stub", "mcp": [sys.executable, str(stub)], "tags": ["bro"], "server": ""}
     [system] = [m for m in sample.messages if m.role == "system"]
     assert "## stub-groundwater-monitoring\nCall groundwater-monitoring.series.get for a level." in system.text
     assert "You are a helpful assistant attempting to submit the best possible answer" in system.text
@@ -193,22 +193,26 @@ def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, m
     assert all(r[0]["window"]["truncated"] is False for r in results)
 
 
-def test_local_groundwater_server_uses_utf8_and_records_resolved_command(tmp_path, monkeypatch):
-    jar = tmp_path / "server.jar"
-    jar.touch()
-    monkeypatch.setenv("AIRCO_GROUNDWATER_MCP_JAR", str(jar))
-    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
-    assert task.metadata["variant_form"]["mcp"] == ("java", "-Dstdout.encoding=UTF-8", "-jar", str(jar))
-    monkeypatch.setenv("AIRCO_GROUNDWATER_MCP_JAR", str(tmp_path / "missing.jar"))
-    with pytest.raises(ValueError, match="AIRCO_GROUNDWATER_MCP_JAR is not a file"):
-        airco(testset="dsfl", variant=GROUNDWATER, agent="inspect")
+@pytest.mark.parametrize(
+    ("variant", "port", "server", "tag"),
+    [
+        ("mcp-groundwater-monitoring", 8081, "groundwater-monitoring", "groundwater"),
+        ("mcp-subsurface-models", 8082, "subsurface-models", "subsurface"),
+        ("mcp-virtual-groundwater-heads", 8090, "virtual-groundwater-heads", "bro"),
+    ],
+)
+def test_the_groundwater_variants_reach_their_server_over_http(variant, port, server, tag):
+    form = tasks.VARIANTS[variant]
+    assert form.mcp == f"http://127.0.0.1:{port}/mcp"
+    assert form.server == server
+    assert form.tags == (tag,)
+    assert tasks.takes(variant, "inspect") and tasks.takes(variant, "claude-code") and not tasks.takes(variant, "model")
 
 
-def test_the_groundwater_variant_runs_a_pinned_image():
-    command = tasks.VARIANTS[GROUNDWATER].mcp
-    assert command[:-1] == ("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod")
-    assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", command[-1])
-    assert command[-1].endswith("sha256:ebbce9d90a7bdefca2e19178ccb108dae54c9894d2ae38cace38270187434344")
+def test_an_environment_variable_replaces_the_address_of_a_server(monkeypatch):
+    monkeypatch.setenv("AIRCO_SUBSURFACE_MODELS_URL", "http://192.0.2.10:8082/mcp")
+    assert tasks.variant_form("mcp-subsurface-models").mcp == "http://192.0.2.10:8082/mcp"
+    assert tasks.variant_form("mcp-groundwater-monitoring").mcp == "http://127.0.0.1:8081/mcp"
 
 
 def test_the_bag_variant_reaches_its_server_over_http_and_runs_the_bag_samples():

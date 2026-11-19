@@ -12,7 +12,7 @@ For a series question they also get plot_series.
 """
 
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from importlib.metadata import version
 from pathlib import Path
 from typing import Literal, get_args
@@ -41,22 +41,43 @@ class Variant:
     mcp: tuple[str, ...] | str | None = None
     # The samples the variant is made for: the default selection, which ids or tags override.
     tags: tuple[str, ...] = ()
+    # The name Claude Code gives the server, which its tool names carry; empty takes the first segment of the URL path.
+    server: str = ""
 
 
-# Revision d712dcc of 13 November 2026. The image is built for linux/amd64 only, and its default profile serves HTTP; prod speaks stdio.
-GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:ebbce9d90a7bdefca2e19178ccb108dae54c9894d2ae38cace38270187434344"
+# The three groundwater servers run as containers and serve Streamable HTTP; these are the addresses of the local compose stack
+# of the calculation tier (deploy/compose.yaml in github.com/sjaakd/mcp-virtual-groundwater-heads). The environment variable
+# of a variant replaces its address, for a server on another machine.
 VARIANTS = {
     "0": Variant("The question alone: the agent finds the standard as it is published today, or not."),
     "mcp-groundwater-monitoring": Variant(
         "Variant 0 plus the groundwater monitoring MCP server on BRO data (github.com/sjaakd/mcp-groundwater-monitoring).",
-        mcp=("docker", "run", "-i", "--rm", "--platform", "linux/amd64", "-e", "QUARKUS_PROFILE=prod", GROUNDWATER_MONITORING_IMAGE),
+        mcp="http://127.0.0.1:8081/mcp",
         tags=("groundwater",),
+        server="groundwater-monitoring",
+    ),
+    "mcp-subsurface-models": Variant(
+        "Variant 0 plus the subsurface models MCP server on GeoTOP and REGIS (github.com/sjaakd/mcp-subsurface-models).",
+        mcp="http://127.0.0.1:8082/mcp",
+        tags=("subsurface",),
+        server="subsurface-models",
+    ),
+    "mcp-virtual-groundwater-heads": Variant(
+        "Variant 0 plus the virtual groundwater heads MCP server, which calls the other two (github.com/sjaakd/mcp-virtual-groundwater-heads).",
+        mcp="http://127.0.0.1:8090/mcp",
+        tags=("bro",),
+        server="virtual-groundwater-heads",
     ),
     "mcp-bag-ldproxy": Variant(
         "Variant 0 plus the MCP server of the BAG API on bag.ldproxy.net, which holds Amersfoort only (BAG extract of 8 October 2026).",
         mcp="https://bag.ldproxy.net/bag/mcp",
         tags=("bag",),
     ),
+}
+ENDPOINT_ENV = {
+    "mcp-groundwater-monitoring": "AIRCO_GROUNDWATER_MONITORING_URL",
+    "mcp-subsurface-models": "AIRCO_SUBSURFACE_MODELS_URL",
+    "mcp-virtual-groundwater-heads": "AIRCO_VIRTUAL_GROUNDWATER_HEADS_URL",
 }
 AgentName = Literal["model", "inspect", "claude-code"]
 MAX_TOOL_OUTPUT = 48 * 1024
@@ -80,15 +101,10 @@ def samples(testset: str, variant: str, ids: list[str] | None = None, tags: list
 
 
 def variant_form(variant: str) -> Variant:
-    """Resolve the optional local server override after loading .env."""
+    """Resolve the optional server address from the environment after loading .env."""
     form = VARIANTS[variant]
-    jar = os.environ.get("AIRCO_GROUNDWATER_MCP_JAR", "").strip()
-    if variant != "mcp-groundwater-monitoring" or not jar:
-        return form
-    path = Path(jar).expanduser().resolve()
-    if not path.is_file():
-        raise ValueError(f"AIRCO_GROUNDWATER_MCP_JAR is not a file: {path}")
-    return Variant(form.about, ("java", "-Dstdout.encoding=UTF-8", "-jar", str(path)), form.tags)
+    url = os.environ.get(ENDPOINT_ENV.get(variant, ""), "").strip()
+    return replace(form, mcp=url) if url else form
 
 
 def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant) -> Agent:
@@ -104,7 +120,7 @@ def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant
         return _with_mcp(tools, variant.mcp)
     from .claude_code import claude_code_agent
 
-    return claude_code_agent(map_tool, series_tool, variant.mcp if isinstance(variant.mcp, str) else None)
+    return claude_code_agent(map_tool, series_tool, variant.mcp if isinstance(variant.mcp, str) else None, variant.server)
 
 
 def server_instructions(name: str, instructions: str | None) -> str | None:
@@ -188,7 +204,7 @@ def airco(
 
     Args:
       testset: Test set under testsets/.
-      variant: Variant: 0, the question alone; mcp-groundwater-monitoring (agent inspect) or mcp-bag-ldproxy (agents inspect and claude-code), variant 0 plus an MCP server.
+      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, mcp-subsurface-models, mcp-virtual-groundwater-heads or mcp-bag-ldproxy (agents inspect and claude-code), variant 0 plus an MCP server.
       agent: model for the model without prompt or tools; inspect for Inspect's react() with web search and fetch; claude-code for Claude Code in a Docker sandbox.
       ids: Comma-separated sample ids; default the samples the variant is made for, all for variant 0.
       tags: Comma-separated tags; the samples with one of them.

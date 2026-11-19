@@ -51,13 +51,13 @@ def claude_code_setup() -> Solver:
     return solve
 
 
-def claude_code_agent(map_tool: bool = False, series_tool: bool = False, mcp_url: str | None = None) -> Agent:
+def claude_code_agent(map_tool: bool = False, series_tool: bool = False, mcp_url: str | None = None, mcp_name: str = "") -> Agent:
     bridged = []
     if map_tool:
         bridged.append(BridgedToolsSpec(name="map", tools=[show_on_map()]))
     if series_tool:
         bridged.append(BridgedToolsSpec(name="plot", tools=[plot_series()]))
-    mcp = [MCPServerConfigHTTP(type="http", name=server_name(mcp_url), url=mcp_url)] if mcp_url else None
+    mcp = [MCPServerConfigHTTP(type="http", name=mcp_name or server_name(mcp_url), url=mcp_url)] if mcp_url else None
     return claude_code(version=CLAUDE_CODE_VERSION, permission_mode="bypassPermissions", cwd=WORKDIR, bridged_tools=bridged or None, mcp_servers=mcp)
 
 
