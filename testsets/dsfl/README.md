@@ -21,8 +21,8 @@ Questions for the Dataspace Fysieke Leefomgeving, as a citizen asks them about t
 | `dsfl-15` | Limits of line-of-sight evidence for confinement | `fields` |
 | `dsfl-16` | Buurten most sensitive to water accumulation | `ranking` |
 | `dsfl-17` | Welke BGT objecten kunnen verhard zijn? | `fields` with a list |
-| `dsfl-18` | Welke soorten verharding beinvloeden wateraccumulatie? | `fields` with a list |
-| `dsfl-19` | Hoe bepaal ik de oppervlakte van de fysieke objecten die relevant zijn voor wateraccumulatie? | `fields` with a list |
+| `dsfl-18` | Welke soorten verharding in de BGT beinvloeden wateraccumulatie? | `fields` with a list |
+| `dsfl-19` | Hoe bepaal ik met de BGT de oppervlakte van de fysieke objecten die relevant zijn voor wateraccumulatie? | `fields` with a list |
 
 The deck leaves the place open ("the city I live in", "the municipality") or names Vlaardingen. Every sample uses Amersfoort. The deck wording of each BAG question is in the `note` of its `expected.json`, with the choices the sample makes where the question is open: a definition of "building", "construction" or "house", and a time window fixed at 12 November 2026.
 
@@ -34,7 +34,7 @@ The BRO questions are a first check that the mechanism works, using the public B
 
 ## Paving in the BGT
 
-`dsfl-17` to `dsfl-19`, tagged `verharding`, ask what the BGT says about paving, without naming a dataset or a place: which object types can be paved, which kinds of paving affect water accumulation, and how to get the area of the relevant objects. They are made to compare an agent without skills with the same agent with the metadata skill and the MIM skill together (variant `skill-metadata+skill-mim`); the first is the example question of the metadata skill. Each asks its question alone and the JSON format afterwards (`format` in `sample.json`), because the format line in the question made Claude Code answer from memory without loading a skill. The format request refers only to the agent's own words, and the object types or kinds of paving in the JSON must be named in its answer before that request (`grounded_fields`). Their standard is `imgeo-2.2`, so the IMGeo and BGT catalogs count as a source. The expected answers come from the IMGeo 2.2 reference model, and `tests/test_dsfl_sources.py` derives them again; the choices below are a draft of 20 November 2026 for the working group.
+`dsfl-17` to `dsfl-19`, tagged `verharding`, ask what the BGT says about paving, naming the BGT but no dataset or place: which object types can be paved, which kinds of paving affect water accumulation, and how to get the area of the relevant objects. They are made to compare an agent without skills with the same agent with the metadata skill and the MIM skill together (variant `skill-metadata+skill-mim`); the first is the example question of the metadata skill. Each asks its question alone and the JSON format afterwards (`format` in `sample.json`), because the format line in the question made Claude Code answer from memory without loading a skill. The format request refers only to the agent's own words, and the object types or kinds of paving in the JSON must be named in its answer before that request (`grounded_fields`). Their standard is `imgeo-2.2`, so the IMGeo and BGT catalogs count as a source. The expected answers come from the IMGeo 2.2 reference model, and `tests/test_dsfl_sources.py` derives them again; the choices below are a draft of 20 November 2026 for the working group.
 
 - **Can be paved.** The object types whose `bgt-fysiekVoorkomen` can be gesloten verharding, open verharding or half verhard: Wegdeel, OndersteunendWegdeel and OnbegroeidTerreindeel.
 - **Affects water accumulation.** Gesloten verharding, open verharding and half verhard. A finer IMGeo plus value under one of them, such as asfalt or tegels, is allowed; onverhard is wrong. That a kind of paving affects water accumulation is a hydrological judgment, which the BGT does not record.

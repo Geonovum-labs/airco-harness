@@ -4,7 +4,7 @@
   "tags": [
     "verharding"
   ],
-  "input": "Welke soorten verharding beinvloeden wateraccumulatie?",
+  "input": "Welke soorten verharding in de BGT beinvloeden wateraccumulatie?",
   "format": "Zet de soorten verharding die je hierboven noemde, in dezelfde woorden, in een JSON-object met de sleutel \"soorten\": een lijst. Zoek niets meer op en antwoord met alleen het JSON-object.",
   "metadata": {
     "status": "draft",

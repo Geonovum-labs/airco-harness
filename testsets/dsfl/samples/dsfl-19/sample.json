@@ -4,7 +4,7 @@
   "tags": [
     "verharding"
   ],
-  "input": "Hoe bepaal ik de oppervlakte van de fysieke objecten die relevant zijn voor wateraccumulatie?",
+  "input": "Hoe bepaal ik met de BGT de oppervlakte van de fysieke objecten die relevant zijn voor wateraccumulatie?",
   "format": "Vat je antwoord hierboven samen in een JSON-object met de sleutels \"objecttypen\" (de objecttypen die je meetelt, in dezelfde woorden als hierboven), \"filter_attribuut\" (het attribuut waarop je ze selecteert, of null als je niet selecteert) en \"bron_oppervlakte\" (\"geometrie\" als de oppervlakte uit de geometrie komt, \"attribuut\" als die uit een attribuut komt). Zoek niets meer op en antwoord met alleen het JSON-object.",
   "metadata": {
     "status": "draft",
