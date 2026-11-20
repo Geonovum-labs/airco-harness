@@ -283,7 +283,7 @@ def test_the_bag_variant_reaches_the_pinned_ldproxy_on_the_host_and_runs_the_bag
     [bag] = tasks.VARIANTS["mcp-bag-ldproxy"].mcp
     assert (bag.name, bag.url, bag.version) == ("bag", "http://localhost:7080/bag/mcp", "261120115005")
     assert bag.image == tasks.LDPROXY_IMAGE and "@sha256:" in bag.image
-    assert bag.config == "https://github.com/cportele/dsfl-ai/tree/v0.1 (09575804f0fd8863ce900edf4f5345fa7dbe1ab8)"
+    assert bag.config == "https://github.com/cportele/dsfl-ai/tree/v0.2.0 (eb1d4450a9012c4f4221f05790b63cf69d3c130e)"
     assert [s.id for s in airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="inspect").dataset] == [f"dsfl-0{n}" for n in range(1, 6)]
 
 

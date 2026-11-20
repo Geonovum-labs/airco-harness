@@ -114,12 +114,13 @@ class Variant:
 GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:0f4bd731e90fc2fcf29f0a221f93aa74d5b6c0d40d08a54adff07735a38577ee"
 # Revision cb6b5d6 of 20 November 2026, with the GeoTOP and REGIS tiles of Amersfoort in the image.
 SUBSURFACE_MODELS_IMAGE = "ghcr.io/sjaakd/mcp-subsurface-models@sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c"
-# The servers of bag.ldproxy.net, run on the host from the ldproxy data directory of github.com/cportele/dsfl-ai at tag v0.1 (20 November 2026),
-# with its dump of Amersfoort; airco-servers starts it. The ldproxy image is the tag aird-261119184247 that the repository names, by digest.
+# The servers of bag.ldproxy.net, run on the host from the ldproxy data directory of github.com/cportele/dsfl-ai at tag v0.2.0 (20 November 2026),
+# with its dump of Amersfoort; airco-servers starts it. The ldproxy image is the tag aird-261120140038 that the repository names, by digest.
+# From v0.1 only the image changed: the configuration, and so the serverInfo.version of each API, and the dump are the same.
 DSFL_AI_REPOSITORY = "cportele/dsfl-ai"
-DSFL_AI_COMMIT = "09575804f0fd8863ce900edf4f5345fa7dbe1ab8"
-DSFL_AI_CONFIG = f"https://github.com/{DSFL_AI_REPOSITORY}/tree/v0.1 ({DSFL_AI_COMMIT})"
-LDPROXY_IMAGE = "iide/ldproxy@sha256:ce01662e1afab6ae3116ab95739874aad23b045cb72de7e42a668e69ab2ea99a"
+DSFL_AI_COMMIT = "eb1d4450a9012c4f4221f05790b63cf69d3c130e"
+DSFL_AI_CONFIG = f"https://github.com/{DSFL_AI_REPOSITORY}/tree/v0.2.0 ({DSFL_AI_COMMIT})"
+LDPROXY_IMAGE = "iide/ldproxy@sha256:0af53a560fe4bfed814ac0f0f3935378afbd0605de5d184516d8146c4063b22e"
 LDPROXY_DB_IMAGE = "imresamu/postgis@sha256:b5766ee720aca09c61b9a868abefbf273348a4b90ad4cf146b4f8c9ac85d48e4"
 
 
@@ -141,13 +142,13 @@ VARIANTS = {
         tags=("groundwater",),
     ),
     "mcp-bag-ldproxy": Variant(
-        "Variant 0 plus the MCP server of the BAG API of ldproxy (github.com/cportele/dsfl-ai, v0.1), which holds Amersfoort only "
+        "Variant 0 plus the MCP server of the BAG API of ldproxy (github.com/cportele/dsfl-ai, v0.2.0), which holds Amersfoort only "
         "(BAG extract of 8 October 2026), running on the host.",
         mcp=(ldproxy_server("bag", "261120115005"),),
         tags=("bag",),
     ),
     "mcp-bgt-wijkenbuurten-subsurface": Variant(
-        "Variant 0 plus the MCP servers of the BGT and the CBS wijken en buurten of ldproxy (github.com/cportele/dsfl-ai, v0.1, Amersfoort) and the "
+        "Variant 0 plus the MCP servers of the BGT and the CBS wijken en buurten of ldproxy (github.com/cportele/dsfl-ai, v0.2.0, Amersfoort) and the "
         "subsurface models MCP server (github.com/sjaakd/mcp-subsurface-models) with the Amersfoort extract of GeoTOP and REGIS in its image, all on the host.",
         mcp=(
             ldproxy_server("bgt", "261120115005"),
