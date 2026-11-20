@@ -1,0 +1,173 @@
+{
+  "eval_set_id": "8SwiJnuWPeKFqZ7MMdPGdb",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "eFw4Tk9bwei3WGtzD5af6N",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "ifRzrfa6FTrTBbZrmd3A53",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-opus-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "SLK7bzq95HH2SYSrGGxLRu",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "UPHqjgy553P6J9pvsUWhVL",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-opus-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 3
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "dJN5wmKcgMHxBJruQjx3DF",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 4
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "dzwqrEHb4aLmnQrPusVxAv",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "inspect",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-opus-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 5
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "MEiXcq9X7MegRHoQT2ynDF",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 6
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "bPartA7gUrwHzPRCVaGHtJ",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "mcp-bgt-wijkenbuurten-subsurface",
+        "agent": "claude-code",
+        "ids": [
+          "dsfl-16"
+        ],
+        "tags": null,
+        "model": "anthropic/claude-opus-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-opus-5-5",
+      "model_args": {},
+      "sequence": 7
+    }
+  ]
+}

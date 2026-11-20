@@ -1,0 +1,42 @@
+{
+ "11d79a3451ae9a0f89b2d35f": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 56453,
+  "tools": 36
+ },
+ "137e81da955ad8c40f5d80ac": {
+  "model": "anthropic/claude-opus-5-5",
+  "tokens": 17435,
+  "tools": 22
+ },
+ "3024a0c03e05d1445be11787": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 67834,
+  "tools": 55
+ },
+ "74ca209f801cc78a5d0ad59a": {
+  "model": "anthropic/claude-opus-5-5",
+  "tokens": 7090,
+  "tools": 6
+ },
+ "830b347b6996c1b9ba638fb7": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 17551,
+  "tools": 22
+ },
+ "8485f9b59e257252103f50ea": {
+  "model": "anthropic/claude-opus-5-5",
+  "tokens": 67718,
+  "tools": 55
+ },
+ "849dd0456c87d251f8191776": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 7173,
+  "tools": 6
+ },
+ "a02e5fec80115f4e2edfcc13": {
+  "model": "anthropic/claude-opus-5-5",
+  "tokens": 56370,
+  "tools": 36
+ }
+}
