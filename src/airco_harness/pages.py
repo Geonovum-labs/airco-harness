@@ -74,9 +74,9 @@ CODE = ["src", "validators", "testsets", "sources", "reference-models", "model-c
 
 
 def measurements(reports: Path) -> list[Path]:
-    """The report folders that hold logs, newest first; the folder name is the start time of the matrix."""
+    """The report folders that hold logs, by name. A name need not be a time (smoke-dsfl-16-3m), so build() orders by the logs."""
     found = [d for d in reports.iterdir() if d.is_dir() and any((d / "logs" / "logs").glob("*.eval"))] if reports.is_dir() else []
-    return sorted(found, key=lambda d: d.name, reverse=True)
+    return sorted(found, key=lambda d: d.name)
 
 
 def bundle(log_dir: Path, out: Path, shown_log_dir: Path) -> None:
@@ -151,7 +151,8 @@ def build(reports: Path, out: Path, cache: Path | None = None) -> list[dict]:
         m: cache / f"{m.name}-{hashlib.sha256((code + digest(m, [m / 'logs' / 'logs', m / tooltokens.FILE])).encode()).hexdigest()[:20]}" if cache else None
         for m in found
     }
-    data = sitedata.dataset([part(m, out, entries[m]) for m in found])
+    parts = sorted((part(m, out, entries[m]) for m in found), key=lambda p: p[0]["started"], reverse=True)
+    data = sitedata.dataset(parts)
     if cache and cache.is_dir():
         for stale in set(cache.iterdir()) - set(entries.values()):
             shutil.rmtree(stale)

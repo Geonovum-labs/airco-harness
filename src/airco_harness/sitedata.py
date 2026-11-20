@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import math
 import re
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -350,6 +351,13 @@ def panden(reference: str, commit: str) -> dict:
     }
 
 
+def started(log_dir: Path) -> str:
+    """When the measurement began: the earliest creation time in its log headers, in UTC, so that two compare as strings.
+    The log file names hold the same time, but with the sign of the UTC offset written as a dash."""
+    created = [datetime.fromisoformat(read_eval_log(str(path), header_only=True).eval.created) for path in log_dir.glob("*.eval")]
+    return min(created).astimezone(UTC).isoformat()
+
+
 def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     """One measurement: its facts, its runs, and the map questions among its samples, keyed "<measurement>/<sample>"."""
     table = report.runs(str(log_dir))
@@ -367,6 +375,7 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
         runs.append(run)
     facts = {
         "name": name,
+        "started": started(log_dir),
         "testsets": _distinct(table["testset"]),
         "testset_versions": _distinct(table["testset"] + " " + table["testset_version"]),
         "commits": _distinct(table["commit"]),

@@ -1,6 +1,7 @@
 """The site for GitHub Pages, built from bundles of real logs from a scripted mock model."""
 
 import json
+import time
 from pathlib import Path
 
 import pytest
@@ -71,12 +72,15 @@ def test_site_without_measurements_has_an_empty_dataset(tmp_path):
     assert strict(tmp_path / "site" / "data.json") == {"measurements": [], "runs": [], "maps": {}}
 
 
-def test_measurements_are_newest_first(tmp_path):
-    for name in ("2026-10-19T21-45-03", "2026-11-02T09-00-00"):
-        d = tmp_path / name / "logs" / "logs"
-        d.mkdir(parents=True)
-        (d / "x.eval").write_bytes(b"")
-    assert [m.name for m in pages.measurements(tmp_path)] == ["2026-11-02T09-00-00", "2026-10-19T21-45-03"]
+def test_measurements_are_newest_first_by_the_start_in_their_logs_not_by_name(tmp_path):
+    reports = tmp_path / "reports"
+    imgeo_measurement(reports, "smoke-earlier")
+    time.sleep(1.1)  # eval.created has whole seconds
+    imgeo_measurement(reports, "2026-10-19T21-45-03")
+    shown = pages.build(reports, tmp_path / "site")
+    assert [m["name"] for m in shown] == ["2026-10-19T21-45-03", "smoke-earlier"]
+    assert shown[0]["started"] > shown[1]["started"] and shown[0]["started"].endswith("+00:00")
+    assert [m["name"] for m in strict(tmp_path / "site" / "data.json")["measurements"]] == ["2026-10-19T21-45-03", "smoke-earlier"]
     assert pages.measurements(Path(tmp_path / "missing")) == []
 
 
