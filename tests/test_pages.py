@@ -343,3 +343,33 @@ def test_a_tool_set_is_read_from_the_request_with_its_attachments_and_keyed_what
     reordered = [{"input_schema": tool["input_schema"], "description": tool["description"], "name": "fetch"}]
     assert tooltokens.key("anthropic/claude-haiku-5-5", [tool]) == tooltokens.key("anthropic/claude-haiku-5-5", reordered)
     assert tooltokens.tools_of(SimpleNamespace(call=None), {}) is None
+
+
+def test_a_runs_mcp_messages_go_to_their_own_file_and_its_protocol_per_server_into_the_data():
+    from airco_harness import mcpwire
+
+    records = [
+        {"server": "bgt", "http": "POST", "method": "server/discover", "protocol": "2026-07-28", "client": {"name": "claude-code", "version": "2.1.304"},
+         "supported": ["2026-07-28"], "at": 100.0, "status": 200, "ms": 30, "bytes": 900},
+        {"server": "bgt", "http": "POST", "method": "tools/call", "tool": "process_aggregate-features", "protocol": "2026-07-28", "at": 102.5,
+         "status": 200, "ms": 1200, "bytes": 5000, "error": "too many objects"},
+    ]  # fmt: skip
+    run = {"m": "2026-11-20T14-00-00", "log": "x.eval", "sample": "dsfl-16", "epoch": 1, "calls": [], "mcp": mcpwire.traffic(records),
+           "mcp_messages": sitedata.mcp_messages(records)}  # fmt: skip
+    data = sitedata.dataset([({"name": run["m"]}, [run], {})])
+    [shown] = data["runs"]
+    assert "mcp_messages" not in shown
+    assert shown["mcp"] == [{"server": "bgt", "protocols": ["2026-07-28"], "sessions": 0, "requests": 2, "tool_calls": 1, "errors": 1, "ms": 1200,
+                             "handshake": {"method": "server/discover", "protocol": "2026-07-28", "supported": ["2026-07-28"]}, "client": "claude-code 2.1.304"}]  # fmt: skip
+    assert data["calls"][run["m"]][sitedata.mcp_file(run)] == [
+        {"s": 0.0, "server": "bgt", "method": "server/discover", "status": 200, "ms": 30, "bytes": 900, "protocol": "2026-07-28"},
+        {"s": 2.5, "server": "bgt", "method": "tools/call", "tool": "process_aggregate-features", "status": 200, "ms": 1200, "bytes": 5000,
+         "error": "too many objects", "protocol": "2026-07-28"},
+    ]  # fmt: skip
+    assert mcpwire.protocols(mcpwire.traffic(records)) == "bgt 2026-07-28"
+
+
+def test_the_site_shows_the_start_of_a_long_mcp_message_and_its_length():
+    received = "y" * (sitedata.MCP_SHOWN_CHARS + 10)
+    [shown] = sitedata.mcp_messages([{"server": "s", "method": "tools/call", "at": 1.0, "sent": "{}", "received": received, "received_chars": 70_000}])
+    assert (shown["sent"], len(shown["received"]), shown["received_chars"]) == ("{}", sitedata.MCP_SHOWN_CHARS, 70_000) and "sent_chars" not in shown

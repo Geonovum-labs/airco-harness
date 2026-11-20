@@ -27,7 +27,8 @@ from inspect_ai.solver import Generate, Solver, TaskState, chain, solver
 from inspect_ai.tool import Tool, mcp_server_http, mcp_server_stdio, web_search
 from inspect_ai.util import store
 
-from . import dataset
+from . import dataset, mcpwire
+from .mcpwire import McpRecorder
 from .models import register_costs
 from .scorers import quality, source
 from .tools import ProviderNamedTools, fetch, plot_series, show_on_map
@@ -41,8 +42,6 @@ class McpServer:
     name: str
     url: str = ""
     command: tuple[str, ...] = ()
-    # The URL from Claude Code's sandbox, for a server that runs on the host.
-    sandbox_url: str = ""
     # For a server that runs on the host: the image it runs, pinned by digest, and the serverInfo.version that image reports.
     # A server that reports another version fails the run, so a run never meets an image other than the one named here.
     image: str = ""
@@ -50,8 +49,8 @@ class McpServer:
 
 
 def host_server(name: str, url: str, image: str, version: str) -> McpServer:
-    """A server that runs on the host from a pinned image. Claude Code reaches it from its sandbox at host.docker.internal."""
-    return McpServer(name, url=url, sandbox_url=url.replace("localhost", "host.docker.internal"), image=image, version=version)
+    """A server that runs on the host from a pinned image. Claude Code reaches it through the recording proxy, also on the host."""
+    return McpServer(name, url=url, image=image, version=version)
 
 
 def url_variable(server: McpServer) -> str:
@@ -140,7 +139,9 @@ def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant
         return _with_mcp(tools, variant.mcp)
     from .claude_code import claude_code_agent
 
-    return claude_code_agent(map_tool, series_tool, [(server.name, server.sandbox_url or server.url) for server in variant.mcp])
+    if not variant.mcp:
+        return claude_code_agent(map_tool, series_tool)
+    return _claude_code_with_mcp(map_tool, series_tool, variant.mcp)
 
 
 def server_instructions(servers: list[tuple[str, str | None]]) -> str | None:
@@ -166,6 +167,17 @@ def _connect(server: McpServer):
     return mcp_server_http(url=server.url) if server.url else mcp_server_stdio(command=server.command[0], args=list(server.command[1:]))
 
 
+def _recorder(servers: tuple[McpServer, ...], bind: str = "127.0.0.1") -> McpRecorder:
+    """The proxy that records what the agent sends to its HTTP servers and what they answer; keep() puts it in the sample store."""
+    return McpRecorder({server.name: server.url for server in servers if server.url}, bind)
+
+
+def _keep(recorder: McpRecorder) -> None:
+    """Every MCP message as mcp_calls, and per server its summary as mcp_traffic, which the report reads without the messages."""
+    store().set("mcp_calls", recorder.records)
+    store().set("mcp_traffic", mcpwire.traffic(recorder.records))
+
+
 @solver
 def probe_mcp_servers(servers: tuple[McpServer, ...]) -> Solver:
     """Record the server versions from the host, because Claude Code connects from its sandbox and the log would not know them.
@@ -186,14 +198,37 @@ def _with_mcp(tools: list[Tool], mcp: tuple[McpServer, ...]) -> Agent:
     Unconnected, every tool call would start a server anew."""
 
     async def execute(state: AgentState) -> AgentState:
-        async with AsyncExitStack() as stack:
-            connected = [await stack.enter_async_context(_connect(server)) for server in mcp]
-            # Inspect keeps the initialize result in the session only; a server may explain its data there and nowhere else.
-            sessions = [c._session for c in connected]
-            record_mcp_servers(mcp, [s.server_info for s in sessions])
-            prompt = AgentPrompt(instructions=server_instructions([(s.server_info.name, s.instructions) for s in sessions]))
-            sources = [ProviderNamedTools(c) for c in connected]
-            return await react(prompt=prompt, tools=[*tools, *sources], submit=AgentSubmit(answer_only=True))(state)
+        recorder = _recorder(mcp)
+        try:
+            async with recorder, AsyncExitStack() as stack:
+                proxied = [replace(server, url=recorder.url(server.name)) if server.url else server for server in mcp]
+                connected = [await stack.enter_async_context(_connect(server)) for server in proxied]
+                # Inspect keeps the initialize result in the session only; a server may explain its data there and nowhere else.
+                sessions = [c._session for c in connected]
+                record_mcp_servers(mcp, [s.server_info for s in sessions])
+                prompt = AgentPrompt(instructions=server_instructions([(s.server_info.name, s.instructions) for s in sessions]))
+                sources = [ProviderNamedTools(c) for c in connected]
+                return await react(prompt=prompt, tools=[*tools, *sources], submit=AgentSubmit(answer_only=True))(state)
+        finally:
+            _keep(recorder)
+
+    return execute
+
+
+@agent(name="claude_code_with_mcp")
+def _claude_code_with_mcp(map_tool: bool, series_tool: bool, mcp: tuple[McpServer, ...]) -> Agent:
+    """Claude Code with its HTTP servers behind the recording proxy, which it reaches from its sandbox at host.docker.internal.
+    Its own MCP client logs nothing of the protocol, and the calls of its subagents are not in the conversation."""
+    from .claude_code import claude_code_agent
+
+    async def execute(state: AgentState) -> AgentState:
+        recorder = _recorder(mcp, bind="0.0.0.0")
+        try:
+            async with recorder:
+                servers = [(server.name, recorder.url(server.name, "host.docker.internal")) for server in mcp if server.url]
+                return await claude_code_agent(map_tool, series_tool, servers)(state)
+        finally:
+            _keep(recorder)
 
     return execute
 

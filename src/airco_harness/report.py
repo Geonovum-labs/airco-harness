@@ -34,7 +34,7 @@ from inspect_ai.model import ContentToolUse
 
 from validators import rules, sources
 
-from . import scorers, tooltokens
+from . import mcpwire, scorers, tooltokens
 from .models import Price, load_prices
 
 QUALITY = ["correct", "complete", "invented", "parseable", "source"]
@@ -94,6 +94,8 @@ RETRIEVED = SampleColumn("retrieved", path="scores.source.metadata.retrieved", f
 # The source scorer counts every tool use, including the tools a provider runs on its own servers, which leave no tool message.
 TOOL_CALLS = SampleColumn("tool_calls_scored", path="scores.source.metadata.tool_calls", full=True)
 MCP_SERVER = SampleColumn("mcp_server", path="store.mcp_server", full=True)
+# Per MCP server, what the recording proxy saw (mcpwire.traffic); absent in logs from before it. The messages themselves stay out.
+MCP_TRAFFIC = SampleColumn("mcp_traffic", path="store.mcp_traffic", full=True)
 RULE = SampleColumn("rule", path="scores.quality.metadata.rule", full=True)
 EXPLANATION = SampleColumn("explanation", path="scores.quality.explanation", full=True)
 DETAILS = SampleColumn("details", path="scores.quality.metadata", full=True)
@@ -169,10 +171,18 @@ def _mcp_server(value: object) -> str:
     return ", ".join(f"{s['name']} {s['version']}" for s in servers)
 
 
+def _mcp_protocol(value: object) -> str:
+    """`server version` of each MCP protocol version a run's messages went under, from the recording proxy; empty without it."""
+    summary = json.loads(value) if isinstance(value, str) else value
+    return mcpwire.protocols(summary) if isinstance(summary, list) else ""
+
+
 def runs(log_dir: str) -> pd.DataFrame:
     """One row per run (sample x epoch x variant x agent x model) with the quality and trajectory metrics,
     and what a comparison between measurements has to hold fixed: the test set and its version, the commit and the limits."""
-    df = samples_df(log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, RULE, EXPLANATION, MCP_SERVER], quiet=True)
+    df = samples_df(
+        log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, RULE, EXPLANATION, MCP_SERVER, MCP_TRAFFIC], quiet=True
+    )
     if not len(df):
         raise FileNotFoundError(f"no samples in .eval logs under {log_dir}")
     error = df["error"].fillna("").astype(str) if "error" in df else pd.Series("", index=df.index)
@@ -205,6 +215,7 @@ def runs(log_dir: str) -> pd.DataFrame:
             "testset_version": _column(df, "metadata").map(_testset_version),
             "commit": _column(df, "git_commit").fillna("").astype(str),
             "mcp_server": _column(df, "mcp_server").map(_mcp_server),
+            "mcp_protocol": _column(df, "mcp_traffic").map(_mcp_protocol),
             **{f"{name}_limit": pd.to_numeric(_column(df, f"task_arg_{name}_limit", None), errors="coerce") for name in ("cost", "token", "message", "time")},
             "log": _column(df, "log").map(lambda path: Path(str(path)).name),
         }

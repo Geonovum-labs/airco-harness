@@ -460,3 +460,18 @@ table.calllist td.barcell { width: 48%; }
 .perhead h5 { margin: 0; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 .kindlegend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem; }
 .calldetail details.item > summary .label .tooltag { margin: 0 0 0 0.2rem; }
+
+/* The MCP traffic of a run: per server, and every message on request. */
+table.mcptable { font-size: 0.82rem; }
+table.mcptable th, table.mcptable td { padding: 0.45rem 0.55rem; }
+table.mcptable th { white-space: normal; overflow-wrap: normal; word-break: keep-all; }
+table.mcptable td { white-space: nowrap; }
+table.mcptable td.wrap { white-space: normal; min-width: 9rem; }
+table.mcptable td.err { min-width: 18rem; overflow-wrap: anywhere; }
+table.mcptable td.mono { font-family: ui-monospace, Menlo, monospace; white-space: nowrap; }
+table.mcptable tr.bad td { color: var(--bad); }
+details.mcpmessages > summary { cursor: pointer; margin: 0.5rem 0; }
+table.mcptable tr.mcprow { cursor: pointer; }
+table.mcptable tr.mcprow:hover > td, table.mcptable tr.mcprow[aria-expanded="true"] > td { background: var(--chip); }
+table.mcptable tr.mcpbody > td { white-space: normal; padding: 0 0 0.6rem; background: var(--chip); }
+table.mcptable tr.mcpbody pre.said { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; max-height: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.78rem; margin: 0.3rem 0 0; padding: 0.5rem 0.6rem; }

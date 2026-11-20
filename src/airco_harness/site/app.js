@@ -39,6 +39,7 @@ const fmt = (v, digits = 2) => (v === null || v === undefined || Number.isNaN(v)
 const money = v => (v === null || v === undefined ? "n/a" : `$${Number(v).toFixed(2)}`);
 const duration = s => {
   if (s === null || s === undefined || Number.isNaN(s)) return "n/a";
+  if (s < 1) return `${Math.round(s * 1000)} ms`;
   const total = Math.round(s);
   return total < 60 ? `${total} s` : `${Math.floor(total / 60)} min ${total % 60} s`;
 };
@@ -808,6 +809,73 @@ function callsOf(run) {
   return callFiles.get(path);
 }
 
+/** A run's MCP messages as the recording proxy saw them; fetched once per run. */
+function mcpOf(run) {
+  const path = `${root}${encodeURIComponent(run.m)}/mcp/${encodeURIComponent(run.log.replace(/\.eval$/, ""))}/${encodeURIComponent(`${run.sample}-${run.epoch}`)}.json`;
+  if (!callFiles.has(path)) callFiles.set(path, fetch(path).then(r => (r.ok ? r.json() : [])).catch(() => []));
+  return callFiles.get(path);
+}
+
+// A protocol version such as 2026-07-28 with hyphens that do not break the line.
+const unbroken = v => String(v).replaceAll("-", "\u2011");
+const handshake = s => {
+  const hs = s.handshake;
+  if (!hs) return "none seen";
+  return hs.method === "initialize" ? `initialize · asked ${unbroken(hs.protocol ?? "?")}, agreed ${unbroken(hs.agreed ?? "?")}` : `discover · server supports ${(hs.supported || []).map(unbroken).join(", ") || "?"}`;
+};
+
+/** A message as it went over the wire, indented when it is whole JSON; with how much of it the site shows. */
+function mcpBody(label, text, length) {
+  if (text === undefined) return h("div", {}, h("h5", {text: label}), h("p", {class: "muted small", text: "nothing"}));
+  let shown = text;
+  if (length === undefined) {
+    try { shown = JSON.stringify(JSON.parse(text), null, 2); } catch { /* not JSON, or cut: as it came */ }
+  }
+  const note = length === undefined ? null : h("p", {class: "muted small", text: `The first ${number(text.length)} of ${number(length)} characters; the log keeps up to 64,000.`});
+  return h("div", {}, h("h5", {text: label}), note, h("pre", {class: "said", text: shown}));
+}
+
+const mcpBodies = m => h("div", {class: "calldetail"}, mcpBody("Sent", m.sent, m.sent_chars), mcpBody("Received", m.received, m.received_chars));
+
+/** What the harness's proxy saw between the agent and its MCP servers: per server the protocol, and on request every message. */
+function mcpSection(run) {
+  if (!run.mcp || !run.mcp.length) return null;
+  const head = ["Server", "Protocol", "Handshake", "Client", "Sessions", "Requests", "Tool calls", "Errors", "Tool time"];
+  const summary = h("div", {class: "tablewrap"}, h("table", {class: "mcptable"},
+    h("thead", {}, h("tr", {}, head.map((t, i) => h("th", {scope: "col", class: i >= 4 ? "num" : null, text: t})))),
+    h("tbody", {}, run.mcp.map(s => h("tr", {},
+      h("td", {text: s.server}), h("td", {class: "mono", text: s.protocols.join(", ") || "n/a"}), h("td", {class: "wrap", text: handshake(s)}),
+      h("td", {text: s.client || "n/a"}), h("td", {class: "num", text: s.sessions ? String(s.sessions) : "none"}), h("td", {class: "num", text: String(s.requests)}),
+      h("td", {class: "num", text: String(s.tool_calls)}), h("td", {class: "num", text: String(s.errors)}), h("td", {class: "num", text: duration(s.ms / 1000)}))))));
+  const total = run.mcp.reduce((a, s) => a + s.requests, 0);
+  const list = h("div", {}, h("p", {class: "muted small", text: "Loading the MCP messages…"}));
+  const every = h("details", {class: "mcpmessages"}, h("summary", {text: `Every MCP message (${total}); choose one for what went in and out`}), list);
+  every.addEventListener("toggle", () => {
+    if (!every.open || list.dataset.loaded) return;
+    list.dataset.loaded = "1";
+    mcpOf(run).then(messages => list.replaceChildren(!messages.length ? h("p", {class: "muted small", text: "This run's MCP messages are not in the site's data."}) :
+      h("div", {class: "tablewrap"}, h("table", {class: "mcptable"},
+        h("thead", {}, h("tr", {}, ["At", "Server", "Message", "Protocol", "Status", "Time", "Error"].map((t, i) => h("th", {scope: "col", class: [0, 4, 5].includes(i) ? "num" : null, text: t})))),
+        h("tbody", {}, messages.flatMap(m => {
+          const detail = h("tr", {class: "mcpbody", hidden: true}, h("td", {colspan: "7"}, mcpBodies(m)));
+          const row = h("tr", {class: ["mcprow", m.error ? "bad" : null].filter(Boolean).join(" "), tabindex: "0", "aria-expanded": "false", title: "Show what went in and out"},
+            h("td", {class: "num muted", text: `${fmt(m.s, 1)} s`}), h("td", {text: m.server}), h("td", {text: m.tool ? `tools/call · ${m.tool}` : m.method}),
+            h("td", {class: "mono", text: m.protocol || "n/a"}), h("td", {class: "num", text: String(m.status ?? "n/a")}),
+            h("td", {class: "num", text: m.ms === undefined ? "n/a" : `${number(m.ms)} ms`}), h("td", {class: "wrap err", text: m.error || ""}));
+          const toggle = () => {
+            detail.hidden = !detail.hidden;
+            row.setAttribute("aria-expanded", String(!detail.hidden));
+          };
+          row.addEventListener("click", toggle);
+          row.addEventListener("keydown", e => (e.key === "Enter" || e.key === " " ? (e.preventDefault(), toggle()) : null));
+          return [row, detail];
+        }))))));
+  });
+  return h("div", {class: "calls"}, h("h4", {text: "MCP traffic"}),
+    h("p", {class: "muted small", text: "What the harness's proxy saw between the agent and its MCP servers: every message the agent's MCP client sent, with the protocol version it went under. For Claude Code this includes its subagents, whose calls the model calls below do not show. The 2026 protocol is stateless, so it has no sessions. Tool time is the servers' time for the tool calls."}),
+    summary, every);
+}
+
 const defsOf = c => (c.definitions ? c.definitions.tokens.reduce((a, b) => a + b, 0) : 0);
 // "≈" before a count of tool definitions that is estimated from their length rather than counted.
 const about = exact => (exact ? "" : "≈ ");
@@ -993,6 +1061,7 @@ function runDetail(d, m, run, onClose) {
     h("p", {class: "muted small", text: `${SOURCE_NOTE[0].toUpperCase()}${SOURCE_NOTE.slice(1)}`}),
     h("div", {class: "sources"}, h("span", {class: "k", text: "Retrieved from"}), h("div", {class: "hosts"}, hostList(run))),
     run.mcp_server ? h("div", {class: "sources"}, h("span", {class: "k", text: "MCP servers"}), h("span", {class: "small", text: run.mcp_server})) : null,
+    mcpSection(run),
     callsSection(run));
   const sample = mapOf(run);
   if (sample) {

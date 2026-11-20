@@ -221,6 +221,7 @@ name = "airco-harness"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "aiohttp" },
     { name = "inspect-ai" },
     { name = "inspect-swe" },
     { name = "jsonschema" },
@@ -252,6 +253,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiohttp", specifier = ">=3.14" },
     { name = "anthropic", marker = "extra == 'providers'" },
     { name = "google-genai", marker = "extra == 'providers'" },
     { name = "inspect-ai", specifier = "==0.3.281" },

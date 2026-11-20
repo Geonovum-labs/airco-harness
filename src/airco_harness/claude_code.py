@@ -15,9 +15,9 @@ a proxy does too.
 
 In a test set with a map question, show_on_map runs on the host and reaches
 Claude Code through the bridge as the MCP tool mcp__map__show_on_map. A
-variant's HTTP MCP servers are configured in Claude Code itself, which reaches them
-from the sandbox and passes their instructions to the model as it does for a
-user; a server on the host is reached at host.docker.internal. For a series question, plot_series is bridged as mcp__plot__plot_series.
+variant's HTTP MCP servers are configured in Claude Code itself, which passes their
+instructions to the model as it does for a user. It reaches them through the
+recording proxy of mcpwire, on the host at host.docker.internal. For a series question, plot_series is bridged as mcp__plot__plot_series.
 """
 
 from __future__ import annotations

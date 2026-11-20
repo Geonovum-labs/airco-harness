@@ -1,6 +1,7 @@
-"""A stdio MCP server with the bounded groundwater series contract, for tests."""
+"""An MCP server with the bounded groundwater series contract, for tests: over stdio, or over HTTP on the port given as argument."""
 
 import inspect
+import sys
 from typing import Annotated
 
 from mcp.server.mcpserver import MCPServer
@@ -26,4 +27,7 @@ server.tool(name="groundwater-monitoring.series.get")(series_get)
 
 
 if __name__ == "__main__":
-    server.run("stdio")
+    if len(sys.argv) > 1:
+        server.run("streamable-http", host="127.0.0.1", port=int(sys.argv[1]))
+    else:
+        server.run("stdio")

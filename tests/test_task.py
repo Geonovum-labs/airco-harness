@@ -9,7 +9,7 @@ import pytest
 from inspect_ai import eval
 from inspect_ai.model import ModelCost, ModelOutput, ModelUsage, get_model, get_model_info
 
-from airco_harness import models, tasks
+from airco_harness import mcpwire, models, tasks
 from airco_harness.tasks import airco
 
 ANSWER = {"objecttype": "OverigBouwwerk", "type": "bassin"}
@@ -124,7 +124,7 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     assert sample.scores["quality"].value["correct"] == 1
     assert log.eval.metadata["variant_form"] == {
         "about": "stub",
-        "mcp": [{"name": "groundwater-monitoring", "url": "", "command": [sys.executable, str(stub)], "sandbox_url": "", "image": "", "version": ""}],
+        "mcp": [{"name": "groundwater-monitoring", "url": "", "command": [sys.executable, str(stub)], "image": "", "version": ""}],
         "tags": ["bro"],
     }
     [system] = [m for m in sample.messages if m.role == "system"]
@@ -205,6 +205,50 @@ def test_samples_that_run_at_the_same_time_each_get_their_own_server(tmp_path, m
     assert all(r[0]["window"]["truncated"] is False for r in results)
 
 
+@pytest.fixture
+def http_stub():
+    """The stub server over HTTP on a free port, as a host server runs."""
+    import socket
+    import subprocess
+    import time
+
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    process = subprocess.Popen([sys.executable, str(Path(__file__).parent / "fixtures" / "stub_mcp_server.py"), str(port)], stderr=subprocess.DEVNULL)
+    try:
+        for _ in range(100):
+            with socket.socket() as s:
+                if s.connect_ex(("127.0.0.1", port)) == 0:
+                    break
+            time.sleep(0.1)
+        yield f"http://127.0.0.1:{port}/mcp"
+    finally:
+        process.terminate()
+        process.wait()
+
+
+def test_the_proxy_records_every_mcp_message_of_an_http_server_with_its_protocol_version(tmp_path, monkeypatch, http_stub):
+    monkeypatch.setitem(tasks.VARIANTS, GROUNDWATER, tasks.Variant("stub", mcp=(tasks.McpServer("groundwater-monitoring", url=http_stub),), tags=("bro",)))
+    outputs = [
+        ModelOutput.for_tool_call(
+            "mockllm/model", "groundwater-monitoring_series_get", {"gldBroId": "GLD000000025798", "from": "2026-09-21", "to": "2026-09-21"}
+        ),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps({"value": 2.13, "unit": "m", "reference_plane": "NAP"})}),
+    ]
+    task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
+    [log] = eval(task, model=get_model("mockllm/model", custom_outputs=outputs), log_dir=str(tmp_path), display="none")
+    [sample] = log.samples
+    assert sample.error is None and sample.scores["quality"].value["correct"] == 1
+    records = sample.store["mcp_calls"]
+    handshake = next(r for r in records if r["method"] == "initialize")
+    [call] = [r for r in records if r["method"] == "tools/call"]
+    assert (handshake["server"], handshake["agreed"], handshake["server_info"]["version"]) == ("groundwater-monitoring", "2025-11-25", "1.2.3")
+    assert (call["tool"], call["protocol"], call["status"]) == ("groundwater-monitoring.series.get", "2025-11-25", 200) and "error" not in call
+    [server] = mcpwire.traffic(records)
+    assert (server["protocols"], server["tool_calls"], server["errors"], server["handshake"]["method"]) == (["2025-11-25"], 1, 0, "initialize")
+
+
 def test_a_stdio_server_reaches_the_agent_inspect_only(monkeypatch):
     stub = Path(__file__).parent / "fixtures" / "stub_mcp_server.py"
     monkeypatch.setitem(tasks.VARIANTS, "stub", tasks.Variant("stub", mcp=(tasks.McpServer("stub", command=(sys.executable, str(stub))),)))
@@ -213,13 +257,13 @@ def test_a_stdio_server_reaches_the_agent_inspect_only(monkeypatch):
 
 def test_the_groundwater_variant_reaches_a_pinned_image_on_the_host_and_its_variable_moves_it(monkeypatch):
     [server] = tasks.VARIANTS[GROUNDWATER].mcp
-    assert (server.url, server.sandbox_url) == ("http://localhost:18081/mcp", "http://host.docker.internal:18081/mcp")
+    assert server.url == "http://localhost:18081/mcp"
     assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", server.image)
     assert server.image.endswith("sha256:0f4bd731e90fc2fcf29f0a221f93aa74d5b6c0d40d08a54adff07735a38577ee") and server.version == "1.0.10"
     monkeypatch.setenv("AIRCO_GROUNDWATER_MONITORING_URL", "http://localhost:9001/mcp")
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
     [moved] = task.metadata["variant_form"]["mcp"]
-    assert (moved["url"], moved["sandbox_url"], moved["version"]) == ("http://localhost:9001/mcp", "http://host.docker.internal:9001/mcp", "1.0.10")
+    assert (moved["url"], moved["version"]) == ("http://localhost:9001/mcp", "1.0.10")
 
 
 def test_a_server_that_reports_another_version_than_its_pin_fails_the_run(tmp_path, monkeypatch):
@@ -238,7 +282,7 @@ def test_the_bag_variant_reaches_its_server_over_http_and_runs_the_bag_samples()
     assert [s.id for s in airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="inspect").dataset] == [f"dsfl-0{n}" for n in range(1, 6)]
 
 
-def test_the_bgt_variant_gives_three_named_servers_and_claude_code_reaches_the_host_one_from_its_sandbox(monkeypatch):
+def test_the_bgt_variant_gives_three_named_servers_one_of_them_on_the_host(monkeypatch):
     variant = "mcp-bgt-wijkenbuurten-subsurface"
     servers = tasks.VARIANTS[variant].mcp
     assert [(s.name, s.url) for s in servers] == [
@@ -246,14 +290,13 @@ def test_the_bgt_variant_gives_three_named_servers_and_claude_code_reaches_the_h
         ("wijkenbuurten", "https://bag.ldproxy.net/wijkenbuurten/mcp"),
         ("subsurface-models", "http://localhost:18082/mcp"),
     ]
-    assert servers[2].sandbox_url == "http://host.docker.internal:18082/mcp"
     assert servers[2].image.endswith("sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c") and servers[2].version == "1.0.13"
     assert not servers[0].version and not servers[1].version
     assert tasks.takes(variant, "claude-code") and tasks.takes(variant, "inspect") and not tasks.takes(variant, "model")
     assert [s.id for s in airco(testset="dsfl", variant=variant, agent="inspect").dataset] == ["dsfl-16"]
     monkeypatch.setenv("AIRCO_SUBSURFACE_MODELS_URL", "http://localhost:9000/mcp")
     moved = tasks.variant_form(variant).mcp[2]
-    assert (moved.url, moved.sandbox_url) == ("http://localhost:9000/mcp", "http://host.docker.internal:9000/mcp")
+    assert moved.url == "http://localhost:9000/mcp"
 
 
 def test_price_file_registers_a_model_inspect_does_not_know(tmp_path):

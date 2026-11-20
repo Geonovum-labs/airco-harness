@@ -24,7 +24,7 @@ from inspect_ai.model import ModelUsage, compute_model_cost
 
 from validators import geo, source_check, sources
 
-from . import report, scorers, tooltokens
+from . import mcpwire, report, scorers, tooltokens
 from .models import Price, load_prices
 from .tools import MAP_STORE
 
@@ -44,6 +44,7 @@ RUN_FIELDS = [
     "total_time_s",
     "explanation",
     "mcp_server",
+    "mcp_protocol",
     "log",
 ]
 
@@ -320,6 +321,10 @@ def conversations(log_dir: Path, map_samples: dict[str, dict]) -> dict[tuple[str
                 "errors": list(failed.values()),
                 "calls": model_calls(sample.events, prices, sample.attachments, counts, servers),
             }
+            records = sample.store.get("mcp_calls")
+            if records:
+                run["mcp"] = sample.store.get("mcp_traffic") or mcpwire.traffic(records)
+                run["mcp_messages"] = mcp_messages(records)
             if str(sample.id) in map_samples:
                 run["places"] = places(sample.messages, map_samples[str(sample.id)], sample.store.get(MAP_STORE, {}))
             out[(path.name, str(sample.id), sample.epoch)] = run
@@ -369,6 +374,8 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
         seen = fetched.get((row["log"], row["sample"], row["epoch"]), {})
         run = {"m": name, **{k: row[k] for k in RUN_FIELDS}, "retrieved": seen.get("retrieved", []), "errors": seen.get("errors", [])}
         run["calls"] = seen.get("calls", [])
+        if "mcp" in seen:
+            run["mcp"], run["mcp_messages"] = seen["mcp"], seen["mcp_messages"]
         found = on_map.get((row["model"], row["agent"], row["variant"], row["sample"], row["epoch"]))
         if found:
             run["map"] = {k: found[k] for k in ("shown", "missing", "unmatched")} | {"places": seen.get("places", [])}
@@ -405,6 +412,41 @@ def measurement(name: str, log_dir: Path) -> tuple[dict, list[dict], dict]:
     return facts, runs, maps
 
 
+MCP_SHOWN_CHARS = 4_000  # Of each message sent and each answer, the site shows this much; the log keeps more.
+
+
+def _shown(record: dict, key: str) -> dict:
+    """A message as the site shows it: its start, and its full length when that is longer than the start."""
+    text = record.get(key)
+    if text is None:
+        return {}
+    length = record.get(f"{key}_chars", len(text))
+    return {key: text[:MCP_SHOWN_CHARS], **({f"{key}_chars": length} if length > MCP_SHOWN_CHARS else {})}
+
+
+def mcp_messages(records: list[dict]) -> list[dict]:
+    """Every MCP message of a run as the site lists it: seconds since the first, server, method, tool, the protocol
+    version it went under, HTTP status, the server's time in ms, the size of the answer, an error, and the start of
+    what went in and out."""
+    first = min((r["at"] for r in records if "at" in r), default=0)
+    keep = ("server", "method", "tool", "status", "ms", "bytes", "error")
+    return [
+        {
+            "s": round(r.get("at", first) - first, 1),
+            **{k: r[k] for k in keep if k in r},
+            "protocol": mcpwire.applied(r),
+            **_shown(r, "sent"),
+            **_shown(r, "received"),
+        }
+        for r in records
+    ]
+
+
+def mcp_file(run: dict) -> str:
+    """Where the site keeps a run's MCP messages, relative to its measurement's folder, as app.js builds the path."""
+    return f"mcp/{Path(run['log']).stem}/{run['sample']}-{run['epoch']}.json"
+
+
 def calls_file(run: dict) -> str:
     """Where the site keeps a run's model calls, relative to its measurement's folder, as app.js builds the path."""
     return f"calls/{Path(run['log']).stem}/{run['sample']}-{run['epoch']}.json"
@@ -412,19 +454,21 @@ def calls_file(run: dict) -> str:
 
 def dataset(parts: list[tuple[dict, list[dict], dict]]) -> dict:
     """All measurements, newest first, with their runs and the map questions of each, from what measurement() gives.
-    The model calls of the runs go into "calls", per measurement and file, so that data.json stays small."""
+    The model calls and MCP messages of the runs go into "calls", per measurement and file, so that data.json stays small."""
     out = {"measurements": [], "runs": [], "maps": {}, "calls": {}}
     for facts, runs, maps in parts:
         out["measurements"].append(facts)
         for run in runs:
             out["calls"].setdefault(run["m"], {})[calls_file(run)] = run.get("calls", [])
-            out["runs"].append({k: v for k, v in run.items() if k != "calls"} | {"model_calls": len(run.get("calls", []))})
+            if "mcp_messages" in run:
+                out["calls"][run["m"]][mcp_file(run)] = run["mcp_messages"]
+            out["runs"].append({k: v for k, v in run.items() if k not in ("calls", "mcp_messages")} | {"model_calls": len(run.get("calls", []))})
         out["maps"] |= maps
     return _clean(out)
 
 
 def write(data: dict, out: Path) -> None:
-    """data.json, and per run its model calls (calls_file), which a page fetches only when it shows the run."""
+    """data.json, and per run its model calls (calls_file) and MCP messages (mcp_file), which a page fetches only when it shows the run."""
     shown = {k: v for k, v in data.items() if k != "calls"}
     (out / "data.json").write_text(json.dumps(shown, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     for name, files in data.get("calls", {}).items():
