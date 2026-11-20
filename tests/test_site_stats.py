@@ -40,7 +40,7 @@ def runs() -> pd.DataFrame:
     ]:
         rows.append({"model": model, "agent": "inspect", "variant": "0", "sample": sample, "epoch": epoch, "failed": failed, "limit": limit,
                      "correct": correct, "complete": complete, "invented": 0, "parseable": 1, "source": 1 if model == "a" else 0,
-                     "tool_calls": epoch, "tokens": 1000 * epoch, "total_time_s": 10.0, "working_time_s": 9.0, "cost": 0.1 * epoch})  # fmt: skip
+                     "tool_calls": epoch, "tokens": 1000 * epoch, "total_time_s": 10.0, "working_time_s": 9.0, "cost": 0.1 * epoch, "skill_used": float(epoch % 2) if model == "a" else float("nan")})  # fmt: skip
     table = pd.DataFrame(rows)
     at_limit = table["limit"].ne("")
     table.loc[at_limit, report.QUALITY] = table.loc[at_limit, report.QUALITY].fillna(0)
@@ -67,6 +67,9 @@ def test_site_statistics_equal_the_report(tmp_path):
                 assert row[metric]["se"] == pytest.approx(r[f"{metric}_se"]), metric
         for metric in ("tool_calls", "tokens", "total_time_s"):
             assert row[metric]["mean"] == pytest.approx(r[metric]), metric
+        assert (row["skill_used"]["mean"] is None) == math.isnan(r["skill_used"])
+        if row["skill_used"]["mean"] is not None:
+            assert row["skill_used"]["mean"] == pytest.approx(r["skill_used"])
         assert (row["cost_per_correct"] is None) == math.isnan(r["cost_per_correct"])
         if row["cost_per_correct"] is not None:
             assert row["cost_per_correct"] == pytest.approx(r["cost_per_correct"])

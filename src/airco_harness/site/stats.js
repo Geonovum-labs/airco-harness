@@ -4,7 +4,7 @@
 // tests/test_site_stats.py checks these functions against airco_harness.report.summary.
 
 export const QUALITY = ["correct", "complete", "invented", "parseable", "source"];
-export const TRAJECTORY = ["tool_calls", "tokens", "total_time_s"];
+export const TRAJECTORY = ["tool_calls", "skill_used", "tokens", "total_time_s"];
 
 const mean = values => values.reduce((a, b) => a + b, 0) / values.length;
 

@@ -40,7 +40,7 @@ The terms come from the tooling note. The code and the documentation use them in
 | --- | --- |
 | Harness | The test harness: this repo, which runs the test set, scores it and logs it. The agent harness is the wrapper around the model |
 | Setup | Setup 1 is the harness's own agent loop: the agent `model` or the agent `inspect`. Setup 2 is a real CLI agent, Claude Code. Setup 3 (an IDE or chat assistant) is not in the harness yet |
-| Variant | A form in which the standard is published. The assessment framework defines the forms later; for now there is only variant 0, the standard as it is published today, which the agent finds or not |
+| Variant | A form in which the standard is published. Variant 0 is the standard as it is published today, which the agent finds or not; other variants add MCP servers or skills, and join with a plus |
 | Agent | What answers the question: `model`, the model without prompt or tools; `inspect`, Inspect's own agent with web search and fetch (both setup 1); or `claude-code`, Claude Code with its own prompt and tools (setup 2) |
 | Publication form | What the agent gets of the standard; on variant 0 nothing beyond what it finds itself |
 | Test set | A folder under `testsets/` with samples for one purpose, such as `imgeo` |

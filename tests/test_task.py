@@ -9,7 +9,7 @@ import pytest
 from inspect_ai import eval
 from inspect_ai.model import ModelCost, ModelOutput, ModelUsage, get_model, get_model_info
 
-from airco_harness import mcpwire, models, tasks
+from airco_harness import mcpwire, models, report, tasks
 from airco_harness.tasks import airco
 
 ANSWER = {"objecttype": "OverigBouwwerk", "type": "bassin"}
@@ -91,7 +91,7 @@ def test_a_variant_runs_the_samples_it_is_made_for_unless_ids_or_tags_choose_oth
 
 @pytest.mark.parametrize(("variant", "agent"), [(GROUNDWATER, "model"), ("mcp-bag-ldproxy", "model"), ("mcp-bgt-wijkenbuurten-subsurface", "model")])
 def test_an_mcp_variant_refuses_an_agent_that_cannot_reach_its_server(variant, agent):
-    with pytest.raises(ValueError, match=f"the agent {agent} does not take the MCP server of variant {variant}"):
+    with pytest.raises(ValueError, match=f"the agent {agent} does not take the MCP servers or skills of variant {variant}"):
         airco(testset="dsfl", variant=variant, agent=agent)
 
 
@@ -125,6 +125,7 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     assert log.eval.metadata["variant_form"] == {
         "about": "stub",
         "mcp": [{"name": "groundwater-monitoring", "url": "", "command": [sys.executable, str(stub)], "image": "", "version": ""}],
+        "skills": [],
         "tags": ["bro"],
     }
     [system] = [m for m in sample.messages if m.role == "system"]
@@ -407,3 +408,45 @@ def test_the_ttl_of_a_haiku_call_logged_at_the_ceiling_is_recovered_too():
     logged_at_ceiling = usage(10, 1000, 20000, 100, total_cost=(10 * 0.50 + 1000 * 0.625 * 1.6 + 20000 * 0.05 + 100 * 2.50) / 1e6)
     assert HAIKU.cache_ttl(logged_at_ceiling) == "1h"
     assert HAIKU.call(logged_at_ceiling, "1h") == pytest.approx((10 * 0.10 + 1000 * 0.125 * 1.6 + 20000 * 0.01 + 100 * 0.50) / 1e6)
+
+
+def test_joined_variants_give_the_servers_and_skills_of_both_on_the_samples_the_mcp_variant_is_made_for():
+    form = tasks.compose("mcp-dsfl-context+skill-metadata")
+    assert ([s.name for s in form.mcp], [s.name for s in form.skills], form.tags) == (["dsfl-context"], ["metadata"], ("dsfl-context",))
+    assert tasks.compose("skill-metadata").tags == ()
+
+
+@pytest.mark.parametrize("variant", ["skill-metadata+nope", "skill-metadata+skill-metadata", "0+skill-metadata"])
+def test_a_join_of_an_unknown_a_repeated_or_the_baseline_variant_is_refused(variant):
+    with pytest.raises(ValueError, match=f"unknown variant '{re.escape(variant)}'"):
+        airco(variant=variant)
+
+
+def test_a_skill_variant_refuses_the_agent_without_tools():
+    with pytest.raises(ValueError, match="the agent model does not take the MCP servers or skills of variant skill-metadata"):
+        airco(variant="skill-metadata", agent="model")
+
+
+def test_the_inspect_agent_loads_a_skill_with_inspects_skill_tool_and_the_report_counts_it(tmp_path):
+    outputs = [
+        ModelOutput.for_tool_call("mockllm/model", "skill", {"command": "metadata"}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps(ANSWER)}),
+    ]
+    log = run(tmp_path, get_model("mockllm/model", custom_outputs=outputs), variant="skill-metadata", agent="inspect")
+    [sample] = log.samples
+    [loaded] = [m for m in sample.messages if m.role == "tool" and m.function == "skill"]
+    assert "<command-name>metadata</command-name>" in loaded.text
+    assert "Find the metadata that leads to the right source for the question" in loaded.text
+    assert (sample.scores["source"].metadata["skills"], sample.scores["quality"].value["correct"]) == (["metadata"], 1)
+    assert log.eval.metadata["variant_form"]["skills"] == [
+        {"name": "metadata", "origin": "https://github.com/Bakkej/skills-metadata", "revision": tasks.METADATA_SKILL.revision}
+    ]
+    [row] = report.runs(str(tmp_path)).to_dict("records")
+    assert (row["skills"], row["skill_used"]) == ("metadata", 1.0)
+
+
+def test_a_run_that_offers_a_skill_and_does_not_load_it_counts_as_not_used(tmp_path):
+    outputs = [ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"})]
+    run(tmp_path, get_model("mockllm/model", custom_outputs=outputs), variant="skill-metadata", agent="inspect")
+    [row] = report.runs(str(tmp_path)).to_dict("records")
+    assert (row["skills"], row["skill_used"]) == ("", 0.0)

@@ -41,6 +41,8 @@ RUN_FIELDS = [
     "cost",
     "tokens",
     "tool_calls",
+    "skills",
+    "skill_used",
     "total_time_s",
     "explanation",
     "mcp_server",

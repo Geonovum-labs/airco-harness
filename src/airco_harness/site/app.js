@@ -1061,6 +1061,9 @@ function runDetail(d, m, run, onClose) {
     h("p", {class: "muted small", text: `${SOURCE_NOTE[0].toUpperCase()}${SOURCE_NOTE.slice(1)}`}),
     h("div", {class: "sources"}, h("span", {class: "k", text: "Retrieved from"}), h("div", {class: "hosts"}, hostList(run))),
     run.mcp_server ? h("div", {class: "sources"}, h("span", {class: "k", text: "MCP servers"}), h("span", {class: "small", text: run.mcp_server})) : null,
+    run.skill_used !== null && run.skill_used !== undefined
+      ? h("div", {class: "sources"}, h("span", {class: "k", text: "Skills loaded"}), h("span", {class: "small", text: run.skills || "none, although the variant offered one"}))
+      : null,
     mcpSection(run),
     callsSection(run));
   const sample = mapOf(run);
@@ -1124,11 +1127,17 @@ function measurementPage() {
   const quality = cells.map(([[model, agent, v], g]) =>
     h("tr", {}, h("td", {class: "nowrap", text: model}), h("td", {text: agent}), h("td", {class: "nowrap", text: v}),
       ...Object.keys(METRICS).map(k => { const s = aggregate(g, k); return h("td", {class: "num", text: s.se === null ? fmt(s.mean) : `${fmt(s.mean)} ± ${fmt(s.se)}`}); })));
-  const trajectory = cells.map(([[model, agent, v], g]) =>
-    h("tr", {}, h("td", {class: "nowrap", text: model}), h("td", {text: agent}), h("td", {class: "nowrap", text: v}),
-      h("td", {class: "num", text: fmt(aggregate(g, "tool_calls").mean, 1)}), h("td", {class: "num", text: compact(aggregate(g, "tokens").mean)}),
+  // Skill used only when a variant offered a skill; a variant without one has no value, which the table shows as a dash.
+  const offersSkill = all.some(r => r.skill_used !== null && r.skill_used !== undefined);
+  const trajectory = cells.map(([[model, agent, v], g]) => {
+    const used = aggregate(g, "skill_used");
+    return h("tr", {}, h("td", {class: "nowrap", text: model}), h("td", {text: agent}), h("td", {class: "nowrap", text: v}),
+      h("td", {class: "num", text: fmt(aggregate(g, "tool_calls").mean, 1)}),
+      offersSkill ? h("td", {class: "num", text: used.n ? pct(used.mean) : "–"}) : null,
+      h("td", {class: "num", text: compact(aggregate(g, "tokens").mean)}),
       h("td", {class: "num", text: fmt(aggregate(g, "total_time_s").mean, 0)}), h("td", {class: "num", text: money(g.reduce((a, r) => a + (r.cost || 0), 0))}),
-      h("td", {class: "num", text: money(costPerCorrect(g))})));
+      h("td", {class: "num", text: money(costPerCorrect(g))}));
+  });
   // A link to a run opens the page on it; a run chosen on the page opens where the reader already is.
   if (selected && arriving) requestAnimationFrame(() => document.getElementById("detail")?.scrollIntoView({block: "start"}));
   arriving = false;
@@ -1151,7 +1160,9 @@ function measurementPage() {
       table(["Model", "Agent", "Variant", ...Object.keys(METRICS)], quality, [3, 4, 5, 6, 7]),
       h("p", {class: "muted small", text: `Mean ± standard error over the questions. ${SOURCE_NOTE[0].toUpperCase()}${SOURCE_NOTE.slice(1)}`})),
     h("details", {}, h("summary", {text: "Table: trajectory and cost per model, agent and variant"}),
-      table(["Model", "Agent", "Variant", "Tool calls", "Tokens", "Time (s)", "Cost", "Cost per correct"], trajectory, [3, 4, 5, 6, 7])),
+      offersSkill
+        ? table(["Model", "Agent", "Variant", "Tool calls", "Skill used", "Tokens", "Time (s)", "Cost", "Cost per correct"], trajectory, [3, 4, 5, 6, 7, 8])
+        : table(["Model", "Agent", "Variant", "Tool calls", "Tokens", "Time (s)", "Cost", "Cost per correct"], trajectory, [3, 4, 5, 6, 7])),
   ].filter(Boolean);
 }
 

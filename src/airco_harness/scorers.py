@@ -58,6 +58,21 @@ def tool_uses(messages: list[ChatMessage]) -> list[dict]:
     return out
 
 
+# The skill tool of each agent and the argument that names the skill: Claude Code's Skill and Inspect's skill().
+SKILL_TOOLS = {"Skill": "skill", "skill": "command"}
+
+
+def skills_used(uses: list[dict]) -> list[str]:
+    """The skills the agent loaded with a skill tool that did not fail. Claude Code can also read a SKILL.md as a file, which does not count."""
+    return sorted(
+        {
+            str(u["arguments"][SKILL_TOOLS[u["tool"]]])
+            for u in uses
+            if u["tool"] in SKILL_TOOLS and not u["failed"] and u["arguments"].get(SKILL_TOOLS[u["tool"]])
+        }
+    )
+
+
 def _result(block: ContentToolUse) -> dict:
     """The result of a provider's tool use as a dict; Anthropic reports a refused web fetch in it, not as an error."""
     result = block.result
@@ -258,7 +273,7 @@ def source():
     async def score(state: TaskState, target: Target) -> Score:
         uses = tool_uses(state.messages)
         value, details = source_check.assess(retrievals(state.messages), state.metadata["standard"])
-        tools = {"tool_calls": len(uses), "tools": sorted({u["tool"] for u in uses})}
+        tools = {"tool_calls": len(uses), "tools": sorted({u["tool"] for u in uses}), "skills": skills_used(uses)}
         return Score(value={"source": value}, explanation=f"retrieved: {details['retrieved']}", metadata={**details, **tools})
 
     return score

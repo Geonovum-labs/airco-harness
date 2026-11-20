@@ -1,0 +1,124 @@
+[
+  {
+    "id": "trace-across-four-levels",
+    "prompt": "Find the trees API from the catalog record. What can we say about speciesCode, and which modeling levels are represented?",
+    "inputs": ["../examples/catalog/catalog.ttl", "../examples/catalog/openapi.json", "../examples/catalog/model-notes.md"],
+    "source_notes": [],
+    "must": [
+      "Trace the record via the dataset and its distribution to the service and endpoint description.",
+      "Identify the vocabulary as level 1, conceptual and logical models as 2 and 3, and the OpenAPI contract as level 4.",
+      "Distinguish the OpenAPI response field from the likely but undocumented model binding."
+    ],
+    "must_not": ["Call the endpoint or claim the mapping, code list, or MIM conformance has been confirmed."]
+  },
+  {
+    "id": "quality-and-provenance-scope",
+    "prompt": "Does the 92% mean this dataset is 92% accurate today? Where did the data come from?",
+    "inputs": ["../examples/catalog/catalog.ttl"],
+    "source_notes": [],
+    "must": [
+      "Identify the date, distribution, measured field and what the fraction measures.",
+      "Report the dataset's declared derivation from survey-2026 and the lack of activity-level detail."
+    ],
+    "must_not": ["Generalize the measurement to current data, accuracy, or all distributions."]
+  },
+  {
+    "id": "concept-lookup-not-review",
+    "prompt": "Wat betekent tree taxon in deze catalogus?",
+    "inputs": ["../examples/catalog/catalog.ttl"],
+    "source_notes": [],
+    "must": [
+      "Give the vocabulary's definition in Dutch with a source and identify the level-1 route.",
+      "Continue with the supplied SKOS definition if the companion is not installed."
+    ],
+    "must_not": ["Claim the SKOS scheme is NL-SBB-conformant or run an unsolicited review or validation."]
+  },
+  {
+    "id": "conflicting-versions",
+    "prompt": "Can I safely use Tree.taxonCode to interpret API speciesCode in version 2026.1?",
+    "inputs": ["../examples/catalog/catalog.ttl", "../examples/catalog/openapi.json", "../examples/catalog/model-notes.md"],
+    "source_notes": [
+      "The publisher's service index says that API 2026.1 uses logical model v2.",
+      "The API 2026.1 release note says the same operation still uses logical model v1.",
+      "No version-specific field mapping or implementation observation is available."
+    ],
+    "must": [
+      "Report the conflict for the same API release and preserve both sources.",
+      "Distinguish those claims from the dataset-level conformance assertion.",
+      "Ask for an authoritative release-specific field mapping or corrected documentation before confirming the link."
+    ],
+    "must_not": ["Silently select v2 or equate matching labels with a field binding."]
+  },
+  {
+    "id": "standards-registry-not-model",
+    "prompt": "A data service links to an entry in a CSSV registry. Does that give me the domain model and its field mappings?",
+    "inputs": ["../examples/catalog/catalog.ttl"],
+    "source_notes": [
+      "Interpret only what the service's link to service-spec-v1 tells us, separately from any other links in the catalog.",
+      "The full Trees API publishing specification and operation-to-field mappings are not supplied."
+    ],
+    "must": [
+      "Recognize the service's declared specification claim and the registry's specification-description role.",
+      "Explain why listing the specification via dcat:dataset does not make it the served domain dataset, and why the underlying artifact is needed."
+    ],
+    "must_not": ["Assert conformance or classify the CSSV description itself as a MIM model or an implementation schema."]
+  },
+  {
+    "id": "configured-model-and-manifest-discovery",
+    "prompt": "Use the supplied offline.config.json as the configuration. Find the trees access interface, identify the specification it claims to follow and whether a skill is available to interpret it.",
+    "inputs": ["../examples/config/offline.config.json", "../examples/config/offline-model.md", "../examples/config/offline-standards-manifest.json", "../examples/catalog/catalog.ttl"],
+    "source_notes": [
+      "The fictional publisher of the trees catalog and service-spec-v1 supplied offline-standards-manifest.json as the manifest for version 1.",
+      "The fictional trees-api-interpret skill and trees-review-mcp tool are not installed. Treat all trees.example identifiers as offline fixture identifiers."
+    ],
+    "must": [
+      "Apply the configured metadata model v1 and follow the configured local catalog source, resolving paths relative to the selected profile.",
+      "Trace the access interface to the declared specification and identify the matching manifest and its interpretation candidate.",
+      "Say the candidate is unavailable and fall back to the read-only workflow without claiming to have used the skill."
+    ],
+    "must_not": ["Fetch trees.example, install a skill, start a review, or call a tool listed by the manifest."]
+  },
+  {
+    "id": "standards-manifest-version-mismatch",
+    "prompt": "Interpret the applicable trees publishing specification version 2. Does the supplied standards manifest identify a skill that can interpret this version?",
+    "inputs": ["../examples/config/offline-standards-manifest.json"],
+    "source_notes": [
+      "The manifest was supplied by the fictional standard publisher but applies only to release 1. No version 2 manifest or authoritative version 2 text is supplied.",
+      "Treat all trees.example identifiers as offline fixture identifiers."
+    ],
+    "must": [
+      "Report the version mismatch and distinguish it from a matching manifest without a suitable skill.",
+      "Give the fallback and name what is missing for version 2."
+    ],
+    "must_not": ["Use a v1 skill as an applicable v2 handoff or treat the listed MCP tool as a dataset or permission."]
+  },
+  {
+    "id": "catalog-route-to-source-schema",
+    "prompt": "Find a source for municipal trees and tell me whether I can filter by species. Start with the catalogs in the supplied profile. Use only metadata; do not retrieve tree records.",
+    "inputs": ["../examples/config/offline.config.json", "../examples/config/offline-model.md", "../examples/config/offline-standards-manifest.json", "../examples/catalog/catalog.ttl", "../examples/catalog/openapi.json"],
+    "source_notes": [
+      "The publisher confirms that the supplied openapi.json is the contract linked as ex:openapi.json, and the supplied fictional manifest is for service-spec-v1.",
+      "A second publisher listing mentions an MCP search service but supplies neither a dataset ID nor a tool contract. It is not connected in the client. All trees.example identifiers are offline fixture identifiers."
+    ],
+    "must": [
+      "Start from the configured catalog and link its dataset record to the distribution, service and API contract.",
+      "Recommend the documented GET /trees route, explain why the MCP route is unverified, and distinguish speciesCode in the response schema from an advertised filter.",
+      "Report that filtering by species is not established by the supplied operation metadata; do not treat standards recognition or manifest availability as a requirement for routing."
+    ],
+    "must_not": ["Fetch tree records, call or connect the MCP service, or invent an OGC collection or filter parameter."]
+  },
+  {
+    "id": "concept-first-route-to-source-schema",
+    "prompt": "Ik zoek gegevens over de soortgroep van straatbomen. Waar vind ik het begrip en welke bron kan ik gebruiken? Gebruik alleen de meegeleverde metadata.",
+    "inputs": ["../examples/catalog/catalog.ttl", "../examples/catalog/model-notes.md", "../examples/catalog/openapi.json"],
+    "source_notes": [
+      "The publisher confirms that the supplied openapi.json is the contract linked as ex:openapi.json. The identifiers in the fictional trees.example namespace are offline only."
+    ],
+    "must": [
+      "Start from the meaning of the user's wording: identify tree taxon in the glossary as a candidate, not an asserted exact synonym.",
+      "Connect the concept through the model notes and catalog references to the candidate dataset and its documented GET /trees route.",
+      "Identify speciesCode in the API contract and state that its binding to Tree.taxonCode is not documented."
+    ],
+    "must_not": ["Require a dataset-title match before consulting the glossary, confirm an undocumented field mapping, or retrieve payload data."]
+  }
+]

@@ -1,0 +1,63 @@
+@prefix cssv: <http://data.europa.eu/2sa/cssv#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dqv: <http://www.w3.org/ns/dqv#> .
+@prefix ex: <https://trees.example/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:catalog a dcat:Catalog ;
+  dcat:record ex:trees-record ;
+  dcat:dataset ex:trees, ex:service-spec-v1 .
+
+ex:trees-record a dcat:CatalogRecord ;
+  foaf:primaryTopic ex:trees ;
+  dct:modified "2026-10-12"^^xsd:date .
+
+ex:trees a dcat:Dataset, prov:Entity ;
+  dct:title "Municipal trees"@en ;
+  dcat:distribution ex:tree-api-view ;
+  dct:conformsTo ex:tree-logical-v2 ;
+  prov:wasDerivedFrom ex:survey-2026 .
+
+ex:tree-api-view a dcat:Distribution ;
+  dcat:accessURL <https://trees.example/api/> ;
+  dcat:accessService ex:tree-api ;
+  dqv:hasQualityMeasurement ex:species-coverage .
+
+ex:tree-api a dcat:DataService ;
+  dcat:servesDataset ex:trees ;
+  dcat:endpointURL <https://trees.example/api/> ;
+  dcat:endpointDescription ex:openapi.json ;
+  dct:conformsTo ex:service-spec-v1 .
+
+ex:service-spec-v1 a cssv:Specification ;
+  dct:identifier "tree-service-spec:1" ;
+  dct:title "Trees API publishing specification"@en .
+
+ex:species-coverage a dqv:QualityMeasurement ;
+  dqv:computedOn ex:tree-api-view ;
+  dqv:isMeasurementOf ex:species-field-fill ;
+  dqv:value 0.92 ;
+  dct:date "2026-10-01"^^xsd:date .
+
+ex:species-field-fill a dqv:Metric ;
+  dct:description "Fraction of tree records in this distribution with a non-empty speciesCode."@en .
+
+ex:survey-2026 a prov:Entity .
+
+ex:tree-logical-v2 a dct:Standard ;
+  dct:identifier "tree-logical:2" ;
+  dct:references ex:tree-conceptual-v1 .
+
+ex:tree-conceptual-v1 dct:references ex:tree-terms .
+
+ex:tree-terms a skos:ConceptScheme ;
+  dct:title "Tree registry terms"@en .
+
+ex:tree-taxon a skos:Concept ;
+  skos:inScheme ex:tree-terms ;
+  skos:prefLabel "tree taxon"@en ;
+  skos:definition "A taxonomic group used to classify a tree."@en .

@@ -2,7 +2,8 @@
 
 The harness measures the baseline: the question as a user asks it, to the agent
 as the user has it. Variant 0 is the question alone; another variant adds a
-publication form the agent can reach, such as an MCP server. Three agents answer it:
+publication form the agent can reach, such as an MCP server or a skill, and
+variants join with a plus, as in mcp-dsfl-context+skill-metadata. Three agents answer it:
 "model" is the model without a system prompt and without tools, the floor;
 "inspect" is Inspect's own react() agent with its prompt, web search and a
 fetch tool, the same for every model; "claude-code" is Claude Code with its
@@ -24,7 +25,7 @@ from inspect_ai.agent import Agent, AgentPrompt, AgentState, AgentSubmit, agent,
 from inspect_ai.dataset import MemoryDataset
 from inspect_ai.model import GenerateConfig
 from inspect_ai.solver import Generate, Solver, TaskState, chain, solver
-from inspect_ai.tool import Tool, mcp_server_http, mcp_server_stdio, web_search
+from inspect_ai.tool import Tool, mcp_server_http, mcp_server_stdio, skill, web_search
 from inspect_ai.util import store
 
 from . import dataset, mcpwire
@@ -58,6 +59,22 @@ def url_variable(server: McpServer) -> str:
     return f"AIRCO_{server.name.upper().replace('-', '_')}_URL"
 
 
+SKILLS_DIR = Path(__file__).resolve().parents[2] / "skills"
+
+
+@dataclass(frozen=True)
+class AgentSkill:
+    """A skill a variant adds, vendored under skills/<name>/ from the commit of its repository named here."""
+
+    name: str
+    origin: str
+    revision: str
+
+    @property
+    def path(self) -> Path:
+        return SKILLS_DIR / self.name
+
+
 @dataclass(frozen=True)
 class Variant:
     """A form in which the standard is published: what the agent gets besides the question."""
@@ -65,6 +82,8 @@ class Variant:
     about: str
     # The MCP servers the agent gets as tools, on top of the tools of variant 0.
     mcp: tuple[McpServer, ...] = ()
+    # The skills the agent gets, on top of what it has in variant 0.
+    skills: tuple[AgentSkill, ...] = ()
     # The samples the variant is made for: the default selection, which ids or tags override.
     tags: tuple[str, ...] = ()
 
@@ -74,6 +93,7 @@ class Variant:
 GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:0f4bd731e90fc2fcf29f0a221f93aa74d5b6c0d40d08a54adff07735a38577ee"
 # Revision cb6b5d6 of 20 November 2026, with the GeoTOP and REGIS tiles of Amersfoort in the image.
 SUBSURFACE_MODELS_IMAGE = "ghcr.io/sjaakd/mcp-subsurface-models@sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c"
+METADATA_SKILL = AgentSkill("metadata", "https://github.com/Bakkej/skills-metadata", "42902c7267227f229dd7778ce499b9fc27133900")
 VARIANTS = {
     "0": Variant("The question alone: the agent finds the standard as it is published today, or not."),
     "mcp-groundwater-monitoring": Variant(
@@ -103,31 +123,57 @@ VARIANTS = {
         mcp=(McpServer("dsfl-context", url="https://catalog.modeldesk.io/mcp/modeldesk/context"),),
         tags=("dsfl-context",),
     ),
+    # Made for no sample in particular, like variant 0: on its own it takes every sample, joined to an MCP variant that variant's samples.
+    "skill-metadata": Variant(
+        "Variant 0 plus the metadata skill (github.com/Bakkej/skills-metadata), which leads an agent from glossaries, model repositories "
+        "and data catalogs to a dataset and its access route, such as an MCP server or an OGC API.",
+        skills=(METADATA_SKILL,),
+    ),
 }
+JOIN = "+"
 AgentName = Literal["model", "inspect", "claude-code"]
 MAX_TOOL_OUTPUT = 48 * 1024
 SANDBOX_COMPOSE = Path(__file__).parent / "sandbox" / "compose.yaml"
 
 
+def compose(variant: str) -> Variant:
+    """The variant by name, or the variants joined with a plus as one: their servers, skills and the samples any of them is made for."""
+    parts = variant.split(JOIN)
+    unknown = [part for part in parts if part not in VARIANTS]
+    if unknown or len(set(parts)) < len(parts) or (len(parts) > 1 and "0" in parts):
+        raise ValueError(f"unknown variant {variant!r}; choose from {', '.join(VARIANTS)}, or join variants other than 0 with {JOIN}")
+    forms = [VARIANTS[part] for part in parts]
+    if len(forms) == 1:
+        return forms[0]
+    return Variant(
+        about=" Joined with: ".join(form.about for form in forms),
+        mcp=tuple(server for form in forms for server in form.mcp),
+        skills=tuple(s for form in forms for s in form.skills),
+        tags=tuple(dict.fromkeys(tag for form in forms for tag in form.tags)),
+    )
+
+
 def takes(variant: str, agent: AgentName) -> bool:
-    """Whether the agent can be given the variant's MCP server.
+    """Whether the agent can be given the variant's MCP servers and skills.
 
     The agent model has no tools. Claude Code reaches an HTTP server from its sandbox, but the sandbox cannot run a stdio server's container.
     """
-    mcp = VARIANTS[variant].mcp
-    return not mcp or agent == "inspect" or (agent == "claude-code" and all(server.url for server in mcp))
+    form = compose(variant)
+    if agent == "model":
+        return not form.mcp and not form.skills
+    return agent == "inspect" or all(server.url for server in form.mcp)
 
 
 def samples(testset: str, variant: str, ids: list[str] | None = None, tags: list[str] | None = None) -> MemoryDataset:
     """The samples a run of the variant takes: the ids or tags asked for, else those the variant is made for."""
-    if ids is None and tags is None and VARIANTS[variant].tags:
-        tags = list(VARIANTS[variant].tags)
+    if ids is None and tags is None and compose(variant).tags:
+        tags = list(compose(variant).tags)
     return dataset.load(testset, ids=ids, tags=tags)
 
 
 def variant_form(variant: str) -> Variant:
     """The variant with a host server moved to the URL in its variable, read after .env is loaded."""
-    form = VARIANTS[variant]
+    form = compose(variant)
     moved = {s.name: os.environ.get(url_variable(s), "").strip() for s in form.mcp if s.image}
     servers = tuple(host_server(s.name, moved[s.name], s.image, s.version) if moved.get(s.name) else s for s in form.mcp)
     return replace(form, mcp=servers)
@@ -140,6 +186,9 @@ def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant
     if agent == "inspect":
         # Inspect's defaults: its own system prompt and submit tool. web_search() uses the search of the model's own provider.
         tools = [web_search(), fetch(), *([show_on_map()] if map_tool else []), *([plot_series()] if series_tool else [])]
+        if variant.skills:
+            # Inspect's own skill tool, unchanged: it writes the skills to the local sandbox and hands the model a skill's SKILL.md.
+            tools.append(skill([s.path for s in variant.skills]))
         if not variant.mcp:
             return react(tools=tools, submit=AgentSubmit(answer_only=True))
         # The MCP server comes on top of the tools of variant 0, so that the server is the one difference.
@@ -245,9 +294,18 @@ def _setup(agent: AgentName, form: Variant):
         return None
     from .claude_code import claude_code_setup
 
+    setup = claude_code_setup([s.path for s in form.skills])
     if form.mcp:
-        return chain(claude_code_setup(), probe_mcp_servers(form.mcp))
-    return claude_code_setup()
+        return chain(setup, probe_mcp_servers(form.mcp))
+    return setup
+
+
+def _sandbox(agent: AgentName, form: Variant):
+    if agent == "claude-code":
+        # A path relative to the working directory, so that the log names no home directory.
+        return ("docker", os.path.relpath(SANDBOX_COMPOSE))
+    # Inspect's skill tool writes the skills to a sandbox; a temporary directory on the host serves, as the agent runs nothing in it.
+    return "local" if form.skills else None
 
 
 def _metadata(testset: str, variant: str, agent: AgentName, form: Variant) -> dict:
@@ -279,7 +337,7 @@ def airco(
 
     Args:
       testset: Test set under testsets/.
-      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, mcp-bag-ldproxy, mcp-bgt-wijkenbuurten-subsurface or mcp-dsfl-context (agents inspect and claude-code), variant 0 plus MCP servers.
+      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, mcp-bag-ldproxy, mcp-bgt-wijkenbuurten-subsurface or mcp-dsfl-context, variant 0 plus MCP servers; skill-metadata, variant 0 plus a skill. Join variants with +, as in mcp-dsfl-context+skill-metadata. All but 0 for the agents inspect and claude-code.
       agent: model for the model without prompt or tools; inspect for Inspect's react() with web search and fetch; claude-code for Claude Code in a Docker sandbox.
       ids: Comma-separated sample ids; default the samples the variant is made for, all for variant 0.
       tags: Comma-separated tags; the samples with one of them.
@@ -291,12 +349,11 @@ def airco(
     """
     # On the command line -T variant=0 arrives as the YAML integer 0.
     variant = str(variant)
-    if variant not in VARIANTS:
-        raise ValueError(f"unknown variant {variant!r}; choose from {', '.join(VARIANTS)}")
+    compose(variant)
     if agent not in get_args(AgentName):
         raise ValueError(f"unknown agent {agent!r}; choose from {', '.join(get_args(AgentName))}")
     if not takes(variant, agent):
-        raise ValueError(f"the agent {agent} does not take the MCP server of variant {variant}")
+        raise ValueError(f"the agent {agent} does not take the MCP servers or skills of variant {variant}")
     load_dotenv(find_dotenv(usecwd=True))
     register_costs()
     form = variant_form(variant)
@@ -309,8 +366,7 @@ def airco(
         solver=as_solver(_agent(agent, dataset.asks_for_map(testset), dataset.asks_for_series(testset), form)),
         scorer=[quality(), source()],
         config=GenerateConfig(max_tool_output=MAX_TOOL_OUTPUT),
-        # A path relative to the working directory, so that the log names no home directory.
-        sandbox=("docker", os.path.relpath(SANDBOX_COMPOSE)) if agent == "claude-code" else None,
+        sandbox=_sandbox(agent, form),
         model=model,
         message_limit=message_limit,
         token_limit=token_limit,

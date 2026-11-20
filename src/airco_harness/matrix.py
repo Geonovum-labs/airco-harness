@@ -26,7 +26,7 @@ from dotenv import find_dotenv, load_dotenv
 from inspect_ai import eval_set
 
 from . import dataset
-from .tasks import VARIANTS, AgentName, airco, samples, takes
+from .tasks import JOIN, VARIANTS, AgentName, airco, compose, samples, takes
 
 FREE_PREFIXES = ("mockllm/", "openai-api/local/", "ollama/")
 # Claude Code is built for Claude: behind the bridge another model does not use its tools, so such a run measures nothing.
@@ -51,7 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="airco-matrix", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--testset", default=dataset.DEFAULT_TESTSET, help="test set under testsets/")
     parser.add_argument("--models", default=None, help="comma-separated models; default AIRCO_MATRIX_MODELS")
-    parser.add_argument("--variants", default="0", help=f"comma-separated variants: {', '.join(VARIANTS)}")
+    parser.add_argument("--variants", default="0", help=f"comma-separated variants: {', '.join(VARIANTS)}; join variants with {JOIN}")
     parser.add_argument("--ids", default=None, help="comma-separated sample ids; default the samples each variant is made for, all for variant 0")
     parser.add_argument("--tags", default=None, help="comma-separated tags; the samples with one of them")
     parser.add_argument("--epochs", type=int, default=3, help="runs per sample, variant and model")
@@ -90,9 +90,11 @@ def main() -> None:
         print("no models left to run", file=sys.stderr)
         sys.exit(2)
     variants = [v.strip() for v in args.variants.split(",") if v.strip()]
-    unknown = [v for v in variants if v not in VARIANTS]
-    if unknown:
-        build_parser().error(f"unknown variants {', '.join(unknown)}; choose from {', '.join(VARIANTS)}")
+    for v in variants:
+        try:
+            compose(v)
+        except ValueError as e:
+            build_parser().error(str(e))
     agents = [a.strip() for a in args.agents.split(",") if a.strip()]
     if not agents:
         build_parser().error("no agents: pass --agents")
@@ -118,7 +120,7 @@ def main() -> None:
         if not n_samples[v]:
             print(f"variant {v} has no samples in test set {args.testset}; skipped")
         elif without := sorted({a for a, _ in pairs if not takes(v, a)}):
-            print(f"variant {v} has an MCP server that the agent {', '.join(without)} does not take; skipped")
+            print(f"variant {v} has an MCP server or skill that the agent {', '.join(without)} does not take; skipped")
     if not combos:
         print("no runs left", file=sys.stderr)
         sys.exit(2)

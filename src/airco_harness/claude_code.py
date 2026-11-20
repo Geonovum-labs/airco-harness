@@ -18,11 +18,16 @@ Claude Code through the bridge as the MCP tool mcp__map__show_on_map. A
 variant's HTTP MCP servers are configured in Claude Code itself, which passes their
 instructions to the model as it does for a user. It reaches them through the
 recording proxy of mcpwire, on the host at host.docker.internal. For a series question, plot_series is bridged as mcp__plot__plot_series.
+
+A variant's skills go into the project's .claude/skills, each skill directory
+whole, as a user copies it there. Inspect SWE's own skills option copies only
+SKILL.md, scripts/, references/ and assets/, and a skill can point at other files.
 """
 
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from inspect_ai.agent import Agent, BridgedToolsSpec
 from inspect_ai.solver import Generate, Solver, TaskState, solver
@@ -39,12 +44,15 @@ SETTINGS = {"skipWebFetchPreflight": True}
 
 
 @solver
-def claude_code_setup() -> Solver:
-    """Before the agent starts: an empty working directory with the project settings Claude Code needs behind the bridge."""
+def claude_code_setup(skills: list[Path] | None = None) -> Solver:
+    """Before the agent starts: an empty working directory with the project settings Claude Code needs behind the bridge, and the skills."""
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         await sandbox().exec(["mkdir", "-p", f"{WORKDIR}/.claude"])
         await sandbox().write_file(f"{WORKDIR}/.claude/settings.json", json.dumps(SETTINGS))
+        for skill in skills or []:
+            for file in sorted(f for f in skill.rglob("*") if f.is_file()):
+                await sandbox().write_file(f"{WORKDIR}/.claude/skills/{skill.name}/{file.relative_to(skill).as_posix()}", file.read_bytes())
         return state
 
     return solve

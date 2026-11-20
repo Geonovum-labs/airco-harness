@@ -1,0 +1,33 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Municipal trees API (fictional)",
+    "version": "2026.1"
+  },
+  "servers": [{ "url": "https://trees.example/api/" }],
+  "paths": {
+    "/trees": {
+      "get": {
+        "operationId": "listTrees",
+        "responses": {
+          "200": {
+            "description": "Tree records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "speciesCode": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

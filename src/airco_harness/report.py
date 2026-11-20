@@ -93,6 +93,7 @@ def _costs(logs: pd.Series) -> dict[tuple[str, str, int], float]:
 RETRIEVED = SampleColumn("retrieved", path="scores.source.metadata.retrieved", full=True)
 # The source scorer counts every tool use, including the tools a provider runs on its own servers, which leave no tool message.
 TOOL_CALLS = SampleColumn("tool_calls_scored", path="scores.source.metadata.tool_calls", full=True)
+SKILLS = SampleColumn("skills", path="scores.source.metadata.skills", full=True)
 MCP_SERVER = SampleColumn("mcp_server", path="store.mcp_server", full=True)
 # Per MCP server, what the recording proxy saw (mcpwire.traffic); absent in logs from before it. The messages themselves stay out.
 MCP_TRAFFIC = SampleColumn("mcp_traffic", path="store.mcp_traffic", full=True)
@@ -160,6 +161,17 @@ def _testset_version(metadata: object) -> str:
     return str((meta.get("testset") or {}).get("version", ""))
 
 
+def _skills(value: object) -> str:
+    """The skills a run loaded, as the source scorer recorded them, joined with `, `; empty for a run without, or scored before it recorded them."""
+    names = json.loads(value) if isinstance(value, str) else value
+    return ", ".join(names) if isinstance(names, list) else ""
+
+
+def _offers_skills(metadata: object) -> bool:
+    meta = json.loads(metadata) if isinstance(metadata, str) else metadata if isinstance(metadata, dict) else {}
+    return bool((meta.get("variant_form") or {}).get("skills"))
+
+
 def _column(df: pd.DataFrame, name: str, default: object = "") -> pd.Series:
     return df[name] if name in df else pd.Series(default, index=df.index)
 
@@ -181,13 +193,16 @@ def runs(log_dir: str) -> pd.DataFrame:
     """One row per run (sample x epoch x variant x agent x model) with the quality and trajectory metrics,
     and what a comparison between measurements has to hold fixed: the test set and its version, the commit and the limits."""
     df = samples_df(
-        log_dir, columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, RULE, EXPLANATION, MCP_SERVER, MCP_TRAFFIC], quiet=True
+        log_dir,
+        columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, SKILLS, RULE, EXPLANATION, MCP_SERVER, MCP_TRAFFIC],
+        quiet=True,
     )
     if not len(df):
         raise FileNotFoundError(f"no samples in .eval logs under {log_dir}")
     error = df["error"].fillna("").astype(str) if "error" in df else pd.Series("", index=df.index)
     limit = df["limit"].fillna("").astype(str) if "limit" in df else pd.Series("", index=df.index)
     messages = messages_df(log_dir, quiet=True)
+    skills = _column(df, "skills").map(_skills)
     costs = _costs(df["log"])
     out = pd.DataFrame(
         {
@@ -202,6 +217,9 @@ def runs(log_dir: str) -> pd.DataFrame:
             "limit": limit,
             "reason": (error + " " + limit).str.strip(),
             "tool_calls": _scored_tool_calls(df).fillna(df["sample_id"].map(_tool_calls(messages))).fillna(0).astype(int),
+            "skills": skills,
+            # 1 when the run loaded a skill, 0 when its variant offered one and it did not, empty when the variant offered none.
+            "skill_used": skills.ne("").astype(float).where(_column(df, "metadata").map(_offers_skills)),
             "tokens": df["total_tokens"],
             **{name: df["model_usage"].map(lambda u, f=field: _token_sum(u, f)) for name, field in TOKEN_FIELDS.items()},
             "total_time_s": df["total_time"],
@@ -274,7 +292,7 @@ def summary(table: pd.DataFrame) -> pd.DataFrame:
     groups = sorted(table.groupby(["model", "agent", "variant"]), key=lambda item: (model_order(item[0][0]), item[0][1:]))
     for (model, agent, variant), group in groups:
         done = group[~group["failed"]]
-        per_sample = done.groupby("sample")[QUALITY + TRAJECTORY].mean()
+        per_sample = done.groupby("sample")[QUALITY + TRAJECTORY + ["skill_used"]].mean()
         row = {
             "model": model,
             "agent": agent,
@@ -286,7 +304,7 @@ def summary(table: pd.DataFrame) -> pd.DataFrame:
         }
         for metric in QUALITY:
             row[metric], row[f"{metric}_se"] = _mean_se(per_sample[metric])
-        for metric in TRAJECTORY:
+        for metric in [*TRAJECTORY, "skill_used"]:
             row[metric] = _mean_se(per_sample[metric])[0]
         correct = done["correct"].sum()
         cost = group["cost"]
@@ -327,12 +345,12 @@ def markdown(table: pd.DataFrame, log_dir: str) -> str:
         "",
         "## Trajectory metrics and cost per model and variant",
         "",
-        "| Model | Agent | Variant | Tool calls | Tokens | Total time (s) | Working time (s) | Cost per correct answer ($) |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| Model | Agent | Variant | Tool calls | Skill used | Tokens | Total time (s) | Working time (s) | Cost per correct answer ($) |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for _, r in s.iterrows():
         lines.append(
-            f"| {r['model']} | {r['agent']} | {r['variant']} | {_fmt(r['tool_calls'], 1)} | {_fmt(r['tokens'], 0)} | "
+            f"| {r['model']} | {r['agent']} | {r['variant']} | {_fmt(r['tool_calls'], 1)} | {_fmt(r['skill_used'])} | {_fmt(r['tokens'], 0)} | "
             f"{_fmt(r['total_time_s'], 1)} | {_fmt(r['working_time_s'], 1)} | {_fmt(r['cost_per_correct'], 4)} |"
         )
     lines += ["", "## `correct` / `complete` per sample (mean over epochs)", "", _per_sample(table), ""]
