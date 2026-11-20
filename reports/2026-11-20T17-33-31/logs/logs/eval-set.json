@@ -1,0 +1,173 @@
+{
+  "eval_set_id": "Qg3ojEQXSqLwD3MgSqamor",
+  "tasks": [
+    {
+      "name": "airco_harness/airco",
+      "task_id": "dJ4T6ZiXGdD9JiygBTbJWg",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 0
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "ExR6Dhq6fmcaPWChb5KSVK",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 1
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "AECmBU6yA7eywQuMiFHU7Q",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 2
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "bQhmXmpQVnaestyfqyfsKv",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "0",
+        "agent": "claude-code",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 3
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "cVtgv7p3Q8RvoDbn7qA3oB",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "skill-metadata+skill-mim",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 4
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "9e62UwwqZyKt6dEXYz5UsC",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "skill-metadata+skill-mim",
+        "agent": "inspect",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 5
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "RjEM4HoBfxWiizEmJnU4p3",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "skill-metadata+skill-mim",
+        "agent": "claude-code",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-haiku-5-5",
+      "model_args": {},
+      "sequence": 6
+    },
+    {
+      "name": "airco_harness/airco",
+      "task_id": "Kjkf2NWSR8feiPMZVZbj6i",
+      "task_args": {
+        "testset": "dsfl",
+        "variant": "skill-metadata+skill-mim",
+        "agent": "claude-code",
+        "ids": null,
+        "tags": [
+          "verharding"
+        ],
+        "model": "anthropic/claude-sonnet-5-5",
+        "message_limit": 150,
+        "token_limit": 5000000,
+        "time_limit": 2400,
+        "cost_limit": 5.0
+      },
+      "model": "anthropic/claude-sonnet-5-5",
+      "model_args": {},
+      "sequence": 7
+    }
+  ]
+}
