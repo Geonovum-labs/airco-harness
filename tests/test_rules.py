@@ -192,14 +192,17 @@ CASES = [
     ("dsfl-11", as_json({"present": False}), full(0, 0, 0)),
     ("dsfl-12", as_json({"available": True, "probability": 0.62}), full(0, 0, 1)),
     ("dsfl-15", as_json({"line_of_sight_only": True, "proves_no_connection": True}), full(0, 0.5, 0)),
-    ("dsfl-16", ranking(["Spooremplacement", "Hof", "Eemplein-Nieuwe Stad"]), full()),
-    ("dsfl-16", ranking(["Spooremplacement", "Eemplein-Nieuwe Stad", "Hof"]), full()),
-    ("dsfl-16", ranking(["Hof", "Spooremplacement", "Eemplein-Nieuwe Stad"]), full(0, round(7 / 9, 4), 0)),
-    ("dsfl-16", ranking(["Spooremplacement", "Hof", "Winkelcentrum Vathorst"]), full(0, round(6 / 9, 4), 0)),
-    ("dsfl-16", ranking(["Spooremplacement", "Hof", "Eemplein-Nieuwe Stad"], klei={"Hof": 0.3}), full(0, round(8 / 9, 4), 0)),
+    ("dsfl-16", ranking(["Hof", "Winkelcentrum Vathorst", "Smallepad e.o."]), full()),
+    ("dsfl-16", ranking(["Hof", "Smallepad e.o.", "Winkelcentrum Vathorst"]), full()),
+    ("dsfl-16", ranking(["Winkelcentrum Vathorst", "Hof", "Smallepad e.o."]), full(0, round(7 / 9, 4), 0)),
+    # The fourth, within the tolerance of the third but not where three clipping runs put it.
+    ("dsfl-16", ranking(["Hof", "Winkelcentrum Vathorst", "Stadhuisplein"]), full(0, round(6 / 9, 4), 0)),
+    ("dsfl-16", ranking(["Hof", "Winkelcentrum Vathorst", "Smallepad e.o."], klei={"Hof": 0.3}), full(0, round(8 / 9, 4), 0)),
+    # The answer to the question before it named the paving classes and the geometry: half verhard counted, objects by their point.
+    ("dsfl-16", ranking(["Spooremplacement", "Hof", "Eemplein-Nieuwe Stad"]), full(0, round(2 / 9, 4), 0)),
     # The buurten an agent finds when it multiplies the paved share by the clay share.
     ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "De Baken"]), full(0, 0.0, 0)),
-    ("dsfl-16", ranking(["Spooremplacement", "Hof", "Eemhaven"]), full(0, round(6 / 9, 4), 1)),
+    ("dsfl-16", ranking(["Hof", "Winkelcentrum Vathorst", "Eemhaven"]), full(0, round(6 / 9, 4), 1)),
     ("dsfl-16", as_json({"buurten": []}), full(0, 0, 0, 0)),
 ]
 

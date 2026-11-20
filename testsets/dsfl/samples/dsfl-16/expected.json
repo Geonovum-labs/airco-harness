@@ -3,31 +3,31 @@
   "answer_schema": "answer.schema.json",
   "ranking": [
     [
-      "BU03070309"
+      "BU03070100"
     ],
     [
-      "BU03070100",
-      "BU03070401"
+      "BU03072901",
+      "BU03070200"
     ],
     [
-      "BU03070100",
-      "BU03070401"
+      "BU03072901",
+      "BU03070200"
     ]
   ],
   "values": {
-    "BU03070309": {
-      "naam": "Spooremplacement",
-      "verhard": 0.824,
-      "klei": 0.0
-    },
     "BU03070100": {
       "naam": "Hof",
-      "verhard": 0.7701,
+      "verhard": 0.7622,
       "klei": 0.0
     },
-    "BU03070401": {
-      "naam": "Eemplein-Nieuwe Stad",
-      "verhard": 0.7679,
+    "BU03072901": {
+      "naam": "Winkelcentrum Vathorst",
+      "verhard": 0.7119,
+      "klei": 0.0
+    },
+    "BU03070200": {
+      "naam": "Smallepad e.o.",
+      "verhard": 0.7102,
       "klei": 0.0
     }
   },
@@ -36,6 +36,6 @@
     "klei": 0.02
   },
   "buurten": "dsfl/cbs-buurten-amersfoort-2026-wgs84.geojson",
-  "source": "Derived on 19 November 2026 from sources/dsfl/: the CBS buurten 2026 of bag.ldproxy.net/wijkenbuurten (cbs-buurten-amersfoort-2026.geojson); the area of BGT panden and paved wegdelen per buurt from the aggregation process of bag.ldproxy.net/bgt, BGT stand 30 October 2026 (bgt-amersfoort-panden-per-buurt.json, bgt-amersfoort-verharde-wegdelen-per-buurt.json); kans_2 of GeoTOP v01r6s1 from www.dinodata.nl/opendap/GeoTOP/geotop.nc, reduced per buurt (geotop-amersfoort-klei-per-buurt.json). All recorded in sources/sources.lock.json; tests/test_dsfl_sources.py derives the ranking and values again.",
-  "note": "Draft readings for the working group. Paved share: the area of current BGT panden and of wegdelen with gesloten verharding, open verharding or half verhard, per buurt as the BGT API assigns objects, over the area of the CBS buurt. Clay share: of each GeoTOP column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column), the share with kans op klei (K) above 5%; kleiig zand (KZ) does not count. Spooremplacement is first; Hof (0.7701) and Eemplein-Nieuwe Stad (0.7679) lie within the tolerance of each other, so ranks 2 and 3 accept both in either order; Winkelcentrum Vathorst follows with 0.7445. The three have no voxel with P(klei) > 5%, with 10 voxels or 9, so the lithology does not add to their sensitivity. The question asks for a score but does not define it, so the score is not checked. Since subsurface-models 1.0.13 the tool area-summary gives the clay share of a buurt in one call; before it, an exact clay share took one trace per column, about 50 per buurt."
+  "source": "Derived on 20 November 2026 from sources/dsfl/: the CBS buurten 2026 of bag.ldproxy.net/wijkenbuurten (cbs-buurten-amersfoort-2026.geojson and its WGS84 twin); the area of current BGT panden and of wegdelen with gesloten or open verharding at ground level, clipped to each buurt by the aggregation process of bag.ldproxy.net/bgt (bgt-amersfoort-verhard-per-buurt-geknipt.json); kans_2 of GeoTOP v01r6s1 from www.dinodata.nl/opendap/GeoTOP/geotop.nc, reduced per buurt (geotop-amersfoort-klei-per-buurt.json). All recorded in sources/sources.lock.json; tests/test_dsfl_sources.py derives the ranking and values again.",
+  "note": "Draft readings for the working group. Paved share, as the question defines it: the area of current BGT panden and of wegdelen with gesloten or open verharding at ground level (relatieveHoogteligging 0), clipped to the CBS buurt, over the area of the CBS buurt. Half verhard does not count. Clay share: of each GeoTOP column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column), the share with kans op klei (K) above 5%; kleiig zand (KZ) does not count. Hof is first (0.7622). Winkelcentrum Vathorst (0.7119) and Smallepad e.o. (0.7102) follow so closely that ranks 2 and 3 accept both in either order; Stadhuisplein (0.7059) and Grote Haag (0.7000) come next. Three runs on 20 November that clipped the same way found the same three in this order. None of them has a voxel with P(klei) > 5%, with 10 voxels or 9, so the lithology does not add to their sensitivity. The question asks for a score but does not define it, so the score is not checked. The server failed on the clipped wegdelen of Watervogelbuurt (HTTP 500); its panden alone give 0.189 and its wegdelen unclipped 0.429, far below the top three. Since subsurface-models 1.0.13 the tool area-summary gives the clay share of a buurt in one call."
 }

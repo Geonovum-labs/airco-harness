@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-19T11:04:54Z",
+  "fetched": "2026-11-20T13:29:44Z",
   "files": [
     {
       "path": "dsfl/bag-amersfoort-bouw-gestart.json",
@@ -47,20 +47,12 @@
       "bytes": 220948
     },
     {
-      "path": "dsfl/bgt-amersfoort-panden-per-buurt.json",
+      "path": "dsfl/bgt-amersfoort-verhard-per-buurt-geknipt.json",
       "url": "https://bag.ldproxy.net/bgt/processes/aggregate-features/execution",
-      "method": "POST",
-      "body_sha256": "3fee80d3cc7a162ca70942d97805385f16984475a16ad596d7519982acf94012",
-      "sha256": "aef973683e3e0978c917b5327cfd34e8fbe12f6e2fa8da0aba6656610996f075",
-      "bytes": 10255
-    },
-    {
-      "path": "dsfl/bgt-amersfoort-verharde-wegdelen-per-buurt.json",
-      "url": "https://bag.ldproxy.net/bgt/processes/aggregate-features/execution",
-      "method": "POST",
-      "body_sha256": "d271d030b239aecd2582ed7525bc9fa515e0dc165bdfb71c8caa966c367828b8",
-      "sha256": "85338258cb8064a4d04e38297a991c75c2ba0e6e8b8eefe3121e14c83b79559e",
-      "bytes": 10257
+      "method": "POST per buurt, clipped",
+      "derived_from": "dsfl/cbs-buurten-amersfoort-2026-wgs84.geojson",
+      "sha256": "1e6da85e081023c45da3487bd9932b9e52e56988dd97059d06c5bcab0922491b",
+      "bytes": 21332
     },
     {
       "path": "dsfl/bro-gld000000025798.csv",

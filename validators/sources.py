@@ -11,7 +11,8 @@ then records the method and the sha256 of the body. A source that is too big
 to keep is an Aggregate: its pages are fetched one by one, reduced to a small
 JSON file, and the lock records method "GET, paged". A Reduced source is one
 GET too big to keep, reduced to a small JSON file, and the lock records method
-"GET, reduced". A Derived file is computed
+"GET, reduced". A Clipped source is one aggregate per CBS buurt, clipped to
+its geometry, and the lock records method "POST per buurt, clipped". A Derived file is computed
 from another source file, and the lock records method "derived". The lock records the sha256 and size
 of each file, and Last-Modified and ETag when the server sends them. The MIM
 XSD and the schemas it imports are stored under schemas/<host>/<path>, where
@@ -30,6 +31,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
@@ -188,27 +190,45 @@ class Reduced(NamedTuple):
 
 DSFL_BUURTEN = "dsfl/cbs-buurten-amersfoort-2026.geojson"
 DSFL_BUURTEN_WGS84 = "dsfl/cbs-buurten-amersfoort-2026-wgs84.geojson"
-DSFL_BGT_PANDEN = "dsfl/bgt-amersfoort-panden-per-buurt.json"
-DSFL_BGT_WEGDELEN = "dsfl/bgt-amersfoort-verharde-wegdelen-per-buurt.json"
+DSFL_BGT_CLIPPED = "dsfl/bgt-amersfoort-verhard-per-buurt-geknipt.json"
 DSFL_GEOTOP_KLEI = "dsfl/geotop-amersfoort-klei-per-buurt.json"
 LDPROXY = "https://bag.ldproxy.net"
-PAVED = ("gesloten verharding", "open verharding", "half verhard")
+# What dsfl-16 counts as paved: open and closed paving, not "half verhard" (compacted or loose material, such as track bed).
+PAVED = ("gesloten verharding", "open verharding")
+BGT_AGGREGATE = f"{LDPROXY}/bgt/processes/aggregate-features/execution"
 # A rectangle in RD (EPSG:28992) around gemeente Amersfoort, on whole hectometres so it matches the GeoTOP grid.
 AMERSFOORT_RD = (149400, 457700, 161700, 470200)
 # GeoTOP v01r6s1 at DINO's OPeNDAP server. x and y label the lower left corner of each 100 m cell, from (13600, 338500); z runs from -50 m NAP in 313 steps of 0.5 m.
 GEOTOP_OPENDAP = "https://www.dinodata.nl/opendap/GeoTOP/geotop.nc"
 
 
-def _bgt_area_per_buurt(collection: str, **parameters: str) -> Callable[[], Post]:
-    """The number and area of the current objects of a BGT collection in gemeente Amersfoort, per buurt the API assigns them to."""
-    inputs = {
-        "source": {"collection": collection, "parameters": {"gemeentecode": AMERSFOORT, **parameters}},
-        "groupBy": ["buurtcode"],
-        "aggregates": ["count", {"function": "sum", "property": "$area"}],
-        "limit": 1000,
-    }
-    body = json.dumps({"inputs": inputs}, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    return lambda: Post(f"{LDPROXY}/bgt/processes/aggregate-features/execution", body, "application/json")
+class Clipped(NamedTuple):
+    """Per buurt of the file `buurten` (WGS84), the number and area of current BGT objects at ground level, clipped to the buurt:
+    only the part inside it counts, as the aggregate's clip does. At ground level the clipped surfaces of all collections add
+    up to the area of the buurt. A buurt the server fails on is kept under "failed" with its error."""
+
+    buurten: str
+    sources: dict[str, dict]
+
+
+def _get_clipped(clipped: Clipped) -> bytes:
+    def one(feature: dict, source: dict) -> dict:
+        inputs = {"source": source, "clip": {"geometry": feature["geometry"]}, "aggregates": ["count", {"function": "sum", "property": "$area"}]}
+        body = json.dumps({"inputs": inputs}, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        try:
+            total = json.loads(_get(BGT_AGGREGATE, body, "application/json")[0])["total"]
+        except urllib.error.HTTPError as error:
+            return {"error": f"HTTP {error.code}: {error.read().decode('utf-8', 'replace')[:300]}"}
+        return {"count": total.get("count", 0), "area": round(total.get("sum($area)") or 0.0, 3)}
+
+    features = json.loads(path(clipped.buurten).read_bytes())["features"]
+    jobs = [(f["id"], name, f, source) for f in features for name, source in clipped.sources.items()]
+    with ThreadPoolExecutor(4) as pool:
+        answers = list(pool.map(lambda job: one(job[2], job[3]), jobs))
+    out: dict[str, dict] = {"buurten": {}, "failed": {}}
+    for (code, name, _, _), answer in zip(jobs, answers):
+        out["failed" if "error" in answer else "buurten"].setdefault(code, {})[name] = answer.get("error", answer)
+    return (json.dumps(out, indent=1, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
 
 
 def _geotop_clay_url() -> str:
@@ -244,8 +264,16 @@ SOURCES: dict[str, str | Aggregate | Reduced | Derived | Callable[[], Post]] = {
     DSFL_GLD_SERIES: f"{BRO}/gm/gld/v1/seriesAsCsv/GLD000000025798",
     DSFL_BUURTEN: f"{LDPROXY}/wijkenbuurten/collections/buurt/items?f=json&limit=1000&gemeente={AMERSFOORT}&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
     DSFL_BUURTEN_WGS84: f"{LDPROXY}/wijkenbuurten/collections/buurt/items?f=json&limit=1000&gemeente={AMERSFOORT}",
-    DSFL_BGT_PANDEN: _bgt_area_per_buurt("pand"),
-    DSFL_BGT_WEGDELEN: _bgt_area_per_buurt("wegdeel", filter="bgtFysiekVoorkomen IN (" + ",".join(f"'{v}'" for v in PAVED) + ")"),
+    DSFL_BGT_CLIPPED: Clipped(
+        DSFL_BUURTEN_WGS84,
+        {
+            "panden": {"collection": "pand", "parameters": {"relatieveHoogteligging": 0}},
+            "wegdelen": {
+                "collection": "wegdeel",
+                "parameters": {"relatieveHoogteligging": 0, "filter": "bgtFysiekVoorkomen IN (" + ",".join(f"'{v}'" for v in PAVED) + ")"},
+            },
+        },
+    ),
     DSFL_GEOTOP_KLEI: Reduced(_geotop_clay_url(), lambda raw: area_sources.geotop_clay_per_buurt(raw.decode("utf-8"), path(DSFL_BUURTEN).read_bytes())),
 }
 
@@ -360,6 +388,9 @@ def fetch(prefix: str = "") -> None:
             case Reduced(source_url, _):
                 method, headers = {"method": "GET, reduced"}, {}
                 data = _get_reduced(source)
+            case Clipped(buurten, _):
+                source_url, method, headers = BGT_AGGREGATE, {"method": "POST per buurt, clipped", "derived_from": buurten}, {}
+                data = _get_clipped(source)
             case Derived(origin, build):
                 source_url, method, headers = urls[origin], {"method": "derived", "derived_from": origin}, {}
                 data = build(path(origin).read_bytes())

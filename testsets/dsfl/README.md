@@ -45,21 +45,21 @@ The groundwater MCP variant defaults to the `groundwater` tag, so it still selec
 
 ## Water accumulation per buurt
 
-`dsfl-16` asks which CBS buurten in Amersfoort have the largest paved share, and how far the lithology of the upper 5 m in GeoTOP adds to their sensitivity to water accumulation after heavy rain. The agent ranks the buurten by paved share and gives for the top three the paved share, the share of GeoTOP voxels with P(klei) > 5% and a score. The question does not define the score, so it is not checked. It is scored with the rule `ranking` ([Test sets and scoring](../../docs/test-sets.md#the-rule-ranking)). The readings below are a draft of 19 November 2026 for the working group:
+`dsfl-16` asks which CBS buurten in Amersfoort have the largest paved share, and how far the lithology of the upper 5 m in GeoTOP adds to their sensitivity to water accumulation after heavy rain. The agent ranks the buurten by paved share and gives for the top three the paved share, the share of GeoTOP voxels with P(klei) > 5% and a score. The question says to use the geometry of the CBS buurten and to count only open and closed paving. It does not define the score, so the score is not checked. It is scored with the rule `ranking` ([Test sets and scoring](../../docs/test-sets.md#the-rule-ranking)). The readings below are a draft of 20 November 2026 for the working group:
 
 - **Buurt.** The CBS Wijk- en Buurtkaart 2026, as bag.ldproxy.net/wijkenbuurten serves it: 145 buurten in Amersfoort.
-- **Paved share.** The area of all current BGT panden and of the wegdelen with gesloten verharding, open verharding or half verhard, per buurt as bag.ldproxy.net/bgt assigns them (by a point on the object), over the area of the buurt.
+- **Paved share.** The area of current BGT panden and of wegdelen with gesloten or open verharding at ground level, clipped to the buurt by the `clip` of the aggregation process of bag.ldproxy.net/bgt, over the area of the buurt. Half verhard, such as the track bed of the Spooremplacement, does not count.
 - **Clay share.** Of each GeoTOP v01r6s1 column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column); the share of those voxels with kans op klei (lithoclass K) above 5%. Kleiig zand (KZ) does not count.
 
 | Rank | Buurt | Paved | Clay |
 | --- | --- | --- | --- |
-| 1 | Spooremplacement | 0.824 | 0 |
-| 2 | Hof | 0.770 | 0 |
-| 3 | Eemplein-Nieuwe Stad | 0.768 | 0 |
-| 4 | Winkelcentrum Vathorst | 0.745 | 0 |
+| 1 | Hof | 0.762 | 0 |
+| 2 | Winkelcentrum Vathorst | 0.712 | 0 |
+| 3 | Smallepad e.o. | 0.710 | 0 |
+| 4 | Stadhuisplein | 0.706 | 0 |
 
-Hof and Eemplein-Nieuwe Stad lie within the tolerance of each other, so ranks 2 and 3 accept both in either order. None of the most paved buurten has a voxel with P(klei) > 5%, with 10 voxels or 9, so the lithology does not add to their sensitivity. Clay above 5% occurs in 68 of the 145 buurten; Isselt-Oost has the largest share.
+Winkelcentrum Vathorst and Smallepad e.o. lie within 0.002 of each other, so ranks 2 and 3 accept both in either order. Three runs on 20 November that clipped the same way found these three in this order. The server fails on the clipped wegdelen of Watervogelbuurt (HTTP 500); its panden alone give 0.189 and its wegdelen unclipped 0.429, far below the top three. None of the most paved buurten has a voxel with P(klei) > 5%, with 10 voxels or 9, so the lithology does not add to their sensitivity. Clay above 5% occurs in 68 of the 145 buurten; Isselt-Oost has the largest share.
 
 Since version 1.0.13 the subsurface MCP has the tool `area-summary`, which gives the share of voxels above a probability in a polygon and a depth band in one call. Before it the server answered per point or line only: a buurt of 50 columns took 50 traces, Amersfoort about 6,400. The expected clay shares come from the OPeNDAP server at dinodata.nl, which serves the same GeoTOP version: at the centroids of Isselt-Oost, Schuilenburg-Zuid, De Baken and Laakse Tuinen its kans_2 equals the server's P(K) in each of the upper 10 voxels.
 
-The buurten (in RD and in WGS84), the BGT areas per buurt and the clay probabilities of the upper 12 voxels of each column are in `sources/dsfl/` and recorded in `sources/sources.lock.json`; the GeoTOP block (25 MB) is reduced at fetch time and not kept. `tests/test_dsfl_sources.py` derives the ranking and the values again.
+The buurten (in RD and in WGS84), the clipped BGT areas per buurt and the clay probabilities of the upper 12 voxels of each column are in `sources/dsfl/` and recorded in `sources/sources.lock.json`; the GeoTOP block (25 MB) is reduced at fetch time and not kept. `tests/test_dsfl_sources.py` derives the ranking and the values again.

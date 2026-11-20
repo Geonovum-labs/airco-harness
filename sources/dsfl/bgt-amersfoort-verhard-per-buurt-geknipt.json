@@ -1,0 +1,1455 @@
+{
+ "buurten": {
+  "BU03070100": {
+   "panden": {
+    "area": 37701.696,
+    "count": 325
+   },
+   "wegdelen": {
+    "area": 21298.798,
+    "count": 163
+   }
+  },
+  "BU03070101": {
+   "panden": {
+    "area": 23259.958,
+    "count": 255
+   },
+   "wegdelen": {
+    "area": 9882.375,
+    "count": 91
+   }
+  },
+  "BU03070102": {
+   "panden": {
+    "area": 12190.036,
+    "count": 97
+   },
+   "wegdelen": {
+    "area": 6266.631,
+    "count": 67
+   }
+  },
+  "BU03070103": {
+   "panden": {
+    "area": 20901.3,
+    "count": 172
+   },
+   "wegdelen": {
+    "area": 15064.406,
+    "count": 109
+   }
+  },
+  "BU03070104": {
+   "panden": {
+    "area": 61439.934,
+    "count": 797
+   },
+   "wegdelen": {
+    "area": 41040.681,
+    "count": 350
+   }
+  },
+  "BU03070105": {
+   "panden": {
+    "area": 32374.565,
+    "count": 219
+   },
+   "wegdelen": {
+    "area": 29604.706,
+    "count": 225
+   }
+  },
+  "BU03070106": {
+   "panden": {
+    "area": 30754.069,
+    "count": 165
+   },
+   "wegdelen": {
+    "area": 26285.905,
+    "count": 125
+   }
+  },
+  "BU03070107": {
+   "panden": {
+    "area": 38693.193,
+    "count": 92
+   },
+   "wegdelen": {
+    "area": 36764.776,
+    "count": 206
+   }
+  },
+  "BU03070108": {
+   "panden": {
+    "area": 14531.858,
+    "count": 267
+   },
+   "wegdelen": {
+    "area": 7975.519,
+    "count": 77
+   }
+  },
+  "BU03070200": {
+   "panden": {
+    "area": 24448.574,
+    "count": 18
+   },
+   "wegdelen": {
+    "area": 30511.821,
+    "count": 167
+   }
+  },
+  "BU03070202": {
+   "panden": {
+    "area": 34833.189,
+    "count": 290
+   },
+   "wegdelen": {
+    "area": 36327.301,
+    "count": 238
+   }
+  },
+  "BU03070204": {
+   "panden": {
+    "area": 25624.054,
+    "count": 211
+   },
+   "wegdelen": {
+    "area": 23970.086,
+    "count": 151
+   }
+  },
+  "BU03070300": {
+   "panden": {
+    "area": 50903.396,
+    "count": 922
+   },
+   "wegdelen": {
+    "area": 61595.641,
+    "count": 447
+   }
+  },
+  "BU03070301": {
+   "panden": {
+    "area": 37197.451,
+    "count": 872
+   },
+   "wegdelen": {
+    "area": 39274.973,
+    "count": 261
+   }
+  },
+  "BU03070302": {
+   "panden": {
+    "area": 49563.354,
+    "count": 1003
+   },
+   "wegdelen": {
+    "area": 34985.469,
+    "count": 272
+   }
+  },
+  "BU03070303": {
+   "panden": {
+    "area": 75142.63,
+    "count": 1755
+   },
+   "wegdelen": {
+    "area": 59907.559,
+    "count": 581
+   }
+  },
+  "BU03070304": {
+   "panden": {
+    "area": 57243.92,
+    "count": 1369
+   },
+   "wegdelen": {
+    "area": 46239.944,
+    "count": 472
+   }
+  },
+  "BU03070305": {
+   "panden": {
+    "area": 38056.336,
+    "count": 936
+   },
+   "wegdelen": {
+    "area": 65823.16,
+    "count": 562
+   }
+  },
+  "BU03070306": {
+   "panden": {
+    "area": 42128.767,
+    "count": 263
+   },
+   "wegdelen": {
+    "area": 40436.517,
+    "count": 308
+   }
+  },
+  "BU03070307": {
+   "panden": {
+    "area": 10007.525,
+    "count": 74
+   },
+   "wegdelen": {
+    "area": 26321.493,
+    "count": 130
+   }
+  },
+  "BU03070308": {
+   "panden": {
+    "area": 35073.162,
+    "count": 126
+   },
+   "wegdelen": {
+    "area": 19066.923,
+    "count": 160
+   }
+  },
+  "BU03070309": {
+   "panden": {
+    "area": 2791.036,
+    "count": 11
+   },
+   "wegdelen": {
+    "area": 3835.569,
+    "count": 88
+   }
+  },
+  "BU03070401": {
+   "panden": {
+    "area": 33149.661,
+    "count": 19
+   },
+   "wegdelen": {
+    "area": 51097.157,
+    "count": 235
+   }
+  },
+  "BU03070402": {
+   "panden": {
+    "area": 58485.347,
+    "count": 65
+   },
+   "wegdelen": {
+    "area": 43505.764,
+    "count": 303
+   }
+  },
+  "BU03070504": {
+   "panden": {
+    "area": 209464.567,
+    "count": 293
+   },
+   "wegdelen": {
+    "area": 104836.924,
+    "count": 807
+   }
+  },
+  "BU03070505": {
+   "panden": {
+    "area": 304468.318,
+    "count": 528
+   },
+   "wegdelen": {
+    "area": 125200.733,
+    "count": 885
+   }
+  },
+  "BU03070600": {
+   "panden": {
+    "area": 23234.5,
+    "count": 657
+   },
+   "wegdelen": {
+    "area": 35181.188,
+    "count": 377
+   }
+  },
+  "BU03070601": {
+   "panden": {
+    "area": 38180.53,
+    "count": 381
+   },
+   "wegdelen": {
+    "area": 88485.048,
+    "count": 432
+   }
+  },
+  "BU03070603": {
+   "panden": {
+    "area": 22350.558,
+    "count": 239
+   },
+   "wegdelen": {
+    "area": 29661.282,
+    "count": 155
+   }
+  },
+  "BU03070700": {
+   "panden": {
+    "area": 60640.138,
+    "count": 1216
+   },
+   "wegdelen": {
+    "area": 83652.696,
+    "count": 561
+   }
+  },
+  "BU03070701": {
+   "panden": {
+    "area": 57127.628,
+    "count": 956
+   },
+   "wegdelen": {
+    "area": 79256.815,
+    "count": 545
+   }
+  },
+  "BU03070702": {
+   "panden": {
+    "area": 49328.097,
+    "count": 600
+   },
+   "wegdelen": {
+    "area": 82087.701,
+    "count": 585
+   }
+  },
+  "BU03070800": {
+   "panden": {
+    "area": 50687.591,
+    "count": 1081
+   },
+   "wegdelen": {
+    "area": 85661.17,
+    "count": 456
+   }
+  },
+  "BU03070801": {
+   "panden": {
+    "area": 46387.674,
+    "count": 730
+   },
+   "wegdelen": {
+    "area": 74442.461,
+    "count": 390
+   }
+  },
+  "BU03070803": {
+   "panden": {
+    "area": 43260.312,
+    "count": 806
+   },
+   "wegdelen": {
+    "area": 49868.153,
+    "count": 241
+   }
+  },
+  "BU03070900": {
+   "panden": {
+    "area": 56353.036,
+    "count": 1525
+   },
+   "wegdelen": {
+    "area": 76833.661,
+    "count": 579
+   }
+  },
+  "BU03070902": {
+   "panden": {
+    "area": 48656.591,
+    "count": 1113
+   },
+   "wegdelen": {
+    "area": 64090.554,
+    "count": 511
+   }
+  },
+  "BU03070903": {
+   "panden": {
+    "area": 65905.545,
+    "count": 1443
+   },
+   "wegdelen": {
+    "area": 86551.287,
+    "count": 653
+   }
+  },
+  "BU03070905": {
+   "panden": {
+    "area": 33041.04,
+    "count": 824
+   },
+   "wegdelen": {
+    "area": 49134.167,
+    "count": 314
+   }
+  },
+  "BU03070906": {
+   "panden": {
+    "area": 11746.934,
+    "count": 92
+   },
+   "wegdelen": {
+    "area": 60550.8,
+    "count": 338
+   }
+  },
+  "BU03071000": {
+   "panden": {
+    "area": 33313.468,
+    "count": 621
+   },
+   "wegdelen": {
+    "area": 54951.246,
+    "count": 268
+   }
+  },
+  "BU03071001": {
+   "panden": {
+    "area": 42547.369,
+    "count": 692
+   },
+   "wegdelen": {
+    "area": 62654.639,
+    "count": 349
+   }
+  },
+  "BU03071002": {
+   "panden": {
+    "area": 36495.566,
+    "count": 651
+   },
+   "wegdelen": {
+    "area": 53485.611,
+    "count": 306
+   }
+  },
+  "BU03071003": {
+   "panden": {
+    "area": 48862.45,
+    "count": 834
+   }
+  },
+  "BU03071004": {
+   "panden": {
+    "area": 41626.783,
+    "count": 675
+   },
+   "wegdelen": {
+    "area": 62602.691,
+    "count": 387
+   }
+  },
+  "BU03071100": {
+   "panden": {
+    "area": 49113.188,
+    "count": 1241
+   },
+   "wegdelen": {
+    "area": 76162.093,
+    "count": 400
+   }
+  },
+  "BU03071101": {
+   "panden": {
+    "area": 49576.209,
+    "count": 1172
+   },
+   "wegdelen": {
+    "area": 107619.023,
+    "count": 464
+   }
+  },
+  "BU03071201": {
+   "panden": {
+    "area": 34492.834,
+    "count": 273
+   },
+   "wegdelen": {
+    "area": 59212.029,
+    "count": 208
+   }
+  },
+  "BU03071202": {
+   "panden": {
+    "area": 44344.263,
+    "count": 187
+   },
+   "wegdelen": {
+    "area": 90972.041,
+    "count": 126
+   }
+  },
+  "BU03071203": {
+   "panden": {
+    "area": 103290.341,
+    "count": 228
+   },
+   "wegdelen": {
+    "area": 103875.009,
+    "count": 439
+   }
+  },
+  "BU03071204": {
+   "panden": {
+    "area": 15316.611,
+    "count": 110
+   },
+   "wegdelen": {
+    "area": 104579.89,
+    "count": 149
+   }
+  },
+  "BU03071205": {
+   "panden": {
+    "area": 23961.045,
+    "count": 86
+   },
+   "wegdelen": {
+    "area": 109922.916,
+    "count": 161
+   }
+  },
+  "BU03071300": {
+   "panden": {
+    "area": 41340.135,
+    "count": 1093
+   },
+   "wegdelen": {
+    "area": 51251.283,
+    "count": 248
+   }
+  },
+  "BU03071301": {
+   "panden": {
+    "area": 35838.838,
+    "count": 431
+   },
+   "wegdelen": {
+    "area": 84942.436,
+    "count": 366
+   }
+  },
+  "BU03071302": {
+   "panden": {
+    "area": 30296.471,
+    "count": 480
+   },
+   "wegdelen": {
+    "area": 72027.5,
+    "count": 259
+   }
+  },
+  "BU03071400": {
+   "panden": {
+    "area": 47720.399,
+    "count": 836
+   },
+   "wegdelen": {
+    "area": 69447.888,
+    "count": 561
+   }
+  },
+  "BU03071401": {
+   "panden": {
+    "area": 61932.784,
+    "count": 932
+   },
+   "wegdelen": {
+    "area": 85784.498,
+    "count": 623
+   }
+  },
+  "BU03071402": {
+   "panden": {
+    "area": 30689.462,
+    "count": 340
+   },
+   "wegdelen": {
+    "area": 49509.618,
+    "count": 329
+   }
+  },
+  "BU03071403": {
+   "panden": {
+    "area": 67217.728,
+    "count": 1203
+   },
+   "wegdelen": {
+    "area": 157823.062,
+    "count": 705
+   }
+  },
+  "BU03071500": {
+   "panden": {
+    "area": 58079.092,
+    "count": 914
+   },
+   "wegdelen": {
+    "area": 42121.998,
+    "count": 280
+   }
+  },
+  "BU03071501": {
+   "panden": {
+    "area": 62415.562,
+    "count": 947
+   },
+   "wegdelen": {
+    "area": 80213.77,
+    "count": 532
+   }
+  },
+  "BU03071502": {
+   "panden": {
+    "area": 60397.825,
+    "count": 1310
+   },
+   "wegdelen": {
+    "area": 52693.271,
+    "count": 425
+   }
+  },
+  "BU03071503": {
+   "panden": {
+    "area": 28753.769,
+    "count": 290
+   },
+   "wegdelen": {
+    "area": 63467.098,
+    "count": 191
+   }
+  },
+  "BU03071600": {
+   "panden": {
+    "area": 53958.556,
+    "count": 1213
+   },
+   "wegdelen": {
+    "area": 52282.675,
+    "count": 501
+   }
+  },
+  "BU03071601": {
+   "panden": {
+    "area": 77789.312,
+    "count": 1120
+   },
+   "wegdelen": {
+    "area": 67555.549,
+    "count": 493
+   }
+  },
+  "BU03071602": {
+   "panden": {
+    "area": 77619.309,
+    "count": 1457
+   },
+   "wegdelen": {
+    "area": 73631.83,
+    "count": 638
+   }
+  },
+  "BU03071603": {
+   "panden": {
+    "area": 8459.885,
+    "count": 64
+   },
+   "wegdelen": {
+    "area": 107057.568,
+    "count": 201
+   }
+  },
+  "BU03071700": {
+   "panden": {
+    "area": 17759.482,
+    "count": 315
+   },
+   "wegdelen": {
+    "area": 10908.375,
+    "count": 78
+   }
+  },
+  "BU03071701": {
+   "panden": {
+    "area": 35571.167,
+    "count": 487
+   },
+   "wegdelen": {
+    "area": 60628.121,
+    "count": 437
+   }
+  },
+  "BU03071702": {
+   "panden": {
+    "area": 29096.552,
+    "count": 350
+   },
+   "wegdelen": {
+    "area": 30122.513,
+    "count": 203
+   }
+  },
+  "BU03071703": {
+   "panden": {
+    "area": 43234.705,
+    "count": 698
+   },
+   "wegdelen": {
+    "area": 46011.091,
+    "count": 378
+   }
+  },
+  "BU03071704": {
+   "panden": {
+    "area": 43922.78,
+    "count": 960
+   },
+   "wegdelen": {
+    "area": 27646.193,
+    "count": 378
+   }
+  },
+  "BU03071705": {
+   "panden": {
+    "area": 39709.119,
+    "count": 786
+   },
+   "wegdelen": {
+    "area": 48615.5,
+    "count": 206
+   }
+  },
+  "BU03071706": {
+   "panden": {
+    "area": 20958.313,
+    "count": 120
+   },
+   "wegdelen": {
+    "area": 35530.041,
+    "count": 226
+   }
+  },
+  "BU03071707": {
+   "panden": {
+    "area": 6166.554,
+    "count": 63
+   },
+   "wegdelen": {
+    "area": 28756.048,
+    "count": 115
+   }
+  },
+  "BU03071800": {
+   "panden": {
+    "area": 47565.836,
+    "count": 565
+   },
+   "wegdelen": {
+    "area": 44360.742,
+    "count": 250
+   }
+  },
+  "BU03071801": {
+   "panden": {
+    "area": 16958.687,
+    "count": 32
+   },
+   "wegdelen": {
+    "area": 37423.264,
+    "count": 172
+   }
+  },
+  "BU03071802": {
+   "panden": {
+    "area": 38021.126,
+    "count": 366
+   },
+   "wegdelen": {
+    "area": 43633.699,
+    "count": 194
+   }
+  },
+  "BU03071803": {
+   "panden": {
+    "area": 44416.85,
+    "count": 550
+   },
+   "wegdelen": {
+    "area": 71637.036,
+    "count": 438
+   }
+  },
+  "BU03071804": {
+   "panden": {
+    "area": 48226.895,
+    "count": 472
+   },
+   "wegdelen": {
+    "area": 55414.687,
+    "count": 275
+   }
+  },
+  "BU03071900": {
+   "panden": {
+    "area": 77021.271,
+    "count": 1212
+   },
+   "wegdelen": {
+    "area": 82767.198,
+    "count": 483
+   }
+  },
+  "BU03071901": {
+   "panden": {
+    "area": 68793.322,
+    "count": 1328
+   },
+   "wegdelen": {
+    "area": 64738.541,
+    "count": 408
+   }
+  },
+  "BU03071902": {
+   "panden": {
+    "area": 92386.835,
+    "count": 1797
+   },
+   "wegdelen": {
+    "area": 102280.439,
+    "count": 471
+   }
+  },
+  "BU03071903": {
+   "panden": {
+    "area": 51759.422,
+    "count": 866
+   },
+   "wegdelen": {
+    "area": 71320.829,
+    "count": 379
+   }
+  },
+  "BU03071904": {
+   "panden": {
+    "area": 59972.048,
+    "count": 1034
+   },
+   "wegdelen": {
+    "area": 67469.866,
+    "count": 438
+   }
+  },
+  "BU03071905": {
+   "panden": {
+    "area": 25683.383,
+    "count": 459
+   },
+   "wegdelen": {
+    "area": 37031.241,
+    "count": 242
+   }
+  },
+  "BU03071906": {
+   "panden": {
+    "area": 15885.299,
+    "count": 203
+   },
+   "wegdelen": {
+    "area": 25830.461,
+    "count": 159
+   }
+  },
+  "BU03072000": {
+   "panden": {
+    "area": 34448.551,
+    "count": 965
+   },
+   "wegdelen": {
+    "area": 53538.562,
+    "count": 512
+   }
+  },
+  "BU03072001": {
+   "panden": {
+    "area": 38492.283,
+    "count": 918
+   },
+   "wegdelen": {
+    "area": 66639.566,
+    "count": 424
+   }
+  },
+  "BU03072002": {
+   "panden": {
+    "area": 29500.833,
+    "count": 593
+   },
+   "wegdelen": {
+    "area": 39318.144,
+    "count": 314
+   }
+  },
+  "BU03072003": {
+   "panden": {
+    "area": 41003.208,
+    "count": 734
+   },
+   "wegdelen": {
+    "area": 59557.989,
+    "count": 502
+   }
+  },
+  "BU03072004": {
+   "panden": {
+    "area": 47536.962,
+    "count": 1182
+   },
+   "wegdelen": {
+    "area": 53855.852,
+    "count": 547
+   }
+  },
+  "BU03072005": {
+   "panden": {
+    "area": 40916.804,
+    "count": 929
+   },
+   "wegdelen": {
+    "area": 45613.559,
+    "count": 418
+   }
+  },
+  "BU03072006": {
+   "panden": {
+    "area": 1681.524,
+    "count": 12
+   },
+   "wegdelen": {
+    "area": 39362.451,
+    "count": 52
+   }
+  },
+  "BU03072007": {
+   "panden": {
+    "area": 21290.391,
+    "count": 19
+   },
+   "wegdelen": {
+    "area": 24834.256,
+    "count": 58
+   }
+  },
+  "BU03072100": {
+   "panden": {
+    "area": 35805.395,
+    "count": 976
+   },
+   "wegdelen": {
+    "area": 43575.774,
+    "count": 305
+   }
+  },
+  "BU03072101": {
+   "panden": {
+    "area": 16136.239,
+    "count": 337
+   },
+   "wegdelen": {
+    "area": 35958.125,
+    "count": 256
+   }
+  },
+  "BU03072102": {
+   "panden": {
+    "area": 42750.007,
+    "count": 660
+   },
+   "wegdelen": {
+    "area": 49675.565,
+    "count": 393
+   }
+  },
+  "BU03072103": {
+   "panden": {
+    "area": 27023.374,
+    "count": 500
+   },
+   "wegdelen": {
+    "area": 35333.653,
+    "count": 312
+   }
+  },
+  "BU03072104": {
+   "panden": {
+    "area": 33055.698,
+    "count": 691
+   },
+   "wegdelen": {
+    "area": 47112.232,
+    "count": 360
+   }
+  },
+  "BU03072105": {
+   "panden": {
+    "area": 35816.357,
+    "count": 310
+   },
+   "wegdelen": {
+    "area": 46967.297,
+    "count": 319
+   }
+  },
+  "BU03072106": {
+   "panden": {
+    "area": 35644.581,
+    "count": 770
+   },
+   "wegdelen": {
+    "area": 42789.476,
+    "count": 253
+   }
+  },
+  "BU03072107": {
+   "panden": {
+    "area": 44039.848,
+    "count": 1134
+   },
+   "wegdelen": {
+    "area": 96340.32,
+    "count": 336
+   }
+  },
+  "BU03072108": {
+   "panden": {
+    "area": 52661.56,
+    "count": 983
+   },
+   "wegdelen": {
+    "area": 66194.537,
+    "count": 421
+   }
+  },
+  "BU03072201": {
+   "panden": {
+    "area": 144628.372,
+    "count": 325
+   },
+   "wegdelen": {
+    "area": 102713.146,
+    "count": 401
+   }
+  },
+  "BU03072400": {
+   "panden": {
+    "area": 84578.204,
+    "count": 2010
+   },
+   "wegdelen": {
+    "area": 103563.515,
+    "count": 777
+   }
+  },
+  "BU03072402": {
+   "panden": {
+    "area": 62245.057,
+    "count": 1381
+   },
+   "wegdelen": {
+    "area": 89292.392,
+    "count": 645
+   }
+  },
+  "BU03072403": {
+   "panden": {
+    "area": 34968.5,
+    "count": 351
+   },
+   "wegdelen": {
+    "area": 46224.973,
+    "count": 366
+   }
+  },
+  "BU03072404": {
+   "panden": {
+    "area": 34018.957,
+    "count": 197
+   },
+   "wegdelen": {
+    "area": 73405.5,
+    "count": 550
+   }
+  },
+  "BU03072405": {
+   "panden": {
+    "area": 76334.23,
+    "count": 1645
+   },
+   "wegdelen": {
+    "area": 90870.98,
+    "count": 510
+   }
+  },
+  "BU03072407": {
+   "panden": {
+    "area": 75563.094,
+    "count": 1758
+   },
+   "wegdelen": {
+    "area": 128032.746,
+    "count": 639
+   }
+  },
+  "BU03072500": {
+   "panden": {
+    "area": 70103.137,
+    "count": 110
+   },
+   "wegdelen": {
+    "area": 81348.317,
+    "count": 372
+   }
+  },
+  "BU03072501": {
+   "panden": {
+    "area": 229873.599,
+    "count": 154
+   },
+   "wegdelen": {
+    "area": 145250.528,
+    "count": 449
+   }
+  },
+  "BU03072600": {
+   "panden": {
+    "area": 63480.389,
+    "count": 1101
+   },
+   "wegdelen": {
+    "area": 47549.89,
+    "count": 294
+   }
+  },
+  "BU03072601": {
+   "panden": {
+    "area": 64904.739,
+    "count": 1165
+   },
+   "wegdelen": {
+    "area": 80410.545,
+    "count": 832
+   }
+  },
+  "BU03072602": {
+   "panden": {
+    "area": 24434.762,
+    "count": 342
+   },
+   "wegdelen": {
+    "area": 33938.646,
+    "count": 346
+   }
+  },
+  "BU03072603": {
+   "panden": {
+    "area": 21192.62,
+    "count": 263
+   },
+   "wegdelen": {
+    "area": 30555.62,
+    "count": 196
+   }
+  },
+  "BU03072700": {
+   "panden": {
+    "area": 20048.255,
+    "count": 134
+   },
+   "wegdelen": {
+    "area": 30528.28,
+    "count": 128
+   }
+  },
+  "BU03072701": {
+   "panden": {
+    "area": 124833.087,
+    "count": 493
+   },
+   "wegdelen": {
+    "area": 242258.495,
+    "count": 512
+   }
+  },
+  "BU03072709": {
+   "panden": {
+    "area": 20509.959,
+    "count": 49
+   },
+   "wegdelen": {
+    "area": 26044.827,
+    "count": 105
+   }
+  },
+  "BU03072800": {
+   "panden": {
+    "area": 64969.905,
+    "count": 1319
+   },
+   "wegdelen": {
+    "area": 89510.179,
+    "count": 638
+   }
+  },
+  "BU03072801": {
+   "panden": {
+    "area": 27842.144,
+    "count": 476
+   },
+   "wegdelen": {
+    "area": 36733.403,
+    "count": 264
+   }
+  },
+  "BU03072802": {
+   "panden": {
+    "area": 61516.831,
+    "count": 1157
+   },
+   "wegdelen": {
+    "area": 85466.915,
+    "count": 603
+   }
+  },
+  "BU03072803": {
+   "panden": {
+    "area": 33266.25,
+    "count": 566
+   },
+   "wegdelen": {
+    "area": 47322.214,
+    "count": 353
+   }
+  },
+  "BU03072804": {
+   "panden": {
+    "area": 16708.437,
+    "count": 305
+   },
+   "wegdelen": {
+    "area": 33374.85,
+    "count": 279
+   }
+  },
+  "BU03072900": {
+   "panden": {
+    "area": 51592.025,
+    "count": 1181
+   },
+   "wegdelen": {
+    "area": 61094.114,
+    "count": 453
+   }
+  },
+  "BU03072901": {
+   "panden": {
+    "area": 36639.976,
+    "count": 42
+   },
+   "wegdelen": {
+    "area": 71510.088,
+    "count": 384
+   }
+  },
+  "BU03072902": {
+   "panden": {
+    "area": 32220.827,
+    "count": 689
+   },
+   "wegdelen": {
+    "area": 36973.827,
+    "count": 358
+   }
+  },
+  "BU03073000": {
+   "panden": {
+    "area": 40599.548,
+    "count": 917
+   },
+   "wegdelen": {
+    "area": 50274.673,
+    "count": 493
+   }
+  },
+  "BU03073001": {
+   "panden": {
+    "area": 58502.809,
+    "count": 1183
+   },
+   "wegdelen": {
+    "area": 85207.911,
+    "count": 630
+   }
+  },
+  "BU03073100": {
+   "panden": {
+    "area": 15117.695,
+    "count": 189
+   },
+   "wegdelen": {
+    "area": 35246.07,
+    "count": 204
+   }
+  },
+  "BU03073101": {
+   "panden": {
+    "area": 56421.405,
+    "count": 1100
+   },
+   "wegdelen": {
+    "area": 64240.465,
+    "count": 431
+   }
+  },
+  "BU03073102": {
+   "panden": {
+    "area": 37538.568,
+    "count": 991
+   },
+   "wegdelen": {
+    "area": 58149.675,
+    "count": 438
+   }
+  },
+  "BU03073103": {
+   "panden": {
+    "area": 82888.765,
+    "count": 1558
+   },
+   "wegdelen": {
+    "area": 112046.254,
+    "count": 734
+   }
+  },
+  "BU03073104": {
+   "panden": {
+    "area": 70893.948,
+    "count": 1339
+   },
+   "wegdelen": {
+    "area": 91859.234,
+    "count": 551
+   }
+  },
+  "BU03073105": {
+   "panden": {
+    "area": 11750.167,
+    "count": 85
+   },
+   "wegdelen": {
+    "area": 51532.871,
+    "count": 76
+   }
+  },
+  "BU03073106": {
+   "panden": {
+    "area": 28769.135,
+    "count": 210
+   },
+   "wegdelen": {
+    "area": 67582.072,
+    "count": 156
+   }
+  },
+  "BU03073201": {
+   "panden": {
+    "area": 198.029,
+    "count": 3
+   },
+   "wegdelen": {
+    "area": 16651.772,
+    "count": 31
+   }
+  },
+  "BU03073301": {
+   "panden": {
+    "area": 41970.987,
+    "count": 101
+   },
+   "wegdelen": {
+    "area": 114655.217,
+    "count": 287
+   }
+  },
+  "BU03073302": {
+   "panden": {
+    "area": 47333.876,
+    "count": 27
+   },
+   "wegdelen": {
+    "area": 82563.49,
+    "count": 383
+   }
+  },
+  "BU03073303": {
+   "panden": {
+    "area": 5724.891,
+    "count": 17
+   },
+   "wegdelen": {
+    "area": 51654.738,
+    "count": 157
+   }
+  },
+  "BU03073304": {
+   "panden": {
+    "area": 27992.52,
+    "count": 18
+   },
+   "wegdelen": {
+    "area": 28697.853,
+    "count": 24
+   }
+  },
+  "BU03073401": {
+   "panden": {
+    "area": 52723.602,
+    "count": 341
+   },
+   "wegdelen": {
+    "area": 109422.52,
+    "count": 322
+   }
+  },
+  "BU03073402": {
+   "panden": {
+    "area": 108071.102,
+    "count": 186
+   },
+   "wegdelen": {
+    "area": 259506.886,
+    "count": 1282
+   }
+  },
+  "BU03073403": {
+   "panden": {
+    "area": 142825.856,
+    "count": 300
+   },
+   "wegdelen": {
+    "area": 231961.711,
+    "count": 610
+   }
+  }
+ },
+ "failed": {
+  "BU03071003": {
+   "wegdelen": "HTTP 500: {\"status\":500,\"title\":\"Internal Server Error\",\"detail\":\"There was an error processing your request, it has been logged. Error ID: dff8ac397672a0a0\"}"
+  }
+ }
+}

@@ -170,19 +170,16 @@ UPPER_VOXELS = 10  # 5 m of GeoTOP voxels of 0.5 m
 CLAY_PERCENT = 5
 
 
-def bgt_area(name: str) -> dict[str, float]:
-    return {g["key"]["buurtcode"]: g["sum($area)"] for g in vendored(name)["groups"]}
-
-
 def sensitivity(upper_voxels: int = UPPER_VOXELS) -> dict[str, dict]:
-    """Per buurt: paved share (BGT panden and paved wegdelen per buurt area) and share of upper voxels with P(klei) > 5%."""
-    panden, wegdelen = bgt_area("bgt-amersfoort-panden-per-buurt.json"), bgt_area("bgt-amersfoort-verharde-wegdelen-per-buurt.json")
+    """Per buurt: paved share (BGT panden and wegdelen with open or closed paving, clipped to the buurt, over its area) and share of upper voxels
+    with P(klei) > 5%. A buurt the server failed on counts with what it did return."""
+    clipped = vendored("bgt-amersfoort-verhard-per-buurt-geknipt.json")["buurten"]
     clay = vendored("geotop-amersfoort-klei-per-buurt.json")
     out = {}
     for f in vendored("cbs-buurten-amersfoort-2026.geojson")["features"]:
         code = f["id"]
         voxels = [v for column in clay[code]["kolommen"].values() for v in column[:upper_voxels]]
-        paved = (panden.get(code, 0) + wegdelen.get(code, 0)) / shapely.geometry.shape(f["geometry"]).area
+        paved = sum(part["area"] for part in clipped[code].values()) / shapely.geometry.shape(f["geometry"]).area
         share = sum(v > CLAY_PERCENT for v in voxels) / len(voxels)
         out[code] = {"naam": f["properties"]["naam"], "verhard": paved, "klei": share}
     return out
@@ -192,14 +189,14 @@ def ranked(values: dict[str, dict]) -> list[str]:
     return sorted(values, key=lambda c: -values[c]["verhard"])
 
 
-def test_dsfl_16_every_buurt_has_geotop_columns_and_the_bgt_objects_of_amersfoort_fall_in_its_buurten():
+def test_dsfl_16_every_buurt_has_geotop_columns_and_clipped_bgt_areas_but_one_failed_on_the_server():
     clay = vendored("geotop-amersfoort-klei-per-buurt.json")
     assert len(clay) == 145 and all(len(b["kolommen"]) > 0 for b in clay.values())
     assert all(len(column) == 12 for b in clay.values() for column in b["kolommen"].values())
-    for name in ("bgt-amersfoort-panden-per-buurt.json", "bgt-amersfoort-verharde-wegdelen-per-buurt.json"):
-        data = vendored(name)
-        assert not data["groupsTruncated"] and set(bgt_area(name)) <= set(clay)
-        assert sum(g["count"] for g in data["groups"]) == data["total"]["count"]
+    clipped = vendored("bgt-amersfoort-verhard-per-buurt-geknipt.json")
+    assert set(clipped["buurten"]) == set(clay) and all("panden" in b for b in clipped["buurten"].values())
+    # The note of the expected answer says why this one does not change the answer.
+    assert {code: list(parts) for code, parts in clipped["failed"].items()} == {"BU03071003": ["wegdelen"]}
 
 
 def test_dsfl_16_ranking_and_values_of_the_expected_buurten():
@@ -212,10 +209,10 @@ def test_dsfl_16_ranking_and_values_of_the_expected_buurten():
         assert v == {"naam": values[code]["naam"], **{k: round(values[code][k], 4) for k in ("verhard", "klei")}}
 
 
-def test_dsfl_16_places_two_and_three_lie_within_the_tolerance_and_the_fourth_does_not():
+def test_dsfl_16_the_first_place_is_clear_and_places_two_and_three_lie_within_the_tolerance():
     values, tolerance = sensitivity(), expected("dsfl-16")["tolerance"]["verhard"]
-    second, third, fourth = (values[c]["verhard"] for c in ranked(values)[1:4])
-    assert second - third < tolerance < third - fourth
+    first, second, third = (values[c]["verhard"] for c in ranked(values)[:3])
+    assert first - second > 2 * tolerance and second - third < tolerance
 
 
 def test_dsfl_16_the_most_paved_buurten_have_no_clay_with_one_voxel_less():
