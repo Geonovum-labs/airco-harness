@@ -1,0 +1,27 @@
+{
+ "0bbd3455c4fdef127e34f88d": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 55795,
+  "tools": 36
+ },
+ "4d6fd31afc0caacc645ad3d4": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 67173,
+  "tools": 55
+ },
+ "830b347b6996c1b9ba638fb7": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 17551,
+  "tools": 22
+ },
+ "849dd0456c87d251f8191776": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 7173,
+  "tools": 6
+ },
+ "9d5f638dfb7f9086f7d6a7a4": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 3569,
+  "tools": 2
+ }
+}
