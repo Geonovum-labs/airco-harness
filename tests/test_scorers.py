@@ -107,6 +107,42 @@ def test_server_side_tools_count_as_tool_uses_and_a_server_fetch_as_a_retrieval(
     assert retrievals(messages) == [{"tool": "web_fetch", "url": page, "status": 200}, {"tool": "WebFetch", "url": "https://example.org/", "status": 200}]
 
 
+def test_a_server_fetch_that_the_provider_refused_is_a_failed_retrieval():
+    """Anthropic's web fetch reports a refusal in its result, not as an error, also when code execution calls it."""
+    from inspect_ai.model import ContentToolUse
+
+    url = "https://bag.ldproxy.net/wijkenbuurten/collections/buurt/items?gemeente=0307&f=json"
+    refused = {"type": "web_fetch_tool_result_error", "error_code": "url_not_in_prior_context"}
+    code = f'r = await web_fetch({{"url": "{url}"}})\nprint(r)'
+    blocks = [
+        ContentToolUse(
+            tool_type="web_search",
+            id="f1",
+            name="web_fetch",
+            arguments=json.dumps({"url": url}),
+            result=json.dumps({"content": refused, "tool_use_id": "f1", "type": "web_fetch_tool_result"}),
+        ),
+        ContentToolUse(
+            tool_type="web_search",
+            id="f2",
+            name="web_fetch",
+            arguments=json.dumps({"url": url}),
+            result=json.dumps({"caller": {"tool_id": "c1", "type": "code_execution_20260120"}, "content": refused, "type": "web_fetch_tool_result"}),
+        ),
+        ContentToolUse(
+            tool_type="code_execution",
+            id="c1",
+            name="code_execution",
+            arguments=json.dumps({"code": code}),
+            result=json.dumps({"content": {"stdout": json.dumps(refused)}}),
+        ),
+    ]
+    assert retrievals([ChatMessageAssistant(content=blocks)]) == [
+        {"tool": "web_fetch", "url": url, "status": 0, "error": "url_not_in_prior_context"},
+        {"tool": "web_fetch", "url": url, "status": 0, "error": "url_not_in_prior_context"},
+    ]
+
+
 def test_retrievals_are_the_url_tool_calls_with_their_outcome():
     page = "https://docs.geostandaarden.nl/imgeo/catalogus/bgt/"
     messages = fetch_messages([(page, None), ("https://example.org/missing", "404 Not Found")])

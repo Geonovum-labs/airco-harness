@@ -39,16 +39,34 @@ def tool_uses(messages: list[ChatMessage]) -> list[dict]:
         if not isinstance(m.content, str):
             for block in m.content:
                 if isinstance(block, ContentToolUse):
+                    result = _result(block)
+                    content = result.get("content")
+                    refused = content.get("error_code") if isinstance(content, dict) and str(content.get("type", "")).endswith("_error") else None
+                    error = str(block.error) if block.error else refused
+                    caller = (result.get("caller") or {}).get("tool_id") if isinstance(result.get("caller"), dict) else None
                     out.append(
                         {
                             "tool": block.name,
                             "arguments": _arguments(block),
-                            "failed": bool(block.error),
-                            "error": str(block.error) if block.error else None,
+                            "failed": error is not None,
+                            "error": error,
                             "server": True,
+                            "id": block.id,
+                            "caller": caller,
                         }
                     )
     return out
+
+
+def _result(block: ContentToolUse) -> dict:
+    """The result of a provider's tool use as a dict; Anthropic reports a refused web fetch in it, not as an error."""
+    result = block.result
+    if isinstance(result, str):
+        try:
+            result = json.loads(result)
+        except ValueError:
+            return {}
+    return result if isinstance(result, dict) else {}
 
 
 def _arguments(block: ContentToolUse) -> dict:
@@ -198,10 +216,13 @@ def retrievals(messages: list[ChatMessage]) -> list[dict]:
     """Every web retrieval in the conversation: a tool use with a url argument, or a URL in a shell
     command or code that ran, as when an agent uses curl. A search is not a retrieval.
     A failed retrieval also carries its error, its HTTP status when known, and for a command with several URLs
-    "shared", as its output is about all of them."""
+    "shared", as its output is about all of them. A URL that code fetched through a provider's tool is that tool's
+    retrieval, not the code's."""
+    uses = tool_uses(messages)
+    called = {(use["caller"], url) for use in uses if use.get("caller") for url in _urls(use)}
     out = []
-    for use in tool_uses(messages):
-        urls = _urls(use)
+    for use in uses:
+        urls = [url for url in _urls(use) if (use.get("id"), url) not in called]
         shared = len(set(urls)) > 1
         for url in urls:
             failed = {"error": use["error"], **({"shared": True} if shared else {})} if use["failed"] else {}
