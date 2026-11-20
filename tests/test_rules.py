@@ -212,6 +212,8 @@ CASES = [
     ("dsfl-16", as_json({"buurten": []}), full(0, 0, 0, 0)),
     ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel"]}), full()),
     ("dsfl-17", as_json({"objecttypen": ["wegdeel", "Onbegroeid terrein", "Ondersteunend wegdeel"]}), full()),
+    ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "Ondersteunend wegdeel (OWD)", "Onbegroeid terreindeel (OTD)"]}), full()),
+    ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel", "Pand (dak)"]}), full(0, 1.0, 0)),
     ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel"]}), full(0, 0.6667, 0)),
     ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel", "Pand"]}), full(0, 1.0, 0)),
     ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel", "Verhardingsvlak"]}), full(0, 1.0, 1)),

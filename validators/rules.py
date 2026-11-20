@@ -91,12 +91,18 @@ def _json_answer(answer: str, case: Case) -> tuple[object | None, Assessment | N
     return data, None, details
 
 
+def _without_brackets(text: str) -> str:
+    """A value without what it adds in brackets, such as an abbreviation: Onbegroeid terreindeel (OTD)."""
+    return re.sub(r"\s*\([^()]*\)", "", text).strip()
+
+
 def _same(answer: object, expected: object) -> bool:
     if isinstance(expected, bool) or isinstance(answer, bool):
         return answer is expected
     if isinstance(expected, (int, float)) and isinstance(answer, (int, float)):
         return answer == expected
-    return normalize(str(answer)) == normalize(str(expected))
+    want = normalize(str(expected))
+    return normalize(str(answer)) == want or (isinstance(answer, str) and normalize(_without_brackets(answer)) == want)
 
 
 def _accepted(want: object) -> list[object]:
@@ -114,8 +120,7 @@ def _invented_terms(values: list) -> list[str]:
     known = refmodel().all_terms
 
     def is_known(term: str) -> bool:
-        t = normalize(term)
-        return t in known or t.split(":")[-1] in known
+        return any(t in known or t.split(":")[-1] in known for t in {normalize(term), normalize(_without_brackets(term))})
 
     return sorted({v for v in values if isinstance(v, str) and not is_known(v)})
 
