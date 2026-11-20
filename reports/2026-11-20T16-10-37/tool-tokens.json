@@ -1,0 +1,37 @@
+{
+ "58dfaf23ad6167f112ae799f": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 3576,
+  "tools": 2
+ },
+ "602fab0c00e09ab13b0c011b": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 8352,
+  "tools": 7
+ },
+ "830b347b6996c1b9ba638fb7": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 17551,
+  "tools": 22
+ },
+ "849dd0456c87d251f8191776": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 7173,
+  "tools": 6
+ },
+ "9f208fafbda37838473ad3b8": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 7180,
+  "tools": 6
+ },
+ "b0f1c1d74ae212a0e40becb9": {
+  "model": "anthropic/claude-haiku-5-5",
+  "tokens": 17551,
+  "tools": 22
+ },
+ "f5e9138a8733827bcbb19f48": {
+  "model": "anthropic/claude-sonnet-5-5",
+  "tokens": 8345,
+  "tools": 7
+ }
+}
