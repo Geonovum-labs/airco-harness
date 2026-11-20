@@ -94,16 +94,14 @@ Variant `mcp-bgt-wijkenbuurten-subsurface` attaches the subsurface server for `d
 
 ### The rule `ranking`
 
-`dsfl-16` asks for ranked buurten with their values, a map of them and a borehole column per buurt. The rule reads three things at once: the JSON of the last message, the GeoJSON of the last map, and every subsurface `trace` call that returned a column. It counts checks:
+`dsfl-16` asks for ranked buurten with their values. The rule reads the JSON of the last message and counts checks:
 
 | Check | Passes when |
 | --- | --- |
 | `rank <n>` | The buurt at position n, by code or name, is one of `ranking[n]` and not named before |
-| `verhard <n>`, `klei <n>`, `score <n>` | The buurt has expected `values` and the given value is within `tolerance` |
-| `boorkolom <n>` | A trace of `boorkolom.model_id` lies in the buurt within `max_distance_m` of its centroid, and the first `voxels` entries of the answer's column repeat its layers: top, base, lithoclass code, and P(klei) within `probability_tolerance` |
-| `map` | The places on the map lie in exactly the buurten of the answer |
+| `verhard <n>`, `klei <n>` | The buurt has expected `values` and the given value is within `tolerance` |
 
-The buurten are the polygons of `buurten`, a GeoJSON file under `sources/` in WGS84. `complete` is the share of checks that pass. `invented` counts the buurten that are not in the reference and the places on the map in no buurt. `correct` is 1 when every check passes and nothing is invented. The boreholes are checked against what the server returned to the agent, so a run without the subsurface server fails them.
+A buurt is recognized by its code or name in `buurten`, a GeoJSON file under `sources/` in WGS84. Only the keys of `tolerance` are checked, so the `score` the question asks for is not. `complete` is the share of checks that pass. `invented` counts the buurten that are not in the reference. `correct` is 1 when every check passes and nothing is invented.
 
 ### The scorer `source`
 

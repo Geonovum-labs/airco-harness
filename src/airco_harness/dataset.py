@@ -34,9 +34,9 @@ def records(testset: str) -> list[dict]:
 
 
 def asks_for_map(testset: str) -> bool:
-    """Whether a sample of the test set is scored on the map, alone or with a ranking, so that its agents get show_on_map.
+    """Whether a sample of the test set is scored on the map, so that its agents get show_on_map.
     Per test set, not per selected sample, so that every run of a test set has the same tools."""
-    return any(json.loads(f.read_text(encoding="utf-8"))["rule"] in ("map", "ranking") for f in (TESTSETS_DIR / testset / "samples").glob("*/expected.json"))
+    return any(json.loads(f.read_text(encoding="utf-8"))["rule"] == "map" for f in (TESTSETS_DIR / testset / "samples").glob("*/expected.json"))
 
 
 def asks_for_series(testset: str) -> bool:

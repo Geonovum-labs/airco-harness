@@ -120,14 +120,6 @@ def subsurface_result(messages: list[ChatMessage], tool: str) -> str:
     return json.dumps(found[-1], ensure_ascii=False) if found and found[-1] else ""
 
 
-def ranking_answer(state: TaskState) -> str:
-    """The last message, the map and every trace that returned JSON, together, for the rule ranking."""
-    traces = [t for t in subsurface_results(state.messages, "trace") if t]
-    return json.dumps(
-        {"message": state.output.completion, "map": map_shown(state.messages, state.store.get(MAP_STORE, {})), "traces": traces}, ensure_ascii=False
-    )
-
-
 URL_IN_CODE = re.compile(r"https?://[^\s'\"<>`|\\]+")
 CODE_ARGUMENTS = ("command", "code")  # Claude Code's Bash, a provider's code execution
 
@@ -220,7 +212,7 @@ def retrievals(messages: list[ChatMessage]) -> list[dict]:
 @scorer(name="quality", metrics={"correct": [mean(), stderr()], "complete": [mean(), stderr()], "invented": [mean(), stderr()], "parseable": [mean()]})
 def quality():
     """correct, complete, invented and parseable from the rule named in the sample's expected.json.
-    The answer is the last message, map or series data, a subsurface tool call and result, or for a ranking all three."""
+    The answer is the last message, map or series data, or a subsurface tool call and result."""
 
     async def score(state: TaskState, target: Target) -> Score:
         case = rules.Case.load(target.text)
@@ -228,8 +220,6 @@ def quality():
             answer = map_shown(state.messages, state.store.get(MAP_STORE, {}))
         elif case.rule == "series":
             answer = series_shown(state.messages)
-        elif case.rule == "ranking":
-            answer = ranking_answer(state)
         elif case.rule in ("section", "trace"):
             answer = subsurface_result(state.messages, "section-plot" if case.rule == "section" else "trace")
         else:

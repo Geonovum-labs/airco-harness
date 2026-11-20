@@ -19,7 +19,7 @@ Questions for the Dataspace Fysieke Leefomgeving, as a citizen asks them about t
 | `dsfl-13` | GeoTOP cross-section picture | `section` |
 | `dsfl-14` | GeoTOP vertical column for an Appelboor | `trace` |
 | `dsfl-15` | Limits of line-of-sight evidence for confinement | `fields` |
-| `dsfl-16` | Buurten most sensitive to water accumulation, on the map, with borehole columns | `ranking` |
+| `dsfl-16` | Buurten most sensitive to water accumulation | `ranking` |
 
 The deck leaves the place open ("the city I live in", "the municipality") or names Vlaardingen. Every sample uses Amersfoort. The deck wording of each BAG question is in the `note` of its `expected.json`, with the choices the sample makes where the question is open: a definition of "building", "construction" or "house", and a time window fixed at 12 November 2026.
 
@@ -45,22 +45,21 @@ The groundwater MCP variant defaults to the `groundwater` tag, so it still selec
 
 ## Water accumulation per buurt
 
-`dsfl-16` asks which CBS buurten are most sensitive to water accumulation after heavy rain, with the formula in the question: the paved share times the share of GeoTOP voxels in the upper 5 m with P(klei) > 10%. The agent ranks the buurten, shows the top three on the map and gives per buurt the two shares, the score and a 5 m borehole column near the centroid. It is scored with the rule `ranking` ([Test sets and scoring](../../docs/test-sets.md#the-rule-ranking)). The readings below are a draft of 19 November 2026 for the working group:
+`dsfl-16` asks which CBS buurten in Amersfoort have the largest paved share, and how far the lithology of the upper 5 m in GeoTOP adds to their sensitivity to water accumulation after heavy rain. The agent ranks the buurten by paved share and gives for the top three the paved share, the share of GeoTOP voxels with P(klei) > 5% and a score. The question does not define the score, so it is not checked. It is scored with the rule `ranking` ([Test sets and scoring](../../docs/test-sets.md#the-rule-ranking)). The readings below are a draft of 19 November 2026 for the working group:
 
 - **Buurt.** The CBS Wijk- en Buurtkaart 2026, as bag.ldproxy.net/wijkenbuurten serves it: 145 buurten in Amersfoort.
 - **Paved share.** The area of all current BGT panden and of the wegdelen with gesloten verharding, open verharding or half verhard, per buurt as bag.ldproxy.net/bgt assigns them (by a point on the object), over the area of the buurt.
-- **Clay share.** Of each GeoTOP v01r6s1 column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column); the share of those voxels with kans op klei (lithoclass K) above 10%. Kleiig zand (KZ) does not count.
-- **Borehole.** The 10 upper voxels of a `subsurface-models.trace` within 250 m of the centroid, inside the buurt.
+- **Clay share.** Of each GeoTOP v01r6s1 column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column); the share of those voxels with kans op klei (lithoclass K) above 5%. Kleiig zand (KZ) does not count.
 
-| Rank | Buurt | Paved | Clay | Score |
-| --- | --- | --- | --- | --- |
-| 1 | Isselt-Oost | 0.519 | 0.089 | 0.0462 |
-| 2 | Schuilenburg-Zuid | 0.432 | 0.079 | 0.0342 |
-| 3 | De Baken | 0.490 | 0.063 | 0.0306 |
-| 4 | Laakse Tuinen | 0.473 | 0.064 | 0.0301 |
+| Rank | Buurt | Paved | Clay |
+| --- | --- | --- | --- |
+| 1 | Spooremplacement | 0.824 | 0 |
+| 2 | Hof | 0.770 | 0 |
+| 3 | Eemplein-Nieuwe Stad | 0.768 | 0 |
+| 4 | Winkelcentrum Vathorst | 0.745 | 0 |
 
-Only Isselt-Oost is first under every reading tried. Places 2 to 4 trade places when the cells are taken by their lower left corner instead of their centre, or with 9 voxels instead of 10, so ranks 2 and 3 accept any two of Schuilenburg-Zuid, De Baken and Laakse Tuinen. Isselt-West follows with 0.0260.
+Hof and Eemplein-Nieuwe Stad lie within the tolerance of each other, so ranks 2 and 3 accept both in either order. None of the most paved buurten has a voxel with P(klei) > 5%, with 10 voxels or 9, so the lithology does not add to their sensitivity. Clay above 5% occurs in 68 of the 145 buurten; Isselt-Oost has the largest share.
 
-The subsurface MCP answers per point or line and has no sum per area: a buurt of 50 columns takes 50 traces, Amersfoort about 6,400. The expected clay shares come from the OPeNDAP server at dinodata.nl, which serves the same GeoTOP version: at the centroids of the four buurten its kans_2 equals the server's P(K) in each of the upper 10 voxels.
+The subsurface MCP answers per point or line and has no sum per area: a buurt of 50 columns takes 50 traces, Amersfoort about 6,400. The expected clay shares come from the OPeNDAP server at dinodata.nl, which serves the same GeoTOP version: at the centroids of Isselt-Oost, Schuilenburg-Zuid, De Baken and Laakse Tuinen its kans_2 equals the server's P(K) in each of the upper 10 voxels.
 
 The buurten (in RD and in WGS84), the BGT areas per buurt and the clay probabilities of the upper 12 voxels of each column are in `sources/dsfl/` and recorded in `sources/sources.lock.json`; the GeoTOP block (25 MB) is reduced at fetch time and not kept. `tests/test_dsfl_sources.py` derives the ranking and the values again.

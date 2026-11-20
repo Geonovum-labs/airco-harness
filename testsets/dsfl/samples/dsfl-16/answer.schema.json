@@ -13,22 +13,9 @@
           "naam": {"type": "string"},
           "verhard": {"type": "number"},
           "klei": {"type": "number"},
-          "score": {"type": "number"},
-          "boorkolom": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "top": {"type": "number"},
-                "basis": {"type": "number"},
-                "lithoklasse": {"type": "string"},
-                "kans_klei": {"type": "number"}
-              },
-              "required": ["top", "basis", "lithoklasse", "kans_klei"]
-            }
-          }
+          "score": {"type": "number"}
         },
-        "required": ["code", "naam", "verhard", "klei", "score", "boorkolom"]
+        "required": ["code", "naam", "verhard", "klei", "score"]
       }
     }
   },

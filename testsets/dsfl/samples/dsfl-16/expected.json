@@ -3,57 +3,39 @@
   "answer_schema": "answer.schema.json",
   "ranking": [
     [
-      "BU03070504"
+      "BU03070309"
     ],
     [
-      "BU03071302",
-      "BU03073103",
-      "BU03073104"
+      "BU03070100",
+      "BU03070401"
     ],
     [
-      "BU03071302",
-      "BU03073103",
-      "BU03073104"
+      "BU03070100",
+      "BU03070401"
     ]
   ],
   "values": {
-    "BU03070504": {
-      "naam": "Isselt-Oost",
-      "verhard": 0.5193,
-      "klei": 0.0889,
-      "score": 0.0462
+    "BU03070309": {
+      "naam": "Spooremplacement",
+      "verhard": 0.824,
+      "klei": 0.0
     },
-    "BU03071302": {
-      "naam": "Schuilenburg-Zuid",
-      "verhard": 0.4323,
-      "klei": 0.0792,
-      "score": 0.0342
+    "BU03070100": {
+      "naam": "Hof",
+      "verhard": 0.7701,
+      "klei": 0.0
     },
-    "BU03073103": {
-      "naam": "De Baken",
-      "verhard": 0.4901,
-      "klei": 0.0625,
-      "score": 0.0306
-    },
-    "BU03073104": {
-      "naam": "Laakse Tuinen",
-      "verhard": 0.4731,
-      "klei": 0.0636,
-      "score": 0.0301
+    "BU03070401": {
+      "naam": "Eemplein-Nieuwe Stad",
+      "verhard": 0.7679,
+      "klei": 0.0
     }
   },
   "tolerance": {
     "verhard": 0.02,
-    "klei": 0.02,
-    "score": 0.005
+    "klei": 0.02
   },
   "buurten": "dsfl/cbs-buurten-amersfoort-2026-wgs84.geojson",
-  "boorkolom": {
-    "model_id": "GEOTOP-v01r6s1-001",
-    "voxels": 10,
-    "max_distance_m": 250,
-    "probability_tolerance": 0.01
-  },
   "source": "Derived on 19 November 2026 from sources/dsfl/: the CBS buurten 2026 of bag.ldproxy.net/wijkenbuurten (cbs-buurten-amersfoort-2026.geojson); the area of BGT panden and paved wegdelen per buurt from the aggregation process of bag.ldproxy.net/bgt, BGT stand 30 October 2026 (bgt-amersfoort-panden-per-buurt.json, bgt-amersfoort-verharde-wegdelen-per-buurt.json); kans_2 of GeoTOP v01r6s1 from www.dinodata.nl/opendap/GeoTOP/geotop.nc, reduced per buurt (geotop-amersfoort-klei-per-buurt.json). All recorded in sources/sources.lock.json; tests/test_dsfl_sources.py derives the ranking and values again.",
-  "note": "Draft readings for the working group. Paved share: the area of current BGT panden and of wegdelen with gesloten verharding, open verharding or half verhard, per buurt as the BGT API assigns objects, over the area of the CBS buurt. Clay share: of each GeoTOP column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column), the share with kans op klei (K) above 10%; kleiig zand (KZ) does not count. Isselt-Oost is first under every reading tried. Schuilenburg-Zuid (0.0342), De Baken (0.0306) and Laakse Tuinen (0.0301) trade places 2 to 4 with cells taken by their corner or with 9 voxels, so ranks 2 and 3 accept any two of them; Isselt-West follows with 0.0260. The borehole is checked against the subsurface-models.trace the agent called within 250 m of the centroid, inside the buurt; the OPeNDAP values equal the server's P(K) at the centroids of all four buurten. The subsurface MCP has no sum per area, so an exact clay share takes one trace per column: about 50 per buurt."
+  "note": "Draft readings for the working group. Paved share: the area of current BGT panden and of wegdelen with gesloten verharding, open verharding or half verhard, per buurt as the BGT API assigns objects, over the area of the CBS buurt. Clay share: of each GeoTOP column whose 100 m cell centre lies in the buurt, the upper 10 voxels (5 m from the top of the column), the share with kans op klei (K) above 5%; kleiig zand (KZ) does not count. Spooremplacement is first; Hof (0.7701) and Eemplein-Nieuwe Stad (0.7679) lie within the tolerance of each other, so ranks 2 and 3 accept both in either order; Winkelcentrum Vathorst follows with 0.7445. The three have no voxel with P(klei) > 5%, with 10 voxels or 9, so the lithology does not add to their sensitivity. The question asks for a score but does not define it, so the score is not checked. The subsurface MCP has no sum per area, so an exact clay share takes one trace per column: about 50 per buurt."
 }

@@ -167,7 +167,7 @@ def test_every_dsfl_sample_names_its_origin_and_its_source(sample_id):
 
 
 UPPER_VOXELS = 10  # 5 m of GeoTOP voxels of 0.5 m
-CLAY_PERCENT = 10
+CLAY_PERCENT = 5
 
 
 def bgt_area(name: str) -> dict[str, float]:
@@ -175,7 +175,7 @@ def bgt_area(name: str) -> dict[str, float]:
 
 
 def sensitivity(upper_voxels: int = UPPER_VOXELS) -> dict[str, dict]:
-    """Per buurt: paved share (BGT panden and paved wegdelen per buurt area), share of upper voxels with P(klei) > 10%, and their product."""
+    """Per buurt: paved share (BGT panden and paved wegdelen per buurt area) and share of upper voxels with P(klei) > 5%."""
     panden, wegdelen = bgt_area("bgt-amersfoort-panden-per-buurt.json"), bgt_area("bgt-amersfoort-verharde-wegdelen-per-buurt.json")
     clay = vendored("geotop-amersfoort-klei-per-buurt.json")
     out = {}
@@ -184,12 +184,12 @@ def sensitivity(upper_voxels: int = UPPER_VOXELS) -> dict[str, dict]:
         voxels = [v for column in clay[code]["kolommen"].values() for v in column[:upper_voxels]]
         paved = (panden.get(code, 0) + wegdelen.get(code, 0)) / shapely.geometry.shape(f["geometry"]).area
         share = sum(v > CLAY_PERCENT for v in voxels) / len(voxels)
-        out[code] = {"naam": f["properties"]["naam"], "verhard": paved, "klei": share, "score": paved * share}
+        out[code] = {"naam": f["properties"]["naam"], "verhard": paved, "klei": share}
     return out
 
 
 def ranked(values: dict[str, dict]) -> list[str]:
-    return sorted(values, key=lambda c: -values[c]["score"])
+    return sorted(values, key=lambda c: -values[c]["verhard"])
 
 
 def test_dsfl_16_every_buurt_has_geotop_columns_and_the_bgt_objects_of_amersfoort_fall_in_its_buurten():
@@ -207,11 +207,17 @@ def test_dsfl_16_ranking_and_values_of_the_expected_buurten():
     want = expected("dsfl-16")
     top = ranked(values)
     assert [top[0]] == want["ranking"][0]
-    assert set(top[1:4]) == set(want["ranking"][1]) == set(want["ranking"][2])
+    assert set(top[1:3]) == set(want["ranking"][1]) == set(want["ranking"][2])
     for code, v in want["values"].items():
-        assert v == {"naam": values[code]["naam"], **{k: round(values[code][k], 4) for k in ("verhard", "klei", "score")}}
+        assert v == {"naam": values[code]["naam"], **{k: round(values[code][k], 4) for k in ("verhard", "klei")}}
 
 
-def test_dsfl_16_places_two_to_four_trade_places_with_one_voxel_less():
-    names = [sensitivity(UPPER_VOXELS - 1)[c]["naam"] for c in ranked(sensitivity(UPPER_VOXELS - 1))[:4]]
-    assert names == ["Isselt-Oost", "De Baken", "Laakse Tuinen", "Schuilenburg-Zuid"]
+def test_dsfl_16_places_two_and_three_lie_within_the_tolerance_and_the_fourth_does_not():
+    values, tolerance = sensitivity(), expected("dsfl-16")["tolerance"]["verhard"]
+    second, third, fourth = (values[c]["verhard"] for c in ranked(values)[1:4])
+    assert second - third < tolerance < third - fourth
+
+
+def test_dsfl_16_the_most_paved_buurten_have_no_clay_with_one_voxel_less():
+    values = sensitivity(UPPER_VOXELS - 1)
+    assert [values[c]["klei"] for c in ranked(values)[:3]] == [0, 0, 0]
