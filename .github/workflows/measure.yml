@@ -174,20 +174,15 @@ jobs:
           fi
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin \
             || echo "::warning::GHCR login failed; a variant with a private image will fail"
-      # The MCP servers of github.com/sjaakd serve HTTP only, so a variant with them reaches them on the host (Claude Code at
-      # host.docker.internal). Their images are pinned in tasks.py, and the harness checks the version each one reports.
+      # A variant's servers on the host (the servers of github.com/sjaakd and the ldproxy of github.com/cportele/dsfl-ai) start
+      # from the images pinned in tasks.py: only those of the variants in the options, each checked by the version it reports.
+      # A failed start only warns, so that it fails just the variants with that server.
       - name: Start the MCP servers on the host
-        if: ${{ contains(inputs.options, 'mcp-groundwater-monitoring') || contains(inputs.options, 'mcp-bgt-wijkenbuurten-subsurface') }}
+        env:
+          OPTIONS: ${{ inputs.options }}
         run: |
-          read -r groundwater subsurface < <(uv run python -c "from airco_harness.tasks import GROUNDWATER_MONITORING_IMAGE as g, SUBSURFACE_MODELS_IMAGE as s; print(g, s)")
-          docker run -d --name airco-groundwater --platform linux/amd64 -p 18081:8080 -e GROUNDWATER_MONITORING_CONCEPTS_BASE_URI=https://example.org/ "$groundwater" \
-            || echo "::warning::the groundwater monitoring server did not start; its variant will fail"
-          docker run -d --name airco-subsurface --platform linux/amd64 -p 18082:8080 -e SUBSURFACE_MODELS_CONCEPTS_BASE_URI=https://example.org/ "$subsurface" \
-            || echo "::warning::the subsurface models server did not start; its variant will fail"
-          for port in 18081 18082; do
-            for _ in $(seq 1 90); do curl -sf "http://localhost:$port/q/health/ready" > /dev/null && break; sleep 2; done
-            curl -sf "http://localhost:$port/q/health/ready" > /dev/null || echo "::warning::the MCP server on port $port is not ready"
-          done
+          read -ra options <<< "$OPTIONS"
+          uv run airco-servers up "${options[@]}" || echo "::warning::not every MCP server on the host started; its variants will fail"
       - id: matrix
         env:
           TESTSET: ${{ inputs.testset }}
@@ -227,7 +222,7 @@ jobs:
         run: uv run airco-logcheck --mask "logs/$NAME" "reports/$NAME"
       - name: Stop the MCP servers on the host
         if: ${{ always() }}
-        run: docker rm -f airco-groundwater airco-subsurface > /dev/null 2>&1 || true
+        run: uv run airco-servers down || true
       # A self-hosted runner keeps its Docker config between jobs, so the login must not outlive the job.
       - name: Log out of GHCR
         if: ${{ always() }}

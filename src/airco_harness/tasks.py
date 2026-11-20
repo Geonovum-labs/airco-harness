@@ -47,11 +47,13 @@ class McpServer:
     # A server that reports another version fails the run, so a run never meets an image other than the one named here.
     image: str = ""
     version: str = ""
+    # For a server whose image holds neither its configuration nor its data: the repository and commit that do.
+    config: str = ""
 
 
-def host_server(name: str, url: str, image: str, version: str) -> McpServer:
+def host_server(name: str, url: str, image: str, version: str, config: str = "") -> McpServer:
     """A server that runs on the host from a pinned image. Claude Code reaches it through the recording proxy, also on the host."""
-    return McpServer(name, url=url, image=image, version=version)
+    return McpServer(name, url=url, image=image, version=version, config=config)
 
 
 def url_variable(server: McpServer) -> str:
@@ -93,6 +95,20 @@ class Variant:
 GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:0f4bd731e90fc2fcf29f0a221f93aa74d5b6c0d40d08a54adff07735a38577ee"
 # Revision cb6b5d6 of 20 November 2026, with the GeoTOP and REGIS tiles of Amersfoort in the image.
 SUBSURFACE_MODELS_IMAGE = "ghcr.io/sjaakd/mcp-subsurface-models@sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c"
+# The servers of bag.ldproxy.net, run on the host from the ldproxy data directory of github.com/cportele/dsfl-ai at tag v0.1 (20 November 2026),
+# with its dump of Amersfoort; airco-servers starts it. The ldproxy image is the tag aird-261119184247 that the repository names, by digest.
+DSFL_AI_REPOSITORY = "cportele/dsfl-ai"
+DSFL_AI_COMMIT = "09575804f0fd8863ce900edf4f5345fa7dbe1ab8"
+DSFL_AI_CONFIG = f"https://github.com/{DSFL_AI_REPOSITORY}/tree/v0.1 ({DSFL_AI_COMMIT})"
+LDPROXY_IMAGE = "iide/ldproxy@sha256:ce01662e1afab6ae3116ab95739874aad23b045cb72de7e42a668e69ab2ea99a"
+LDPROXY_DB_IMAGE = "imresamu/postgis@sha256:b5766ee720aca09c61b9a868abefbf273348a4b90ad4cf146b4f8c9ac85d48e4"
+
+
+def ldproxy_server(name: str, version: str) -> McpServer:
+    """An API of the ldproxy on the host; its serverInfo.version is the date of its configuration in the repository (yymmddHHMMSS)."""
+    return host_server(name, f"http://localhost:7080/{name}/mcp", LDPROXY_IMAGE, version, DSFL_AI_CONFIG)
+
+
 METADATA_SKILL = AgentSkill("metadata", "https://github.com/Bakkej/skills-metadata", "42902c7267227f229dd7778ce499b9fc27133900")
 VARIANTS = {
     "0": Variant("The question alone: the agent finds the standard as it is published today, or not."),
@@ -102,16 +118,17 @@ VARIANTS = {
         tags=("groundwater",),
     ),
     "mcp-bag-ldproxy": Variant(
-        "Variant 0 plus the MCP server of the BAG API on bag.ldproxy.net, which holds Amersfoort only (BAG extract of 8 October 2026).",
-        mcp=(McpServer("bag", url="https://bag.ldproxy.net/bag/mcp"),),
+        "Variant 0 plus the MCP server of the BAG API of ldproxy (github.com/cportele/dsfl-ai, v0.1), which holds Amersfoort only "
+        "(BAG extract of 8 October 2026), running on the host.",
+        mcp=(ldproxy_server("bag", "261120115005"),),
         tags=("bag",),
     ),
     "mcp-bgt-wijkenbuurten-subsurface": Variant(
-        "Variant 0 plus the MCP servers of the BGT and the CBS wijken en buurten on bag.ldproxy.net (Amersfoort) and the subsurface models MCP server "
-        "(github.com/sjaakd/mcp-subsurface-models) with the Amersfoort extract of GeoTOP and REGIS in its image, running on the host.",
+        "Variant 0 plus the MCP servers of the BGT and the CBS wijken en buurten of ldproxy (github.com/cportele/dsfl-ai, v0.1, Amersfoort) and the "
+        "subsurface models MCP server (github.com/sjaakd/mcp-subsurface-models) with the Amersfoort extract of GeoTOP and REGIS in its image, all on the host.",
         mcp=(
-            McpServer("bgt", url="https://bag.ldproxy.net/bgt/mcp"),
-            McpServer("wijkenbuurten", url="https://bag.ldproxy.net/wijkenbuurten/mcp"),
+            ldproxy_server("bgt", "261120115005"),
+            ldproxy_server("wijkenbuurten", "261120104208"),
             host_server("subsurface-models", "http://localhost:18082/mcp", SUBSURFACE_MODELS_IMAGE, "1.0.13"),
         ),
         tags=("bgt",),
@@ -175,7 +192,7 @@ def variant_form(variant: str) -> Variant:
     """The variant with a host server moved to the URL in its variable, read after .env is loaded."""
     form = compose(variant)
     moved = {s.name: os.environ.get(url_variable(s), "").strip() for s in form.mcp if s.image}
-    servers = tuple(host_server(s.name, moved[s.name], s.image, s.version) if moved.get(s.name) else s for s in form.mcp)
+    servers = tuple(replace(s, url=moved[s.name]) if moved.get(s.name) else s for s in form.mcp)
     return replace(form, mcp=servers)
 
 

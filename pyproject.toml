@@ -45,6 +45,7 @@ airco-report = "airco_harness.report:main"
 airco-rescore = "airco_harness.rescore:main"
 airco-logcheck = "airco_harness.logcheck:main"
 airco-pages = "airco_harness.pages:main"
+airco-servers = "airco_harness.servers:main"
 
 [project.entry-points.inspect_ai]
 airco_harness = "airco_harness._registry"

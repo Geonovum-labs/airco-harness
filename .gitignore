@@ -13,3 +13,5 @@ __pycache__/
 /reports/*/logs/robots.txt
 /site/
 /.site-cache/
+# The ldproxy data directory and its restored database, which airco-servers fetches and starts.
+/.ldproxy/

@@ -124,7 +124,7 @@ def test_an_mcp_variant_gives_the_server_tools_under_names_the_model_apis_accept
     assert sample.scores["quality"].value["correct"] == 1
     assert log.eval.metadata["variant_form"] == {
         "about": "stub",
-        "mcp": [{"name": "groundwater-monitoring", "url": "", "command": [sys.executable, str(stub)], "image": "", "version": ""}],
+        "mcp": [{"name": "groundwater-monitoring", "url": "", "command": [sys.executable, str(stub)], "image": "", "version": "", "config": ""}],
         "skills": [],
         "tags": ["bro"],
     }
@@ -278,8 +278,11 @@ def test_a_server_that_reports_another_version_than_its_pin_fails_the_run(tmp_pa
     assert "reports version 1.2.3, not 9.9.9 of stub" in sample.error.message
 
 
-def test_the_bag_variant_reaches_its_server_over_http_and_runs_the_bag_samples():
-    assert tasks.VARIANTS["mcp-bag-ldproxy"].mcp == (tasks.McpServer("bag", url="https://bag.ldproxy.net/bag/mcp"),)
+def test_the_bag_variant_reaches_the_pinned_ldproxy_on_the_host_and_runs_the_bag_samples():
+    [bag] = tasks.VARIANTS["mcp-bag-ldproxy"].mcp
+    assert (bag.name, bag.url, bag.version) == ("bag", "http://localhost:7080/bag/mcp", "261120115005")
+    assert bag.image == tasks.LDPROXY_IMAGE and "@sha256:" in bag.image
+    assert bag.config == "https://github.com/cportele/dsfl-ai/tree/v0.1 (09575804f0fd8863ce900edf4f5345fa7dbe1ab8)"
     assert [s.id for s in airco(testset="dsfl", variant="mcp-bag-ldproxy", agent="inspect").dataset] == [f"dsfl-0{n}" for n in range(1, 6)]
 
 
@@ -287,12 +290,12 @@ def test_the_bgt_variant_gives_three_named_servers_one_of_them_on_the_host(monke
     variant = "mcp-bgt-wijkenbuurten-subsurface"
     servers = tasks.VARIANTS[variant].mcp
     assert [(s.name, s.url) for s in servers] == [
-        ("bgt", "https://bag.ldproxy.net/bgt/mcp"),
-        ("wijkenbuurten", "https://bag.ldproxy.net/wijkenbuurten/mcp"),
+        ("bgt", "http://localhost:7080/bgt/mcp"),
+        ("wijkenbuurten", "http://localhost:7080/wijkenbuurten/mcp"),
         ("subsurface-models", "http://localhost:18082/mcp"),
     ]
     assert servers[2].image.endswith("sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c") and servers[2].version == "1.0.13"
-    assert not servers[0].version and not servers[1].version
+    assert (servers[0].version, servers[1].version) == ("261120115005", "261120104208")
     assert tasks.takes(variant, "claude-code") and tasks.takes(variant, "inspect") and not tasks.takes(variant, "model")
     assert [s.id for s in airco(testset="dsfl", variant=variant, agent="inspect").dataset] == ["dsfl-16"]
     monkeypatch.setenv("AIRCO_SUBSURFACE_MODELS_URL", "http://localhost:9000/mcp")
