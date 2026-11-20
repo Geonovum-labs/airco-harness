@@ -1,0 +1,146 @@
+{
+  "2026-11-20T16-21-29-00-00_airco_JN9ydXTi9vfaneWDFMJRD4.eval": {
+    "eval_id": "6dqPFDzLceu2qSTecDbnVr",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "JN9ydXTi9vfaneWDFMJRD4",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:25:52+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.3333333333333333,
+      "params": {}
+    }
+  },
+  "2026-11-20T16-21-29-00-00_airco_KzLNwXYg84bnKCeZj5qh6T.eval": {
+    "eval_id": "FsayDA9rYLbGkAQiSNVVap",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "KzLNwXYg84bnKCeZj5qh6T",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:25:05+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.3333333333333333,
+      "params": {}
+    }
+  },
+  "2026-11-20T16-21-29-00-00_airco_FXmHmZtUw5L4quFUi7HhrV.eval": {
+    "eval_id": "QUYshb2uu5ptHui24o75k4",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "FXmHmZtUw5L4quFUi7HhrV",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:24:49+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T16-21-29-00-00_airco_gPRggSbewRfbNPTCSPVvtY.eval": {
+    "eval_id": "Qd5YCJT2ygN88cpjufBXrB",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "gPRggSbewRfbNPTCSPVvtY",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:23:45+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.3333333333333333,
+      "params": {}
+    }
+  },
+  "2026-11-20T16-21-29-00-00_airco_GGuqowdfYkw5ymFhHDGk54.eval": {
+    "eval_id": "n2rFh6Aqxzu6BnhcAaSUki",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "GGuqowdfYkw5ymFhHDGk54",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:23:39+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.3333333333333333,
+      "params": {}
+    }
+  },
+  "2026-11-20T16-21-29-00-00_airco_VbN3xsp6cZCLUoEyLVWz2h.eval": {
+    "eval_id": "5dUEfyMFvYBQp8agvKZKdU",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "VbN3xsp6cZCLUoEyLVWz2h",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:21:56+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.3333333333333333,
+      "params": {}
+    }
+  },
+  "2026-11-20T16-21-29-00-00_airco_4F9QizH59SDfUbzQCsRLpc.eval": {
+    "eval_id": "GjEAE8h64KrRhmk4mL7Hmd",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "4F9QizH59SDfUbzQCsRLpc",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:21:51+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.3333333333333333,
+      "params": {}
+    }
+  },
+  "2026-11-20T16-21-29-00-00_airco_JcRpDuSZ27uE7PGsysHhLa.eval": {
+    "eval_id": "RXEHLsfUKXfKYhjMGe4MRj",
+    "run_id": "BViSpy3s25yFWhE2X9odt7",
+    "task": "airco_harness/airco",
+    "task_id": "JcRpDuSZ27uE7PGsysHhLa",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-haiku-5-5",
+    "started_at": "2026-11-20T16:21:29+00:00",
+    "completed_at": "2026-11-20T16:21:47+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.3333333333333333,
+      "params": {}
+    }
+  }
+}
