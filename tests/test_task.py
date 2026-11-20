@@ -11,6 +11,7 @@ from inspect_ai.model import ModelCost, ModelOutput, ModelUsage, get_model, get_
 
 from airco_harness import mcpwire, models, report, tasks
 from airco_harness.tasks import airco
+from validators import rules
 
 ANSWER = {"objecttype": "OverigBouwwerk", "type": "bassin"}
 
@@ -474,3 +475,50 @@ def test_the_inspect_agent_offers_both_skills_of_a_joined_variant(tmp_path):
     [loaded] = [m for m in sample.messages if m.role == "tool" and m.function == "skill"]
     assert "Interpret data with any MIM-conformant information model" not in loaded.text and "# MIM interpret" in loaded.text
     assert sample.scores["source"].metadata["skills"] == ["geonovum-mim-interpret"]
+
+
+TYPES = {"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel"]}
+
+
+def test_a_sample_with_a_format_asks_the_question_alone_and_the_format_after_the_answer(tmp_path):
+    log = run_dsfl17(tmp_path, text_model("Wegdelen, ondersteunende wegdelen en onbegroeide terreindelen.", json.dumps(TYPES)))
+    [sample] = log.samples
+    assert [m.role for m in sample.messages] == ["user", "assistant", "user", "assistant"]
+    assert sample.messages[0].text == "Welke BGT objecten kunnen verhard zijn?"
+    assert sample.messages[2].text == json.loads((rules.TESTSETS_DIR / "dsfl/samples/dsfl-17/sample.json").read_text())["format"]
+    assert sample.scores["quality"].value["correct"] == 1
+
+
+def test_the_inspect_agent_keeps_one_system_prompt_over_the_two_turns(tmp_path):
+    outputs = [
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Wegdeel, OndersteunendWegdeel en OnbegroeidTerreindeel."}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps(TYPES)}),
+    ]
+    log = run_dsfl17(tmp_path, get_model("mockllm/model", custom_outputs=outputs), agent="inspect")
+    [sample] = log.samples
+    assert [m.role for m in sample.messages].count("system") == 1
+    assert (sample.output.completion, sample.scores["quality"].value["correct"]) == (json.dumps(TYPES), 1)
+
+
+def run_dsfl17(tmp_path, model, **kwargs):
+    [log] = eval(airco(testset="dsfl", ids="dsfl-17", **kwargs), model=model, log_dir=str(tmp_path), display="none")
+    return log
+
+
+def test_an_answer_that_names_a_type_only_once_asked_for_the_format_is_not_correct(tmp_path):
+    log = run_dsfl17(tmp_path, text_model("Wegdelen en ondersteunende wegdelen.", json.dumps(TYPES)))
+    [sample] = log.samples
+    quality = sample.scores["quality"]
+    assert (quality.value["correct"], quality.value["complete"], quality.metadata["ungrounded"]) == (0, 1.0, {"objecttypen": ["OnbegroeidTerreindeel"]})
+    assert quality.metadata["format_tool_calls"] == 0
+
+
+def test_the_inspect_agent_has_only_its_submit_tool_when_asked_for_the_format(tmp_path):
+    outputs = [
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "Wegdeel, OndersteunendWegdeel en OnbegroeidTerreindeel."}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": json.dumps(TYPES)}),
+    ]
+    log = run_dsfl17(tmp_path, get_model("mockllm/model", custom_outputs=outputs), agent="inspect")
+    [sample] = log.samples
+    first, *_, last = [e for e in sample.events if e.event == "model"]
+    assert "fetch" in [t.name for t in first.tools] and [t.name for t in last.tools] == ["submit"]

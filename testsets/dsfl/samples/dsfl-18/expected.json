@@ -6,13 +6,15 @@
         {
           "one_of": [
             "gesloten verharding",
-            "geslotenVerharding"
+            "geslotenVerharding",
+            "gesloten verhardingen"
           ]
         },
         {
           "one_of": [
             "open verharding",
-            "openVerharding"
+            "openVerharding",
+            "open verhardingen"
           ]
         }
       ],
@@ -33,5 +35,8 @@
   ],
   "answer_schema": "answer.schema.json",
   "source": "IMGeo 2.2 reference model: gesloten verharding and open verharding of bgt-fysiekVoorkomen, and as optional the plus-fysiekVoorkomen values whose parent is one of them",
-  "note": "Origin: question of 20 November 2026 for the comparison without and with the metadata and MIM skills. The working group chose gesloten verharding and open verharding, in line with dsfl-16; a finer IMGeo plus value under one of them, such as asfalt or tegels, is allowed. Half verhard, onverhard and their plus values count as wrong."
+  "note": "Origin: question of 20 November 2026 for the comparison without and with the metadata and MIM skills. The working group chose gesloten verharding and open verharding, in line with dsfl-16; a finer IMGeo plus value under one of them, such as asfalt or tegels, is allowed. Half verhard, onverhard and their plus values count as wrong.",
+  "grounded_fields": [
+    "soorten"
+  ]
 }

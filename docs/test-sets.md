@@ -21,7 +21,8 @@ The sample id is `<name>-G<nn>-<nn>`, where `<name>` is the short name of the st
 | `task` | Task type, one of the values in `sample.schema.json`, such as `lookup` or `classify` |
 | `standard` | Standard with version, such as `imgeo-2.2`, or the name of a group of sources, such as `dsfl`. The allowlist for `source` uses the same name |
 | `tags` | Optional. What the question is about, such as `bag` or `bro`, in lowercase. `--tags` selects samples by them, and a variant names the tags of the samples it is made for |
-| `input` | The question to the agent, with the requested answer format. It may be in Dutch, and then so are the answer keys |
+| `input` | The question to the agent, with the requested answer format, or as a user asks it when `format` is given. It may be in Dutch, and then so are the answer keys |
+| `format` | Optional. The request for the answer format, which the agent gets in the same conversation after it has answered `input`. A format line in the question can make an agent answer from memory without its tools or skills; see [Architecture](architecture.md#why-answers-are-json) |
 | `metadata.status` | `draft`, `approved` or `withdrawn` |
 | `metadata.hypothesis` | Why the question may fail |
 | `metadata.expected_variant` | The hypothesis of the test set note: the lowest variant on which the question is expected to pass. Which variants there will be is not defined yet; 0 is the standard as published today |
@@ -63,7 +64,9 @@ Each field of the answer has an expected value.
 
 A list field matches when the answer's list holds every item of `set` and nothing outside `set` and `optional`; each item is a value or `{"one_of": [...]}`, and the order does not count. Its part of `complete` is the share of `set` the list holds, so `complete` is the mean over the fields, which is the share of fields that match when no field is a list. In a list field that is a term field, each value outside `set` and `optional` that is not a known term counts as invented, and a known one makes the answer wrong without counting.
 
-`complete` is the share of fields that match, with a list field counted by the share of its set. `invented` is the number of differing values in `term_fields` that are not a known term plus differing values in `invented_fields`; use each field in at most one of these lists. `correct` is 1 only if everything matches and nothing is invented.
+`complete` is the share of fields that match, with a list field counted by the share of its set.
+
+For a sample with `format`, `grounded_fields` names list fields whose values the agent must have named before the request for the format. A value is named when one of the forms of its item, a literal or one of its `one_of`, is in the agent's text before that request, with any case and with or without spaces or hyphens between its words, so that OndersteunendWegdeel is named by "ondersteunende wegdelen" when that form is listed. Longer forms take their place first, so wegdeel inside "ondersteunend wegdeel" does not name Wegdeel. A value not named makes the answer not correct and is listed under `ungrounded` in the score details; `complete` does not change. The score also records `format_tool_calls`, the tool uses after the request, which `runs.csv` has as a column. `invented` is the number of differing values in `term_fields` that are not a known term plus differing values in `invented_fields`; use each field in at most one of these lists. `correct` is 1 only if everything matches and nothing is invented.
 
 For example, `imgeo-G04-03` expects `objecttype` OverigBouwwerk (or Overig bouwwerk) and `type` bassin. The answer Waterdeel with zwembad gets `complete` 0 and `invented` 1: Waterdeel is a known term, zwembad is not.
 

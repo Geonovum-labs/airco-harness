@@ -5,25 +5,29 @@
       "set": [
         {
           "one_of": [
-            "Pand"
+            "Pand",
+            "panden"
           ]
         },
         {
           "one_of": [
-            "Wegdeel"
+            "Wegdeel",
+            "wegdelen"
           ]
         },
         {
           "one_of": [
             "OndersteunendWegdeel",
-            "Ondersteunend wegdeel"
+            "Ondersteunend wegdeel",
+            "ondersteunende wegdelen"
           ]
         },
         {
           "one_of": [
             "OnbegroeidTerreindeel",
             "Onbegroeid terreindeel",
-            "Onbegroeid terrein"
+            "Onbegroeid terrein",
+            "onbegroeide terreindelen"
           ]
         }
       ]
@@ -42,5 +46,8 @@
   ],
   "answer_schema": "answer.schema.json",
   "source": "IMGeo 2.2 reference model (reference-models/imgeo-2.2): the object types with an attribute bgt-fysiekVoorkomen whose domain holds gesloten verharding, open verharding or half verhard; Pand, whose roof is paved surface, as dsfl-16 counts it; no object type of the model has an area attribute",
-  "note": "Origin: question of 20 November 2026 for the comparison without and with the metadata and MIM skills. The working group chose the object types of dsfl-17 plus Pand, the filter on fysiekVoorkomen and the area from the geometry."
+  "note": "Origin: question of 20 November 2026 for the comparison without and with the metadata and MIM skills. The working group chose the object types of dsfl-17 plus Pand, the filter on fysiekVoorkomen and the area from the geometry.",
+  "grounded_fields": [
+    "objecttypen"
+  ]
 }

@@ -4,7 +4,8 @@
   "tags": [
     "verharding"
   ],
-  "input": "Welke BGT objecten kunnen verhard zijn?\n\nAntwoord met alleen een JSON-object met de sleutel \"objecttypen\": een lijst met de namen van de BGT-objecttypen die verhard kunnen zijn.",
+  "input": "Welke BGT objecten kunnen verhard zijn?",
+  "format": "Zet de objecttypen die je hierboven noemde, in dezelfde woorden, in een JSON-object met de sleutel \"objecttypen\": een lijst. Zoek niets meer op en antwoord met alleen het JSON-object.",
   "metadata": {
     "status": "draft",
     "hypothesis": "The answer is in the domains of bgt-fysiekVoorkomen in the IMGeo model or catalog, not in a dataset. Likely failures: answering from general knowledge (roads, parking, roofs); naming Pand or Overbruggingsdeel, which have no fysiekVoorkomen; leaving out OnbegroeidTerreindeel, whose verharding is less obvious than that of a road.",

@@ -5,20 +5,23 @@
       "set": [
         {
           "one_of": [
-            "Wegdeel"
+            "Wegdeel",
+            "wegdelen"
           ]
         },
         {
           "one_of": [
             "OndersteunendWegdeel",
-            "Ondersteunend wegdeel"
+            "Ondersteunend wegdeel",
+            "ondersteunende wegdelen"
           ]
         },
         {
           "one_of": [
             "OnbegroeidTerreindeel",
             "Onbegroeid terreindeel",
-            "Onbegroeid terrein"
+            "Onbegroeid terrein",
+            "onbegroeide terreindelen"
           ]
         }
       ]
@@ -29,5 +32,8 @@
   ],
   "answer_schema": "answer.schema.json",
   "source": "IMGeo 2.2 reference model (reference-models/imgeo-2.2): the object types with an attribute bgt-fysiekVoorkomen whose domain holds gesloten verharding, open verharding or half verhard",
-  "note": "Origin: the example question of the metadata skill (github.com/Bakkej/skills-metadata, README), asked for the comparison without and with the metadata and MIM skills. Erf is a value of OnbegroeidTerreindeel, not an object type."
+  "note": "Origin: the example question of the metadata skill (github.com/Bakkej/skills-metadata, README), asked for the comparison without and with the metadata and MIM skills. Erf is a value of OnbegroeidTerreindeel, not an object type.",
+  "grounded_fields": [
+    "objecttypen"
+  ]
 }

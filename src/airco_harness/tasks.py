@@ -24,7 +24,7 @@ from dotenv import find_dotenv, load_dotenv
 from inspect_ai import Task, task
 from inspect_ai.agent import Agent, AgentPrompt, AgentState, AgentSubmit, agent, as_solver, react
 from inspect_ai.dataset import MemoryDataset
-from inspect_ai.model import GenerateConfig
+from inspect_ai.model import ChatMessageUser, GenerateConfig
 from inspect_ai.solver import Generate, Solver, TaskState, chain, solver
 from inspect_ai.tool import Skill, Tool, mcp_server_http, mcp_server_stdio, skill, web_search
 from inspect_ai.util import store
@@ -225,10 +225,46 @@ def variant_form(variant: str) -> Variant:
     return replace(form, mcp=servers)
 
 
+FORMAT_STORE = "answer_format"
+
+
+@solver
+def remember_format() -> Solver:
+    """Put the sample's request for the answer format in the store, where the agent finds it after the question."""
+
+    async def solve(state: TaskState, generate: Generate) -> TaskState:
+        store().set(FORMAT_STORE, state.metadata.get("format"))
+        return state
+
+    return solve
+
+
+async def _answer(state: AgentState, agent: Agent, follow_up: Agent | None = None) -> AgentState:
+    """The agent on the question; then, for a sample with a format, once more in the same conversation on the request to give its answer in it.
+
+    A format line in the question made Claude Code answer from memory at once, without its skills or a search (20 November 2026), so the
+    question goes alone and the format comes after the agent is done. `follow_up` takes the second turn where the agent would add its
+    prompt to the conversation again, as react() does, and then has only its submit tool, so that it looks nothing up; Claude Code
+    resumes its session with its tools, and the score records how many it used in that turn."""
+    state = await agent(state)
+    if request := store().get(FORMAT_STORE):
+        state.messages.append(ChatMessageUser(content=request))
+        state = await (follow_up or agent)(state)
+    return state
+
+
+@agent(name="answer_then_format")
+def _formatted(first: Agent, follow_up: Agent | None = None) -> Agent:
+    async def execute(state: AgentState) -> AgentState:
+        return await _answer(state, first, follow_up)
+
+    return execute
+
+
 def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant) -> Agent:
     if agent == "model":
         # No system prompt, no tools, no submit tool: the agent is done when the model stops calling tools, and its last message is the answer.
-        return react(prompt=None, tools=[], submit=False)
+        return _formatted(react(prompt=None, tools=[], submit=False))
     if agent == "inspect":
         # Inspect's defaults: its own system prompt and submit tool. web_search() uses the search of the model's own provider.
         tools = [web_search(), fetch(), *([show_on_map()] if map_tool else []), *([plot_series()] if series_tool else [])]
@@ -236,13 +272,13 @@ def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant
             # Inspect's own skill tool, unchanged: it writes the skills to the local sandbox and hands the model a skill's SKILL.md.
             tools.append(skill([s.for_inspect() for s in variant.skills]))
         if not variant.mcp:
-            return react(tools=tools, submit=AgentSubmit(answer_only=True))
+            return _formatted(react(tools=tools, submit=AgentSubmit(answer_only=True)), react(prompt=None, tools=[], submit=AgentSubmit(answer_only=True)))
         # The MCP server comes on top of the tools of variant 0, so that the server is the one difference.
         return _with_mcp(tools, variant.mcp)
     from .claude_code import claude_code_agent
 
     if not variant.mcp:
-        return claude_code_agent(map_tool, series_tool)
+        return _formatted(claude_code_agent(map_tool, series_tool))
     return _claude_code_with_mcp(map_tool, series_tool, variant.mcp)
 
 
@@ -310,7 +346,9 @@ def _with_mcp(tools: list[Tool], mcp: tuple[McpServer, ...]) -> Agent:
                 record_mcp_servers(mcp, [s.server_info for s in sessions])
                 prompt = AgentPrompt(instructions=server_instructions([(s.server_info.name, s.instructions) for s in sessions]))
                 sources = [ProviderNamedTools(c) for c in connected]
-                return await react(prompt=prompt, tools=[*tools, *sources], submit=AgentSubmit(answer_only=True))(state)
+                every = [*tools, *sources]
+                first = react(prompt=prompt, tools=every, submit=AgentSubmit(answer_only=True))
+                return await _answer(state, first, react(prompt=None, tools=[], submit=AgentSubmit(answer_only=True)))
         finally:
             _keep(recorder)
 
@@ -328,7 +366,7 @@ def _claude_code_with_mcp(map_tool: bool, series_tool: bool, mcp: tuple[McpServe
         try:
             async with recorder:
                 servers = [(server.name, recorder.url(server.name, "host.docker.internal")) for server in mcp if server.url]
-                return await claude_code_agent(map_tool, series_tool, servers)(state)
+                return await _answer(state, claude_code_agent(map_tool, series_tool, servers))
         finally:
             _keep(recorder)
 
@@ -337,13 +375,11 @@ def _claude_code_with_mcp(map_tool: bool, series_tool: bool, mcp: tuple[McpServe
 
 def _setup(agent: AgentName, form: Variant):
     if agent != "claude-code":
-        return None
+        return remember_format()
     from .claude_code import claude_code_setup
 
-    setup = claude_code_setup([entry for s in form.skills for entry in s.installed()])
-    if form.mcp:
-        return chain(setup, probe_mcp_servers(form.mcp))
-    return setup
+    setup = [remember_format(), claude_code_setup([entry for s in form.skills for entry in s.installed()])]
+    return chain(*setup, *([probe_mcp_servers(form.mcp)] if form.mcp else []))
 
 
 def _sandbox(agent: AgentName, form: Variant):

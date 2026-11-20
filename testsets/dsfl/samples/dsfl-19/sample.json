@@ -4,7 +4,8 @@
   "tags": [
     "verharding"
   ],
-  "input": "Hoe bepaal ik de oppervlakte van de fysieke objecten die relevant zijn voor wateraccumulatie?\n\nAntwoord met alleen een JSON-object met de sleutels \"objecttypen\" (een lijst met de BGT-objecttypen die je meetelt), \"filter_attribuut\" (het attribuut waarop je die objecten selecteert, of null als je niet selecteert) en \"bron_oppervlakte\" (\"geometrie\" als je de oppervlakte uit de geometrie berekent, \"attribuut\" als je een attribuut met de oppervlakte gebruikt).",
+  "input": "Hoe bepaal ik de oppervlakte van de fysieke objecten die relevant zijn voor wateraccumulatie?",
+  "format": "Vat je antwoord hierboven samen in een JSON-object met de sleutels \"objecttypen\" (de objecttypen die je meetelt, in dezelfde woorden als hierboven), \"filter_attribuut\" (het attribuut waarop je ze selecteert, of null als je niet selecteert) en \"bron_oppervlakte\" (\"geometrie\" als de oppervlakte uit de geometrie komt, \"attribuut\" als die uit een attribuut komt). Zoek niets meer op en antwoord met alleen het JSON-object.",
   "metadata": {
     "status": "draft",
     "hypothesis": "The BGT has no attribute with the area of an object, so the area comes from its surface geometry, and the paved objects are selected on fysiekVoorkomen. Likely failures: assuming an area attribute; leaving out the roofs of panden; selecting on functie instead of fysiekVoorkomen.",

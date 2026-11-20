@@ -4,7 +4,8 @@
   "tags": [
     "verharding"
   ],
-  "input": "Welke soorten verharding beinvloeden wateraccumulatie?\n\nAntwoord met alleen een JSON-object met de sleutel \"soorten\": een lijst met de soorten verharding, met de namen die de BGT ervoor gebruikt.",
+  "input": "Welke soorten verharding beinvloeden wateraccumulatie?",
+  "format": "Zet de soorten verharding die je hierboven noemde, in dezelfde woorden, in een JSON-object met de sleutel \"soorten\": een lijst. Zoek niets meer op en antwoord met alleen het JSON-object.",
   "metadata": {
     "status": "draft",
     "hypothesis": "The BGT records the kind of paving in fysiekVoorkomen; whether a kind affects water accumulation is a hydrological judgment the metadata does not settle. Likely failures: materials from general knowledge instead of the BGT values; counting half verhard or onverhard as paving.",

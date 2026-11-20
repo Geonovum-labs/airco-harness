@@ -94,6 +94,16 @@ def _arguments(block: ContentToolUse) -> dict:
     return arguments if isinstance(arguments, dict) else {}
 
 
+def format_turn(messages: list[ChatMessage], request: str | None) -> tuple[str | None, int]:
+    """For a sample that asks for the format after the question: the text the agent wrote before that request, and the tool uses
+    after it, which should be none. None and 0 for a sample without a format, or a run that stopped before the request."""
+    asked = next((i for i in range(len(messages) - 1, -1, -1) if request and messages[i].role == "user" and request in messages[i].text), None)
+    if asked is None:
+        return None, 0
+    before = "\n".join(m.text for m in messages[:asked] if m.role == "assistant")
+    return before, len(tool_uses(messages[asked + 1 :]))
+
+
 def map_shown(messages: list[ChatMessage], maps: dict) -> str:
     """The GeoJSON of the last show_on_map call that succeeded, as JSON text, or "" when the agent showed no map.
     The last call counts because a new call replaces the map. Claude Code names the tool mcp__map__show_on_map.
@@ -260,8 +270,10 @@ def quality():
             answer = subsurface_result(state.messages, "section-plot" if case.rule == "section" else "trace")
         else:
             answer = state.output.completion
-        result = await asyncio.to_thread(rules.assess, answer, case)
-        return Score(value=result.score_value(), answer=answer, explanation=result.explanation, metadata={"rule": case.rule, **result.details})
+        before, format_tool_calls = format_turn(state.messages, state.metadata.get("format"))
+        result = await asyncio.to_thread(rules.assess, answer, case, before)
+        turn = {"format_tool_calls": format_tool_calls} if before is not None else {}
+        return Score(value=result.score_value(), answer=answer, explanation=result.explanation, metadata={"rule": case.rule, **result.details, **turn})
 
     return score
 

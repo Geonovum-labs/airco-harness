@@ -318,3 +318,30 @@ def test_map_details_name_what_is_missing_and_flag_swapped_coordinates():
     assert (result.details["unmatched"], result.details["swapped"]) == ([list(RIVER)], 0)
     result = rules.assess(shown([*PANDEN, point(*RIVER)]), case)
     assert result.details["shown"] == sorted(f["properties"]["identificatie"] for f in PANDEN)
+
+
+def grounded(sample_id: str, answer: dict, before: str) -> dict:
+    return rules.assess(as_json(answer), Case.load(TARGETS[sample_id]), before).score_value()
+
+
+TYPES17 = {"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel"]}
+
+
+@pytest.mark.parametrize(
+    ("sample_id", "answer", "before", "expected"),
+    [
+        ("dsfl-17", TYPES17, "Verhard kunnen zijn: wegdelen, ondersteunende wegdelen en onbegroeide terreindelen.", full()),
+        ("dsfl-17", TYPES17, "Het attribuut fysiekVoorkomen van Wegdeel, OndersteunendWegdeel en OnbegroeidTerreindeel.", full()),
+        ("dsfl-17", TYPES17, "Wegen en stoepen: wegdelen en ondersteunende wegdelen.", full(0)),
+        ("dsfl-17", TYPES17, "Ondersteunend wegdeel en onbegroeid terreindeel.", full(0)),
+        ("dsfl-18", {"soorten": ["gesloten verharding", "open verharding"]}, "Gesloten verharding en open verharding houden water tegen.", full()),
+        ("dsfl-18", {"soorten": ["gesloten verharding", "open verharding"]}, "Asfalt en klinkers houden water tegen.", full(0)),
+        ("dsfl-18", {"soorten": ["gesloten verharding", "open verharding", "asfalt"]}, "Gesloten en open verharding, zoals asfalt.", full(0)),
+    ],
+)
+def test_a_value_must_be_named_before_the_request_for_the_format(sample_id, answer, before, expected):
+    assert grounded(sample_id, answer, before) == expected
+
+
+def test_without_a_text_before_the_format_nothing_needs_to_be_named():
+    assert grounded("dsfl-17", TYPES17, None) == full()

@@ -3,7 +3,9 @@
 A test set folder holds testset.json (purpose, version, date) and a folder
 samples/<id>/ per sample, with sample.json, expected.json and, for a JSON
 answer, answer.schema.json. The folder name is the sample id. Each sample
-names its standard, and a test set may mix standards.
+names its standard, and a test set may mix standards. A sample with a
+`format` asks its question alone, and asks for the format after the agent
+has answered.
 """
 
 from __future__ import annotations
@@ -64,7 +66,14 @@ def load(testset: str = DEFAULT_TESTSET, ids: list[str] | None = None, tags: lis
             id=r["id"],
             input=r["input"],
             target=f"{testset}/samples/{r['id']}/expected.json",
-            metadata={"defect": r.get("defect"), "task": r["task"], "standard": r["standard"], "tags": r.get("tags", []), **r["metadata"]},
+            metadata={
+                "defect": r.get("defect"),
+                "task": r["task"],
+                "standard": r["standard"],
+                "tags": r.get("tags", []),
+                "format": r.get("format"),
+                **r["metadata"],
+            },
         )
         for r in rows
         if ids is None or r["id"] in ids

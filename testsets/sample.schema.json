@@ -11,6 +11,7 @@
     "standard": {"type": "string"},
     "tags": {"type": "array", "items": {"type": "string", "pattern": "^[a-z0-9-]+$"}, "uniqueItems": true},
     "input": {"type": "string", "minLength": 1},
+    "format": {"type": "string", "minLength": 1, "description": "Optional. The request to give the answer in a form the rule reads, such as a JSON object with fixed keys. The agent gets it in the same conversation after it has answered input, so that the question goes as a user asks it."},
     "metadata": {
       "type": "object",
       "required": ["status", "hypothesis", "expected_variant", "location", "absence"],

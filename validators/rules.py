@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cache
@@ -135,12 +136,44 @@ def _set_field(given: object, want: dict) -> tuple[float, dict | None]:
     return share, {"expected": want, "given": given, "missing": missing, "extra": extra} if missing or extra else None
 
 
-def rule_fields(answer: str, case: Case) -> Assessment:
+def _words(term: str) -> list[str]:
+    """The words of a term as an agent may write them: OndersteunendWegdeel as ondersteunend wegdeel."""
+    spaced = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", term)
+    return [w for w in re.split(r"[\s\-_]+", normalize(spaced)) if w]
+
+
+def _named(items: list, before: str) -> set[int]:
+    """The items, by index, that the text names in one of their forms. Longer forms take their place in the text first, so that
+    wegdeel inside ondersteunend wegdeel names OndersteunendWegdeel only."""
+    text = normalize(before)
+    forms = sorted(((form, i) for i, item in enumerate(items) for form in _accepted(item)), key=lambda f: (-len(_words(str(f[0]))), -len(str(f[0]))))
+    named = set()
+    for form, i in forms:
+        pattern = r"(?<![^\W\d_])" + r"[\s\-_]*".join(map(re.escape, _words(str(form)))) + r"(?![^\W\d_])"
+        text, found = re.subn(pattern, " ", text)
+        if found:
+            named.add(i)
+    return named
+
+
+def _ungrounded(given: object, want: dict, before: str) -> list:
+    """The values of a list field whose item the agent's text before the request for the format does not name: what it only
+    knew once the format asked for it."""
+    items = [*want["set"], *want.get("optional", [])]
+    named = _named(items, before)
+    values = given if isinstance(given, list) else []
+    return [value for value in values if (i := next((i for i, item in enumerate(items) if _listed([value], [item])), None)) is not None and i not in named]
+
+
+def rule_fields(answer: str, case: Case, before: str | None = None) -> Assessment:
     """Named fields, with optional known-term and explicitly invented-value checks.
 
     A field whose expected value is {"set": [...], "optional": [...]} takes a list: it must hold every item of the set and
     nothing outside the set and the optional items. Its part of `complete` is the share of the set it holds, and in a
-    term field each value outside both that is no known term counts as invented."""
+    term field each value outside both that is no known term counts as invented.
+
+    `before` is what the agent wrote before the request for the format, for a sample that asks for it after the question. A value of
+    a field in `grounded_fields` must then be named there already; one that is not makes the answer not correct."""
     data, failure, details = _json_answer(answer, case)
     if failure:
         return failure
@@ -158,10 +191,15 @@ def rule_fields(answer: str, case: Case) -> Assessment:
     term_values = [v for k in case.expected.get("term_fields", []) if k in wrong for v in wrong[k].get("extra", [wrong[k]["given"]])]
     invented = _invented_terms(term_values)
     invented_fields = [key for key in case.expected.get("invented_fields", []) if key in wrong]
-    details |= {"wrong": wrong, "invented_terms": invented, "invented_fields": invented_fields}
+    grounded = case.expected.get("grounded_fields", []) if before is not None else []
+    ungrounded = {key: missing for key in grounded if (missing := _ungrounded(data.get(key), fields[key], before))}
+    details |= {"wrong": wrong, "invented_terms": invented, "invented_fields": invented_fields, "ungrounded": ungrounded}
     complete = sum(shares) / len(fields)
-    return Assessment(not wrong and not invented and not invented_fields, complete, len(invented) + len(invented_fields), True,
-                      f"wrong: {sorted(wrong)}; invented: {invented}; invented fields: {invented_fields}", details)  # fmt: skip
+    correct = not wrong and not invented and not invented_fields and not ungrounded
+    explanation = f"wrong: {sorted(wrong)}; invented: {invented}; invented fields: {invented_fields}" + (
+        f"; not named before the format: {ungrounded}" if ungrounded else ""
+    )
+    return Assessment(correct, complete, len(invented) + len(invented_fields), True, explanation, details)
 
 
 def rule_map(answer: str, case: Case) -> Assessment:
@@ -369,5 +407,6 @@ RULES: dict[str, Callable[[str, Case], Assessment]] = {
 }
 
 
-def assess(answer: str, case: Case) -> Assessment:
-    return RULES[case.rule](answer, case)
+def assess(answer: str, case: Case, before: str | None = None) -> Assessment:
+    """`before` is the agent's text before the request for the format, which only the rule fields reads."""
+    return rule_fields(answer, case, before) if case.rule == "fields" else RULES[case.rule](answer, case)

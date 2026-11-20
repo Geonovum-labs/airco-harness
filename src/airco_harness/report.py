@@ -94,6 +94,8 @@ RETRIEVED = SampleColumn("retrieved", path="scores.source.metadata.retrieved", f
 # The source scorer counts every tool use, including the tools a provider runs on its own servers, which leave no tool message.
 TOOL_CALLS = SampleColumn("tool_calls_scored", path="scores.source.metadata.tool_calls", full=True)
 SKILLS = SampleColumn("skills", path="scores.source.metadata.skills", full=True)
+# The tool uses in the turn that asks for the format, for a sample that asks for it after the question.
+FORMAT_TOOL_CALLS = SampleColumn("format_tool_calls", path="scores.quality.metadata.format_tool_calls", full=True)
 MCP_SERVER = SampleColumn("mcp_server", path="store.mcp_server", full=True)
 # Per MCP server, what the recording proxy saw (mcpwire.traffic); absent in logs from before it. The messages themselves stay out.
 MCP_TRAFFIC = SampleColumn("mcp_traffic", path="store.mcp_traffic", full=True)
@@ -194,7 +196,11 @@ def runs(log_dir: str) -> pd.DataFrame:
     and what a comparison between measurements has to hold fixed: the test set and its version, the commit and the limits."""
     df = samples_df(
         log_dir,
-        columns=EvalInfo + EvalModel + EvalTask + SampleSummary + [RETRIEVED, TOOL_CALLS, SKILLS, RULE, EXPLANATION, MCP_SERVER, MCP_TRAFFIC],
+        columns=EvalInfo
+        + EvalModel
+        + EvalTask
+        + SampleSummary
+        + [RETRIEVED, TOOL_CALLS, SKILLS, FORMAT_TOOL_CALLS, RULE, EXPLANATION, MCP_SERVER, MCP_TRAFFIC],
         quiet=True,
     )
     if not len(df):
@@ -218,6 +224,7 @@ def runs(log_dir: str) -> pd.DataFrame:
             "reason": (error + " " + limit).str.strip(),
             "tool_calls": _scored_tool_calls(df).fillna(df["sample_id"].map(_tool_calls(messages))).fillna(0).astype(int),
             "skills": skills,
+            "format_tool_calls": pd.to_numeric(_column(df, "format_tool_calls", None), errors="coerce"),
             # 1 when the run loaded a skill, 0 when its variant offered one and it did not, empty when the variant offered none.
             "skill_used": skills.ne("").astype(float).where(_column(df, "metadata").map(_offers_skills)),
             "tokens": df["total_tokens"],

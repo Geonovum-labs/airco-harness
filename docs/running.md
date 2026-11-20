@@ -164,6 +164,7 @@ The report averages each sample over its epochs first, then takes the mean and s
 | `failed`, `limit`, `reason` | `failed` is `True` for a run with an error; `limit` names the limit a run hit; `reason` holds either |
 | `tool_calls` | Tool uses in the conversation, as the `source` scorer counted them: the agent's own tool calls and the tools the model's provider ran on its servers, such as a web search |
 | `skills`, `skill_used` | The skills the run loaded with a skill tool, joined with `, `; `skill_used` is 1 when it loaded one, 0 when its variant offered a skill and it loaded none, empty when the variant offered none |
+| `format_tool_calls` | For a sample that asks for the format after the question, the tool uses in the turn that asks for it; empty for other samples |
 | `tokens`, `tokens_input`, `tokens_output`, `tokens_cache_read`, `tokens_cache_write`, `tokens_reasoning` | Token counts |
 | `total_time_s`, `working_time_s` | Time in seconds, the second without waiting for a provider limit |
 | `cost` | Dollars, priced per model call from `model-costs.yaml` in this checkout, by the prompt length of that call, plus web searches; not Inspect's logged `total_cost`, which uses the highest price; empty for a model without a price |
