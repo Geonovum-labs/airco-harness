@@ -15,3 +15,5 @@ __pycache__/
 /.site-cache/
 # The ldproxy data directory and its restored database, which airco-servers fetches and starts.
 /.ldproxy/
+# The skills of the variants, which a task fetches at their pinned commits.
+/.skills/

@@ -57,11 +57,13 @@ Each field of the answer has an expected value.
 
 | `expected.json` | Content |
 | --- | --- |
-| `expected` | For each field, a value, `{"one_of": [...]}` for alternatives, or `{"value": 2.131, "tolerance": 0.005}` for a numeric value within an absolute tolerance (inclusive) |
+| `expected` | For each field, a value, `{"one_of": [...]}` for alternatives, `{"value": 2.131, "tolerance": 0.005}` for a numeric value within an absolute tolerance (inclusive), or `{"set": [...], "optional": [...]}` for a list (see below) |
 | `term_fields` | Optional. Fields in which a value that differs from the expected one must be a known term |
 | `invented_fields` | Optional. Fields for which any differing value counts as invented, for example a fabricated value where the expected value is null |
 
-`complete` is the share of fields that match. `invented` is the number of differing values in `term_fields` that are not a known term plus differing values in `invented_fields`; use each field in at most one of these lists. `correct` is 1 only if everything matches and nothing is invented.
+A list field matches when the answer's list holds every item of `set` and nothing outside `set` and `optional`; each item is a value or `{"one_of": [...]}`, and the order does not count. Its part of `complete` is the share of `set` the list holds, so `complete` is the mean over the fields, which is the share of fields that match when no field is a list. In a list field that is a term field, each value outside `set` and `optional` that is not a known term counts as invented, and a known one makes the answer wrong without counting.
+
+`complete` is the share of fields that match, with a list field counted by the share of its set. `invented` is the number of differing values in `term_fields` that are not a known term plus differing values in `invented_fields`; use each field in at most one of these lists. `correct` is 1 only if everything matches and nothing is invented.
 
 For example, `imgeo-G04-03` expects `objecttype` OverigBouwwerk (or Overig bouwwerk) and `type` bassin. The answer Waterdeel with zwembad gets `complete` 0 and `invented` 1: Waterdeel is a known term, zwembad is not.
 

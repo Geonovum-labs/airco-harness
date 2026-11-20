@@ -63,7 +63,7 @@ def test_unknown_variant_agent_sample_or_test_set():
     assert [s.id for s in airco(ids=" imgeo-G04-03 ,").dataset] == ["imgeo-G04-03"]
     with pytest.raises(ValueError, match="unknown sample ids: imgeo-G99-01"):
         airco(ids="imgeo-G04-03,imgeo-G99-01")
-    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-{n:02}" for n in range(1, 17)]
+    assert [s.id for s in airco(testset="dsfl").dataset] == [f"dsfl-{n:02}" for n in range(1, 20)]
     with pytest.raises(ValueError, match="unknown test set 'nl-sbb'; choose from dsfl, imgeo"):
         airco(testset="nl-sbb")
 
@@ -72,6 +72,7 @@ def test_tags_select_the_samples_with_one_of_them():
     assert [s.id for s in airco(testset="dsfl", tags="bro").dataset] == [f"dsfl-{n:02}" for n in range(6, 17)]
     assert [s.id for s in airco(testset="dsfl", tags="bro,bag").dataset] == [f"dsfl-{n:02}" for n in range(1, 17)]
     assert [s.id for s in airco(testset="dsfl", tags="bro", ids="dsfl-01,dsfl-06").dataset] == ["dsfl-06"]
+    assert [s.id for s in airco(testset="dsfl", tags="verharding").dataset] == ["dsfl-17", "dsfl-18", "dsfl-19"]
     assert airco(testset="dsfl", tags="bro").dataset[0].metadata["tags"] == ["bro", "groundwater"]
     assert [s.id for s in airco(testset="dsfl", tags="subsurface").dataset] == [f"dsfl-{n:02}" for n in range(9, 17)]
     assert [s.id for s in airco(testset="dsfl", tags="groundwater").dataset] == ["dsfl-06", "dsfl-07", "dsfl-08"]
@@ -415,7 +416,7 @@ def test_the_ttl_of_a_haiku_call_logged_at_the_ceiling_is_recovered_too():
 
 def test_joined_variants_give_the_servers_and_skills_of_both_on_the_samples_the_mcp_variant_is_made_for():
     form = tasks.compose("mcp-dsfl-context+skill-metadata")
-    assert ([s.name for s in form.mcp], [s.name for s in form.skills], form.tags) == (["dsfl-context"], ["metadata"], ("dsfl-context",))
+    assert ([s.name for s in form.mcp], [s.path for s in form.skills], form.tags) == (["dsfl-context"], ["skills/metadata"], ("dsfl-context",))
     assert tasks.compose("skill-metadata").tags == ()
 
 
@@ -442,7 +443,7 @@ def test_the_inspect_agent_loads_a_skill_with_inspects_skill_tool_and_the_report
     assert "Find the metadata that leads to the right source for the question" in loaded.text
     assert (sample.scores["source"].metadata["skills"], sample.scores["quality"].value["correct"]) == (["metadata"], 1)
     assert log.eval.metadata["variant_form"]["skills"] == [
-        {"name": "metadata", "origin": "https://github.com/Bakkej/skills-metadata", "revision": tasks.METADATA_SKILL.revision}
+        {"repository": "Bakkej/skills-metadata", "commit": "42902c7267227f229dd7778ce499b9fc27133900", "path": "skills/metadata", "beside": []}
     ]
     [row] = report.runs(str(tmp_path)).to_dict("records")
     assert (row["skills"], row["skill_used"]) == ("metadata", 1.0)
@@ -453,3 +454,23 @@ def test_a_run_that_offers_a_skill_and_does_not_load_it_counts_as_not_used(tmp_p
     run(tmp_path, get_model("mockllm/model", custom_outputs=outputs), variant="skill-metadata", agent="inspect")
     [row] = report.runs(str(tmp_path)).to_dict("records")
     assert (row["skills"], row["skill_used"]) == ("", 0.0)
+
+
+def test_the_mim_skill_brings_mim_core_beside_it_and_loads_in_inspect_under_its_frontmatter_name():
+    form = tasks.compose("skill-metadata+skill-mim")
+    assert [[d.name for d in s.directories] for s in form.skills] == [["metadata"], ["mim-interpret", "mim-core"]]
+    assert (form.skills[1].directories[1] / "references" / "reading-rules.md").exists()
+    assert [s.for_inspect().name for s in form.skills] == ["metadata", "geonovum-mim-interpret"]
+    assert [[name for name, _ in s.installed()] for s in form.skills] == [["metadata"], ["geonovum-mim-interpret", "mim-core"]]
+
+
+def test_the_inspect_agent_offers_both_skills_of_a_joined_variant(tmp_path):
+    outputs = [
+        ModelOutput.for_tool_call("mockllm/model", "skill", {"command": "geonovum-mim-interpret"}),
+        ModelOutput.for_tool_call("mockllm/model", "submit", {"answer": "{}"}),
+    ]
+    log = run(tmp_path, get_model("mockllm/model", custom_outputs=outputs), variant="skill-metadata+skill-mim", agent="inspect")
+    [sample] = log.samples
+    [loaded] = [m for m in sample.messages if m.role == "tool" and m.function == "skill"]
+    assert "Interpret data with any MIM-conformant information model" not in loaded.text and "# MIM interpret" in loaded.text
+    assert sample.scores["source"].metadata["skills"] == ["geonovum-mim-interpret"]

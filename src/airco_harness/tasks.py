@@ -19,16 +19,17 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Literal, get_args
 
+import yaml
 from dotenv import find_dotenv, load_dotenv
 from inspect_ai import Task, task
 from inspect_ai.agent import Agent, AgentPrompt, AgentState, AgentSubmit, agent, as_solver, react
 from inspect_ai.dataset import MemoryDataset
 from inspect_ai.model import GenerateConfig
 from inspect_ai.solver import Generate, Solver, TaskState, chain, solver
-from inspect_ai.tool import Tool, mcp_server_http, mcp_server_stdio, skill, web_search
+from inspect_ai.tool import Skill, Tool, mcp_server_http, mcp_server_stdio, skill, web_search
 from inspect_ai.util import store
 
-from . import dataset, mcpwire
+from . import dataset, mcpwire, pinned
 from .mcpwire import McpRecorder
 from .models import register_costs
 from .scorers import quality, source
@@ -61,20 +62,38 @@ def url_variable(server: McpServer) -> str:
     return f"AIRCO_{server.name.upper().replace('-', '_')}_URL"
 
 
-SKILLS_DIR = Path(__file__).resolve().parents[2] / "skills"
-
-
 @dataclass(frozen=True)
 class AgentSkill:
-    """A skill a variant adds, vendored under skills/<name>/ from the commit of its repository named here."""
+    """A skill a variant adds: the directory at `path` in github.com/<repository> at `commit`, fetched into .skills/ when a task needs it.
+    A skill can point at directories next to its own, such as ../mim-core/; `beside` names them, and they are installed beside it."""
 
-    name: str
-    origin: str
-    revision: str
+    repository: str
+    commit: str
+    path: str
+    beside: tuple[str, ...] = ()
 
     @property
-    def path(self) -> Path:
-        return SKILLS_DIR / self.name
+    def directories(self) -> list[Path]:
+        """The skill's directory and those beside it, in the checkout of its commit; each is installed under its own name."""
+        root = pinned.checkout(self.repository, self.commit, ".skills")
+        return [root / self.path, *(root / name for name in self.beside)]
+
+    def _skill_md(self) -> tuple[dict, str]:
+        _, frontmatter, instructions = (self.directories[0] / "SKILL.md").read_text(encoding="utf-8").split("---", 2)
+        return yaml.safe_load(frontmatter), instructions.lstrip("\n")
+
+    def installed(self) -> list[tuple[str, Path]]:
+        """Each directory with the name it is installed under: the skill's under the name in its frontmatter, as the Agent Skills
+        specification requires and Claude Code needs to find it, the directories beside it under their own. The MIM skill's
+        directory is mim-interpret and its name geonovum-mim-interpret; ../mim-core/ still resolves beside it."""
+        skill, *beside = self.directories
+        return [(self._skill_md()[0]["name"], skill), *((d.name, d) for d in beside)]
+
+    def for_inspect(self) -> Skill:
+        """The skill as Inspect's skill tool takes it, from its SKILL.md as it is. Inspect reads a directory only when the
+        name in its frontmatter is the directory's name, which the MIM skill's is not."""
+        meta, instructions = self._skill_md()
+        return Skill(name=meta["name"], description=meta["description"], instructions=instructions)
 
 
 @dataclass(frozen=True)
@@ -109,7 +128,11 @@ def ldproxy_server(name: str, version: str) -> McpServer:
     return host_server(name, f"http://localhost:7080/{name}/mcp", LDPROXY_IMAGE, version, DSFL_AI_CONFIG)
 
 
-METADATA_SKILL = AgentSkill("metadata", "https://github.com/Bakkej/skills-metadata", "42902c7267227f229dd7778ce499b9fc27133900")
+# The two skill repositories have no tags; each is pinned at a commit. The metadata skill at main of 20 November 2026.
+METADATA_SKILL = AgentSkill("Bakkej/skills-metadata", "42902c7267227f229dd7778ce499b9fc27133900", "skills/metadata")
+# The MIM skill at the head of branch cursor/add-experimental-model-catalog (pull request 1) of 19 November 2026, which adds an experimental
+# model catalog and the MIM ambiguities to mim-core. Its README says to copy mim-interpret together with mim-core, which the skill reads as ../mim-core/.
+MIM_SKILL = AgentSkill("Geonovum-labs/skills-mim", "34c66ee83bc9a3c234512787ea56a74501949232", "mim-interpret", beside=("mim-core",))
 VARIANTS = {
     "0": Variant("The question alone: the agent finds the standard as it is published today, or not."),
     "mcp-groundwater-monitoring": Variant(
@@ -145,6 +168,11 @@ VARIANTS = {
         "Variant 0 plus the metadata skill (github.com/Bakkej/skills-metadata), which leads an agent from glossaries, model repositories "
         "and data catalogs to a dataset and its access route, such as an MCP server or an OGC API.",
         skills=(METADATA_SKILL,),
+    ),
+    "skill-mim": Variant(
+        "Variant 0 plus the MIM interpret skill (github.com/Geonovum-labs/skills-mim) with its shared mim-core, which reads a MIM-conformant "
+        "information model to interpret the data it describes: objecttypen, attribuutsoorten, waardelijsten, kardinaliteit.",
+        skills=(MIM_SKILL,),
     ),
 }
 JOIN = "+"
@@ -205,7 +233,7 @@ def _agent(agent: AgentName, map_tool: bool, series_tool: bool, variant: Variant
         tools = [web_search(), fetch(), *([show_on_map()] if map_tool else []), *([plot_series()] if series_tool else [])]
         if variant.skills:
             # Inspect's own skill tool, unchanged: it writes the skills to the local sandbox and hands the model a skill's SKILL.md.
-            tools.append(skill([s.path for s in variant.skills]))
+            tools.append(skill([s.for_inspect() for s in variant.skills]))
         if not variant.mcp:
             return react(tools=tools, submit=AgentSubmit(answer_only=True))
         # The MCP server comes on top of the tools of variant 0, so that the server is the one difference.
@@ -311,7 +339,7 @@ def _setup(agent: AgentName, form: Variant):
         return None
     from .claude_code import claude_code_setup
 
-    setup = claude_code_setup([s.path for s in form.skills])
+    setup = claude_code_setup([entry for s in form.skills for entry in s.installed()])
     if form.mcp:
         return chain(setup, probe_mcp_servers(form.mcp))
     return setup
@@ -354,7 +382,7 @@ def airco(
 
     Args:
       testset: Test set under testsets/.
-      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, mcp-bag-ldproxy, mcp-bgt-wijkenbuurten-subsurface or mcp-dsfl-context, variant 0 plus MCP servers; skill-metadata, variant 0 plus a skill. Join variants with +, as in mcp-dsfl-context+skill-metadata. All but 0 for the agents inspect and claude-code.
+      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, mcp-bag-ldproxy, mcp-bgt-wijkenbuurten-subsurface or mcp-dsfl-context, variant 0 plus MCP servers; skill-metadata or skill-mim, variant 0 plus a skill. Join variants with +, as in mcp-dsfl-context+skill-metadata. All but 0 for the agents inspect and claude-code.
       agent: model for the model without prompt or tools; inspect for Inspect's react() with web search and fetch; claude-code for Claude Code in a Docker sandbox.
       ids: Comma-separated sample ids; default the samples the variant is made for, all for variant 0.
       tags: Comma-separated tags; the samples with one of them.

@@ -1,0 +1,15 @@
+{
+  "task": "assess",
+  "standard": "imgeo-2.2",
+  "tags": [
+    "verharding"
+  ],
+  "input": "Welke soorten verharding beinvloeden wateraccumulatie?\n\nAntwoord met alleen een JSON-object met de sleutel \"soorten\": een lijst met de soorten verharding, met de namen die de BGT ervoor gebruikt.",
+  "metadata": {
+    "status": "draft",
+    "hypothesis": "The BGT records the kind of paving in fysiekVoorkomen; whether a kind affects water accumulation is a hydrological judgment the metadata does not settle. Likely failures: materials from general knowledge instead of the BGT values; counting half verhard or onverhard as paving.",
+    "expected_variant": 1,
+    "location": "IMGeo 2.2 / BGT catalog: values of fysiekVoorkomen; the IMGeo plus values name their parent value",
+    "absence": false
+  }
+}

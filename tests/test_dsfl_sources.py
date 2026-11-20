@@ -218,3 +218,42 @@ def test_dsfl_16_the_first_place_is_clear_and_places_two_and_three_lie_within_th
 def test_dsfl_16_the_most_paved_buurten_have_no_clay_with_one_voxel_less():
     values = sensitivity(UPPER_VOXELS - 1)
     assert [values[c]["klei"] for c in ranked(values)[:3]] == [0, 0, 0]
+
+
+PAVED = {"gesloten verharding", "open verharding", "half verhard"}
+# The paving dsfl-16 counts, and so dsfl-18: half verhard does not.
+SEALED = {"gesloten verharding", "open verharding"}
+
+
+def _first(item):
+    return item["one_of"][0] if isinstance(item, dict) else item
+
+
+def test_dsfl_17_and_19_name_the_object_types_whose_fysiekvoorkomen_can_be_paved():
+    model = rules.refmodel().data
+    paved = {
+        name
+        for name, ot in model["object_types"].items()
+        for attribute, a in ot["attributes"].items()
+        if attribute == "bgt-fysiekvoorkomen" and PAVED & {v["value"] for v in model["domains"][a["type"]]["values"]}
+    }
+    assert {_first(i) for i in expected("dsfl-17")["expected"]["objecttypen"]["set"]} == paved
+    assert {_first(i) for i in expected("dsfl-19")["expected"]["objecttypen"]["set"]} == paved | {"Pand"}
+
+
+def test_dsfl_18_allows_the_imgeo_plus_values_under_open_or_closed_paving_and_no_others():
+    model = rules.refmodel().data
+    plus = {
+        v["value"]
+        for name, d in model["domains"].items()
+        if name.startswith("FysiekVoorkomen") and name.endswith("Plus")
+        for v in d["values"]
+        if SEALED & set(v.get("parents", []))
+    }
+    want = expected("dsfl-18")["expected"]["soorten"]
+    assert ({_first(i) for i in want["set"]}, set(want["optional"])) == (SEALED, plus)
+
+
+def test_dsfl_19_no_object_type_has_an_area_attribute():
+    attributes = {a for ot in rules.refmodel().data["object_types"].values() for a in ot["attributes"]}
+    assert not [a for a in attributes if "oppervlakte" in a.lower()]

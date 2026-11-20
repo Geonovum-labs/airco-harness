@@ -59,6 +59,7 @@ A variant is what the agent gets besides the question, chosen with `-T variant=`
 | `mcp-bgt-wijkenbuurten-subsurface` | Variant 0 plus three MCP servers: the BGT and the CBS wijken en buurten of ldproxy, and the subsurface models server, all on the host, for the agents `inspect` and `claude-code` | Those tagged `bgt` |
 | `mcp-dsfl-context` | Variant 0 plus the semantic context MCP server on catalog.modeldesk.io, for the agents `inspect` and `claude-code` | None yet: name `--ids` or `--tags` |
 | `skill-metadata` | Variant 0 plus the metadata skill (github.com/Bakkej/skills-metadata), for the agents `inspect` and `claude-code` | All |
+| `skill-mim` | Variant 0 plus the MIM interpret skill with its mim-core (github.com/Geonovum-labs/skills-mim), for the agents `inspect` and `claude-code` | All |
 
 Join variants with a plus to give an agent both: `--variants 0,skill-metadata,mcp-bgt-wijkenbuurten-subsurface,mcp-bgt-wijkenbuurten-subsurface+skill-metadata` measures the skill alone, the servers alone and the two together against variant 0. A joined variant takes the samples any of its parts is made for, so the one above takes the samples tagged `bgt`; `--ids` or `--tags` override that as for any variant. Variant 0 joins with nothing.
 
@@ -66,7 +67,13 @@ Join variants with a plus to give an agent both: `--variants 0,skill-metadata,mc
 
 `mcp-bgt-wijkenbuurten-subsurface` gives the agent the servers `bgt`, `wijkenbuurten` and `subsurface-models`. The first two are APIs of the same ldproxy as the BAG server. The subsurface models image holds the GeoTOP and REGIS tiles of Amersfoort; outside them it refuses with `OUT_OF_SAMPLE_EXTENT`.
 
-`skill-metadata` gives Claude Code the skill directory in `/workspace/.claude/skills/metadata`, where it finds the skill as a user's Claude Code would. The agent `inspect` gets Inspect's `skill()` tool, which hands the model the text of `SKILL.md` only, not the skill's references or examples; see [Architecture](architecture.md#the-variants-and-the-agents). The skill is vendored under `skills/metadata/` from the commit named in `tasks.py`. To take a newer version, copy the directory again from that repository and change the commit.
+`skill-metadata` gives Claude Code the skill directory in `/workspace/.claude/skills/metadata`, where it finds the skill as a user's Claude Code would. `skill-mim` gives it `mim-interpret` as `.claude/skills/geonovum-mim-interpret`, the name in its frontmatter, and beside it `mim-core`, as the README of skills-mim asks. The agent `inspect` gets Inspect's `skill()` tool, which hands the model the text of `SKILL.md` only, not the skill's references or examples; see [Architecture](architecture.md#the-variants-and-the-agents). A task fetches each skill at the commit named in `tasks.py` into `.skills/`, which needs git and access to GitHub the first time. To take a newer version, change the commit.
+
+The samples tagged `verharding`, `dsfl-17` to `dsfl-19`, are made to compare an agent without skills with the same agent with both skills:
+
+```bash
+uv run airco-matrix --testset dsfl --tags verharding --variants 0,skill-metadata+skill-mim --agents inspect,claude-code ...
+```
 
 `mcp-dsfl-context` gives the agent the server `dsfl-context`, which answers what a published information standard says about its own elements, from cards compiled from the standard. It is public and not pinned; it reports itself as `@modeldesk/semantic-context` 0.1.0 and offers 4 tools whose definitions take about 3,000 tokens for Sonnet (20 November 2026). No sample is made for it yet, so the matrix skips it unless `--ids` or `--tags` choose samples.
 

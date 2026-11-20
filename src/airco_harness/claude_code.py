@@ -20,7 +20,7 @@ instructions to the model as it does for a user. It reaches them through the
 recording proxy of mcpwire, on the host at host.docker.internal. For a series question, plot_series is bridged as mcp__plot__plot_series.
 
 A variant's skills go into the project's .claude/skills, each skill directory
-whole, as a user copies it there. Inspect SWE's own skills option copies only
+whole and the directories it points at beside it, as a user copies them there. Inspect SWE's own skills option copies only
 SKILL.md, scripts/, references/ and assets/, and a skill can point at other files.
 """
 
@@ -44,15 +44,15 @@ SETTINGS = {"skipWebFetchPreflight": True}
 
 
 @solver
-def claude_code_setup(skills: list[Path] | None = None) -> Solver:
+def claude_code_setup(skills: list[tuple[str, Path]] | None = None) -> Solver:
     """Before the agent starts: an empty working directory with the project settings Claude Code needs behind the bridge, and the skills."""
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         await sandbox().exec(["mkdir", "-p", f"{WORKDIR}/.claude"])
         await sandbox().write_file(f"{WORKDIR}/.claude/settings.json", json.dumps(SETTINGS))
-        for skill in skills or []:
-            for file in sorted(f for f in skill.rglob("*") if f.is_file()):
-                await sandbox().write_file(f"{WORKDIR}/.claude/skills/{skill.name}/{file.relative_to(skill).as_posix()}", file.read_bytes())
+        for name, directory in skills or []:
+            for file in sorted(f for f in directory.rglob("*") if f.is_file()):
+                await sandbox().write_file(f"{WORKDIR}/.claude/skills/{name}/{file.relative_to(directory).as_posix()}", file.read_bytes())
         return state
 
     return solve

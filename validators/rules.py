@@ -119,18 +119,47 @@ def _invented_terms(values: list) -> list[str]:
     return sorted({v for v in values if isinstance(v, str) and not is_known(v)})
 
 
+def _listed(given: object, items: list) -> list:
+    """The items, each a literal or alternatives, that one of the given values matches."""
+    values = given if isinstance(given, list) else []
+    return [item for item in items if any(_matches(value, a) for value in values for a in _accepted(item))]
+
+
+def _set_field(given: object, want: dict) -> tuple[float, dict | None]:
+    """A list field: the share of the required items given, and what is wrong: missing items, or values that are neither required nor optional."""
+    values = given if isinstance(given, list) else []
+    allowed = [*want["set"], *want.get("optional", [])]
+    missing = [item for item in want["set"] if item not in _listed(given, want["set"])]
+    extra = [value for value in values if not _listed([value], allowed)]
+    share = 1 - len(missing) / len(want["set"])
+    return share, {"expected": want, "given": given, "missing": missing, "extra": extra} if missing or extra else None
+
+
 def rule_fields(answer: str, case: Case) -> Assessment:
-    """Named fields, with optional known-term and explicitly invented-value checks."""
+    """Named fields, with optional known-term and explicitly invented-value checks.
+
+    A field whose expected value is {"set": [...], "optional": [...]} takes a list: it must hold every item of the set and
+    nothing outside the set and the optional items. Its part of `complete` is the share of the set it holds, and in a
+    term field each value outside both that is no known term counts as invented."""
     data, failure, details = _json_answer(answer, case)
     if failure:
         return failure
     fields: dict[str, object] = case.expected["expected"]
-    wrong = {key: {"expected": want, "given": data.get(key)} for key, want in fields.items() if not any(_matches(data.get(key), a) for a in _accepted(want))}
-    term_values = [data.get(k) for k in case.expected.get("term_fields", []) if k in wrong]
+    shares, wrong = [], {}
+    for key, want in fields.items():
+        if isinstance(want, dict) and "set" in want:
+            share, problem = _set_field(data.get(key), want)
+        else:
+            matched = any(_matches(data.get(key), a) for a in _accepted(want))
+            share, problem = float(matched), None if matched else {"expected": want, "given": data.get(key)}
+        shares.append(share)
+        if problem:
+            wrong[key] = problem
+    term_values = [v for k in case.expected.get("term_fields", []) if k in wrong for v in wrong[k].get("extra", [wrong[k]["given"]])]
     invented = _invented_terms(term_values)
     invented_fields = [key for key in case.expected.get("invented_fields", []) if key in wrong]
     details |= {"wrong": wrong, "invented_terms": invented, "invented_fields": invented_fields}
-    complete = 1 - len(wrong) / len(fields)
+    complete = sum(shares) / len(fields)
     return Assessment(not wrong and not invented and not invented_fields, complete, len(invented) + len(invented_fields), True,
                       f"wrong: {sorted(wrong)}; invented: {invented}; invented fields: {invented_fields}", details)  # fmt: skip
 

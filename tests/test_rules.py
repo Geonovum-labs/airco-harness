@@ -109,6 +109,12 @@ def ranking(names: list[str], klei: dict | None = None) -> str:
     return as_json({"buurten": buurten})
 
 
+AREA = {
+    "objecttypen": ["Pand", "Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel"],
+    "filter_attribuut": "fysiekVoorkomen",
+    "bron_oppervlakte": "geometrie",
+}
+
 CASES = [
     ("imgeo-G04-03", as_json({"objecttype": "OverigBouwwerk", "type": "bassin"}), full()),
     ("imgeo-G04-03", as_json({"objecttype": "Overig bouwwerk", "type": "Bassin"}, fenced=False), full()),
@@ -204,6 +210,24 @@ CASES = [
     ("dsfl-16", ranking(["Isselt-Oost", "Schuilenburg-Zuid", "De Baken"]), full(0, 0.0, 0)),
     ("dsfl-16", ranking(["Hof", "Winkelcentrum Vathorst", "Eemhaven"]), full(0, round(6 / 9, 4), 1)),
     ("dsfl-16", as_json({"buurten": []}), full(0, 0, 0, 0)),
+    ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel"]}), full()),
+    ("dsfl-17", as_json({"objecttypen": ["wegdeel", "Onbegroeid terrein", "Ondersteunend wegdeel"]}), full()),
+    ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel"]}), full(0, 0.6667, 0)),
+    ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel", "Pand"]}), full(0, 1.0, 0)),
+    ("dsfl-17", as_json({"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel", "Verhardingsvlak"]}), full(0, 1.0, 1)),
+    ("dsfl-17", as_json({"objecttypen": "Wegdeel"}), full(0, 0, 0, 0)),
+    ("dsfl-18", as_json({"soorten": ["gesloten verharding", "open verharding"]}), full()),
+    ("dsfl-18", as_json({"soorten": ["open verharding", "gesloten verharding", "asfalt", "tegels"]}), full()),
+    ("dsfl-18", as_json({"soorten": ["gesloten verharding"]}), full(0, 0.5, 0)),
+    ("dsfl-18", as_json({"soorten": ["gesloten verharding", "open verharding", "half verhard"]}), full(0, 1.0, 0)),
+    ("dsfl-18", as_json({"soorten": ["gesloten verharding", "open verharding", "grind"]}), full(0, 1.0, 0)),
+    ("dsfl-18", as_json({"soorten": ["asfalt", "klinkers"]}), full(0, 0.0, 1)),
+    ("dsfl-19", as_json(AREA), full()),
+    ("dsfl-19", as_json(AREA | {"filter_attribuut": "bgt-fysiekVoorkomen"}), full()),
+    ("dsfl-19", as_json(AREA | {"objecttypen": ["Wegdeel", "OndersteunendWegdeel", "OnbegroeidTerreindeel"]}), full(0, 0.9167, 0)),
+    ("dsfl-19", as_json(AREA | {"bron_oppervlakte": "attribuut"}), full(0, 0.6667, 0)),
+    ("dsfl-19", as_json(AREA | {"filter_attribuut": "bgt-functie"}), full(0, 0.6667, 0)),
+    ("dsfl-19", as_json(AREA | {"bron_oppervlakte": "oppervlakte"}), full(0, 0, 0, 0)),
 ]
 
 

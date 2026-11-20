@@ -29,9 +29,10 @@ from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
 
+from . import pinned
 from .tasks import DSFL_AI_COMMIT, DSFL_AI_REPOSITORY, LDPROXY_DB_IMAGE, LDPROXY_IMAGE, VARIANTS, McpServer, compose, url_variable
 
-CHECKOUTS = Path(__file__).resolve().parents[2] / ".ldproxy"
+LDPROXY_FOLDER = ".ldproxy"
 LDPROXY_PROJECT = "airco-ldproxy"
 INITIALIZE = {
     "jsonrpc": "2.0",
@@ -55,10 +56,6 @@ def _run(*args: str, cwd: Path | None = None, env: dict | None = None) -> str:
     return subprocess.run(args, cwd=cwd, check=True, capture_output=True, text=True, env=env).stdout
 
 
-def _git(checkout: Path, *args: str) -> str:
-    return _run("git", "-C", str(checkout), *args, env={**os.environ, "GIT_LFS_SKIP_SMUDGE": "1"})
-
-
 def _pointer(blob: bytes) -> tuple[str, int] | None:
     """The sha256 and size of a Git LFS pointer; None for a file that is not one."""
     if not blob.startswith(b"version https://git-lfs.github.com/spec/v1"):
@@ -77,13 +74,8 @@ def _sha256(path: Path) -> str:
 
 def ldproxy_checkout() -> Path:
     """dsfl-ai at the pinned commit with its LFS files in place; converges from any partial earlier run."""
-    path = CHECKOUTS / DSFL_AI_COMMIT
-    if not (path / ".git").exists():
-        path.mkdir(parents=True, exist_ok=True)
-        _git(path, "init", "-q")
-        _git(path, "fetch", "-q", "--depth", "1", f"https://github.com/{DSFL_AI_REPOSITORY}", DSFL_AI_COMMIT)
-    _git(path, "checkout", "-q", "--force", DSFL_AI_COMMIT)
-    for name in filter(None, _git(path, "ls-files", "-z").split("\0")):
+    path = pinned.checkout(DSFL_AI_REPOSITORY, DSFL_AI_COMMIT, LDPROXY_FOLDER)
+    for name in filter(None, pinned.git(path, "ls-files", "-z").split("\0")):
         blob = subprocess.run(["git", "-C", str(path), "cat-file", "-p", f"HEAD:{name}"], check=True, capture_output=True).stdout
         if not (pointer := _pointer(blob)):
             continue
@@ -168,7 +160,7 @@ def up(variants: list[str], timeout: int) -> None:
 def down() -> None:
     names = {container(s) for v in VARIANTS.values() for s in v.mcp if s.image and s.image != LDPROXY_IMAGE}
     subprocess.run(["docker", "rm", "-f", *sorted(names)], check=False, capture_output=True)
-    if (path := CHECKOUTS / DSFL_AI_COMMIT).exists():
+    if (path := pinned.location(DSFL_AI_REPOSITORY, DSFL_AI_COMMIT, LDPROXY_FOLDER)).exists():
         _ldproxy_compose(path, "down")
 
 

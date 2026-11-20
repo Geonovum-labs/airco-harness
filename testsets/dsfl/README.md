@@ -20,6 +20,9 @@ Questions for the Dataspace Fysieke Leefomgeving, as a citizen asks them about t
 | `dsfl-14` | GeoTOP vertical column for an Appelboor | `trace` |
 | `dsfl-15` | Limits of line-of-sight evidence for confinement | `fields` |
 | `dsfl-16` | Buurten most sensitive to water accumulation | `ranking` |
+| `dsfl-17` | Welke BGT objecten kunnen verhard zijn? | `fields` with a list |
+| `dsfl-18` | Welke soorten verharding beinvloeden wateraccumulatie? | `fields` with a list |
+| `dsfl-19` | Hoe bepaal ik de oppervlakte van de fysieke objecten die relevant zijn voor wateraccumulatie? | `fields` with a list |
 
 The deck leaves the place open ("the city I live in", "the municipality") or names Vlaardingen. Every sample uses Amersfoort. The deck wording of each BAG question is in the `note` of its `expected.json`, with the choices the sample makes where the question is open: a definition of "building", "construction" or "house", and a time window fixed at 12 November 2026.
 
@@ -28,6 +31,14 @@ The samples have `status: draft`; the working group has to approve each definiti
 The BRO questions are a first check that the mechanism works, using the public BRO services at publiek.broservices.nl. Their `note` carries an "Origin" line instead of the deck wording. The BRO files in `sources/dsfl/` include the characteristics search of the wells within 1 km of Stadhuisplein 1, the wells of that search as a GeoJSON derived from it (the lock records it as `derived`), and the series of one tube. The values of `dsfl-06` and `dsfl-08` are provisional and have to be checked again before approval.
 
 `dsfl-03`, `dsfl-04` and `dsfl-05` are scored with the rule `map` against a BAG extract in `sources/dsfl/`, and `dsfl-07` against the wells as points. The samples name no defect, because the defects G1 to G13 belong to the IMGeo test set note. The version is in `testset.json`.
+
+## Paving in the BGT
+
+`dsfl-17` to `dsfl-19`, tagged `verharding`, ask what the BGT says about paving, without naming a dataset or a place: which object types can be paved, which kinds of paving affect water accumulation, and how to get the area of the relevant objects. They are made to compare an agent without skills with the same agent with the metadata skill and the MIM skill together (variant `skill-metadata+skill-mim`); the first is the example question of the metadata skill. Their standard is `imgeo-2.2`, so the IMGeo and BGT catalogs count as a source. The expected answers come from the IMGeo 2.2 reference model, and `tests/test_dsfl_sources.py` derives them again; the choices below are a draft of 20 November 2026 for the working group.
+
+- **Can be paved.** The object types whose `bgt-fysiekVoorkomen` can be gesloten verharding, open verharding or half verhard: Wegdeel, OndersteunendWegdeel and OnbegroeidTerreindeel.
+- **Affects water accumulation.** Gesloten verharding, open verharding and half verhard. A finer IMGeo plus value under one of them, such as asfalt or tegels, is allowed; onverhard is wrong. That a kind of paving affects water accumulation is a hydrological judgment, which the BGT does not record.
+- **Area.** The object types of `dsfl-17` and Pand, whose roof is paved surface as `dsfl-16` counts it, selected on `fysiekVoorkomen`, with the area from the geometry: no object type has an area attribute.
 
 ## Subsurface models
 
@@ -39,7 +50,7 @@ The harness connects the subsurface server only in variant `mcp-bgt-wijkenbuurte
 
 ### Selecting questions with tags
 
-Use `--testset dsfl --tags bag,groundwater` with `airco-matrix` to run the existing eight questions without the subsurface drafts. Use `--tags subsurface` to select the eight subsurface questions, `dsfl-09` to `dsfl-16`. Tags select any matching sample: `bro` includes both groundwater and subsurface questions. A DSFL run without a tag or id filter includes all sixteen samples.
+Use `--testset dsfl --tags bag,groundwater` with `airco-matrix` to run the existing eight questions without the subsurface drafts. Use `--tags subsurface` to select the eight subsurface questions, `dsfl-09` to `dsfl-16`. Tags select any matching sample: `bro` includes both groundwater and subsurface questions. A DSFL run without a tag or id filter includes all nineteen samples.
 
 The groundwater MCP variant defaults to the `groundwater` tag, so it still selects only `dsfl-06` to `dsfl-08`. Variant `mcp-bgt-wijkenbuurten-subsurface` selects `dsfl-16` by its tag `bgt` and gives it the BGT, the CBS buurten and the subsurface server; [Running](../../docs/running.md) says how to start that server. No variant serves `dsfl-09` to `dsfl-15` yet. Tags select questions; they do not launch a server. The tool-dependent subsurface samples cannot pass without their server; the `fields` samples can still be parseable without tools.
 

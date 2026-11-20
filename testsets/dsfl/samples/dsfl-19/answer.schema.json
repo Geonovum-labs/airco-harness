@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "required": [
+    "objecttypen",
+    "filter_attribuut",
+    "bron_oppervlakte"
+  ],
+  "properties": {
+    "objecttypen": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "filter_attribuut": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bron_oppervlakte": {
+      "enum": [
+        "geometrie",
+        "attribuut"
+      ]
+    }
+  }
+}

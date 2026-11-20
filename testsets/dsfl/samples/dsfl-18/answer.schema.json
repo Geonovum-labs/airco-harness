@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "required": [
+    "soorten"
+  ],
+  "properties": {
+    "soorten": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
