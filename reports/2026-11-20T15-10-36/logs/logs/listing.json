@@ -1,0 +1,146 @@
+{
+  "2026-11-20T14-12-41-00-00_airco_JWGgkV6hBvtum2a38Pc9gb.eval": {
+    "eval_id": "2BqwoyYQQkJhJ7m3RRc3Yb",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "JWGgkV6hBvtum2a38Pc9gb",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:26:29+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 1.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T14-12-41-00-00_airco_57aojYUou3pTasdixt2uzQ.eval": {
+    "eval_id": "RmgLd47jDxDZtTjzYv5bpq",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "57aojYUou3pTasdixt2uzQ",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:19:26+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 1.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T14-12-41-00-00_airco_Gr84t25TJbE4st4kLmR5VS.eval": {
+    "eval_id": "GePnTzoi7yFwQFMXXUgtKu",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "Gr84t25TJbE4st4kLmR5VS",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-opus-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:18:50+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 1.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T14-12-41-00-00_airco_b5AUS2riAHEeqRbYQQGddM.eval": {
+    "eval_id": "9V5KCt2xxNnJWwE3Gbhi82",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "b5AUS2riAHEeqRbYQQGddM",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-opus-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:18:41+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 1.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T14-12-41-00-00_airco_A3Y2ivEToZmyJiuzPBJxMQ.eval": {
+    "eval_id": "ALPRRy3sofmjTptLhtx5U4",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "A3Y2ivEToZmyJiuzPBJxMQ",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-opus-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:18:11+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 1.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T14-12-41-00-00_airco_J9siQYTZ95TcbhHBqzgTva.eval": {
+    "eval_id": "F7jUPkGhyUTFR29goPCz6c",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "J9siQYTZ95TcbhHBqzgTva",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:17:11+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 1.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T14-12-41-00-00_airco_6xDwq4wpeuAhegPaAi2wrw.eval": {
+    "eval_id": "TeDYVCFGzveDigF33XVeqU",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "6xDwq4wpeuAhegPaAi2wrw",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-sonnet-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:15:11+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  },
+  "2026-11-20T14-12-41-00-00_airco_VqVSSP2L8qJp54sBj82MqU.eval": {
+    "eval_id": "EpWWBAsKc4S9UHXNgZeXDG",
+    "run_id": "auZSdkBCB3SDamShTJxrNU",
+    "task": "airco_harness/airco",
+    "task_id": "VqVSSP2L8qJp54sBj82MqU",
+    "task_version": "0.1",
+    "version": 2,
+    "status": "success",
+    "invalidated": false,
+    "model": "anthropic/claude-opus-5-5",
+    "started_at": "2026-11-20T14:12:41+00:00",
+    "completed_at": "2026-11-20T14:14:00+00:00",
+    "primary_metric": {
+      "name": "mean",
+      "value": 0.0,
+      "params": {}
+    }
+  }
+}
