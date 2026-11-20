@@ -35,7 +35,7 @@ The BRO questions are a first check that the mechanism works, using the public B
 
 The cross-section is scored from the successful `section-plot` call and its JSON and PNG result, not by inspecting the picture. That tool produces a complete plot and has no pagination; `section` is a different, paginated data tool. The vertical-column question scores a `trace` result, not an Appelboor drawing, because the server does not draw one. The scores check selected properties, not all cells or the geological interpretation.
 
-The harness connects the subsurface server only in variant `mcp-bgt-wijkenbuurten-subsurface`, for `dsfl-16`. It does not attribute the server's calls as an authoritative source or report response-size metrics. The reference values and the server's behavior need review before approving the samples. The current image (revision `caed3d4`, version `1.0.10`) takes a WGS84 point and puts the column under `result`, unlike the trace these samples were written for; at RD (155000, 463000) it gives a surface of 3.80 m NAP where `dsfl-09` expects 4.37.
+The harness connects the subsurface server only in variant `mcp-bgt-wijkenbuurten-subsurface`, for `dsfl-16`. It does not attribute the server's calls as an authoritative source or report response-size metrics. The reference values and the server's behavior need review before approving the samples. The current image (revision `cb6b5d6`, version `1.0.13`) takes a WGS84 point and puts the column under `result`, unlike the trace these samples were written for; at RD (155000, 463000) it gives a surface of 3.80 m NAP where `dsfl-09` expects 4.37.
 
 ### Selecting questions with tags
 

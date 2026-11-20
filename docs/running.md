@@ -67,14 +67,14 @@ A variant is what the agent gets besides the question, chosen with `-T variant=`
 The groundwater monitoring and subsurface models servers (github.com/sjaakd) answer over HTTP only, for linux/amd64, so they run on the host from the images pinned in `tasks.py`. Start them before a run of their variant:
 
 ```bash
-docker run -d --name airco-groundwater --platform linux/amd64 -p 18081:8080 -e GROUNDWATER_MONITORING_CONCEPTS_BASE_URI=https://example.org/ ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:13ba5702da61d81e76421061e52f3ef416f43d7f390667c8a036282fdf4bf9d0
-docker run -d --name airco-subsurface --platform linux/amd64 -p 18082:8080 -e SUBSURFACE_MODELS_CONCEPTS_BASE_URI=https://example.org/ ghcr.io/sjaakd/mcp-subsurface-models@sha256:40af69780274dcc5c4b8c4ce99cf4b540c07ac72bb241127911954cf8466b6ae
+docker run -d --name airco-groundwater --platform linux/amd64 -p 18081:8080 -e GROUNDWATER_MONITORING_CONCEPTS_BASE_URI=https://example.org/ ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:0f4bd731e90fc2fcf29f0a221f93aa74d5b6c0d40d08a54adff07735a38577ee
+docker run -d --name airco-subsurface --platform linux/amd64 -p 18082:8080 -e SUBSURFACE_MODELS_CONCEPTS_BASE_URI=https://example.org/ ghcr.io/sjaakd/mcp-subsurface-models@sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c
 ```
 
 | Server | Revision | `serverInfo.version` | Host URL | Variable |
 | --- | --- | --- | --- | --- |
-| `groundwater-monitoring` | `74482ac` | `1.0.9` | `http://localhost:18081/mcp` | `AIRCO_GROUNDWATER_MONITORING_URL` |
-| `subsurface-models` | `caed3d4` | `1.0.10` | `http://localhost:18082/mcp` | `AIRCO_SUBSURFACE_MODELS_URL` |
+| `groundwater-monitoring` | `bc4a2a3` | `1.0.10` | `http://localhost:18081/mcp` | `AIRCO_GROUNDWATER_MONITORING_URL` |
+| `subsurface-models` | `cb6b5d6` | `1.0.13` | `http://localhost:18082/mcp` | `AIRCO_SUBSURFACE_MODELS_URL` |
 
 The agent `inspect` reaches a server at its host URL, and Claude Code from its sandbox at `host.docker.internal` on the same port. The variable sets another host URL, for example for a server you build and run yourself. Each image reports its version in `serverInfo.version` (MAJOR.MINOR from the pom, the patch from the CI run), and the harness checks it when it connects: a server that reports another version than its pin fails the run, so a run cannot meet an image other than the pinned one. The `mcp_server` column records the version of every server a run met; the ldproxy servers report the time of their deployment and are not pinned. The groundwater image is private: log in to `ghcr.io` with a token with package access.
 

@@ -71,15 +71,15 @@ class Variant:
 
 
 # The two servers of github.com/sjaakd serve HTTP only, for linux/amd64, so they run on the host; docs/running.md has the docker run commands.
-# Revision 74482ac of 19 November 2026.
-GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:13ba5702da61d81e76421061e52f3ef416f43d7f390667c8a036282fdf4bf9d0"
-# Revision caed3d4 of 19 November 2026, with the GeoTOP and REGIS tiles of Amersfoort in the image.
-SUBSURFACE_MODELS_IMAGE = "ghcr.io/sjaakd/mcp-subsurface-models@sha256:40af69780274dcc5c4b8c4ce99cf4b540c07ac72bb241127911954cf8466b6ae"
+# Revision bc4a2a3 of 20 November 2026.
+GROUNDWATER_MONITORING_IMAGE = "ghcr.io/sjaakd/mcp-groundwater-monitoring@sha256:0f4bd731e90fc2fcf29f0a221f93aa74d5b6c0d40d08a54adff07735a38577ee"
+# Revision cb6b5d6 of 20 November 2026, with the GeoTOP and REGIS tiles of Amersfoort in the image.
+SUBSURFACE_MODELS_IMAGE = "ghcr.io/sjaakd/mcp-subsurface-models@sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c"
 VARIANTS = {
     "0": Variant("The question alone: the agent finds the standard as it is published today, or not."),
     "mcp-groundwater-monitoring": Variant(
         "Variant 0 plus the groundwater monitoring MCP server on BRO data (github.com/sjaakd/mcp-groundwater-monitoring).",
-        mcp=(host_server("groundwater-monitoring", "http://localhost:18081/mcp", GROUNDWATER_MONITORING_IMAGE, "1.0.9"),),
+        mcp=(host_server("groundwater-monitoring", "http://localhost:18081/mcp", GROUNDWATER_MONITORING_IMAGE, "1.0.10"),),
         tags=("groundwater",),
     ),
     "mcp-bag-ldproxy": Variant(
@@ -93,7 +93,7 @@ VARIANTS = {
         mcp=(
             McpServer("bgt", url="https://bag.ldproxy.net/bgt/mcp"),
             McpServer("wijkenbuurten", url="https://bag.ldproxy.net/wijkenbuurten/mcp"),
-            host_server("subsurface-models", "http://localhost:18082/mcp", SUBSURFACE_MODELS_IMAGE, "1.0.10"),
+            host_server("subsurface-models", "http://localhost:18082/mcp", SUBSURFACE_MODELS_IMAGE, "1.0.13"),
         ),
         tags=("bgt",),
     ),

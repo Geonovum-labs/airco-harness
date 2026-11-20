@@ -215,11 +215,11 @@ def test_the_groundwater_variant_reaches_a_pinned_image_on_the_host_and_its_vari
     [server] = tasks.VARIANTS[GROUNDWATER].mcp
     assert (server.url, server.sandbox_url) == ("http://localhost:18081/mcp", "http://host.docker.internal:18081/mcp")
     assert re.fullmatch(r"ghcr\.io/sjaakd/mcp-groundwater-monitoring@sha256:[0-9a-f]{64}", server.image)
-    assert server.image.endswith("sha256:13ba5702da61d81e76421061e52f3ef416f43d7f390667c8a036282fdf4bf9d0") and server.version == "1.0.9"
+    assert server.image.endswith("sha256:0f4bd731e90fc2fcf29f0a221f93aa74d5b6c0d40d08a54adff07735a38577ee") and server.version == "1.0.10"
     monkeypatch.setenv("AIRCO_GROUNDWATER_MONITORING_URL", "http://localhost:9001/mcp")
     task = airco(testset="dsfl", variant=GROUNDWATER, agent="inspect", ids="dsfl-06")
     [moved] = task.metadata["variant_form"]["mcp"]
-    assert (moved["url"], moved["sandbox_url"], moved["version"]) == ("http://localhost:9001/mcp", "http://host.docker.internal:9001/mcp", "1.0.9")
+    assert (moved["url"], moved["sandbox_url"], moved["version"]) == ("http://localhost:9001/mcp", "http://host.docker.internal:9001/mcp", "1.0.10")
 
 
 def test_a_server_that_reports_another_version_than_its_pin_fails_the_run(tmp_path, monkeypatch):
@@ -247,7 +247,7 @@ def test_the_bgt_variant_gives_three_named_servers_and_claude_code_reaches_the_h
         ("subsurface-models", "http://localhost:18082/mcp"),
     ]
     assert servers[2].sandbox_url == "http://host.docker.internal:18082/mcp"
-    assert servers[2].image.endswith("sha256:40af69780274dcc5c4b8c4ce99cf4b540c07ac72bb241127911954cf8466b6ae") and servers[2].version == "1.0.10"
+    assert servers[2].image.endswith("sha256:806d7ff5d58dab50c445dd7f1a4a1208e6b785eadcb759b589f7f66c48b36a2c") and servers[2].version == "1.0.13"
     assert not servers[0].version and not servers[1].version
     assert tasks.takes(variant, "claude-code") and tasks.takes(variant, "inspect") and not tasks.takes(variant, "model")
     assert [s.id for s in airco(testset="dsfl", variant=variant, agent="inspect").dataset] == ["dsfl-16"]
