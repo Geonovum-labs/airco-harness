@@ -57,10 +57,13 @@ A variant is what the agent gets besides the question, chosen with `-T variant=`
 | `mcp-groundwater-monitoring` | Variant 0 plus the groundwater monitoring MCP server on BRO data, on the host, for the agents `inspect` and `claude-code` | Those tagged `groundwater` |
 | `mcp-bag-ldproxy` | Variant 0 plus the MCP server of the BAG API on bag.ldproxy.net, for the agents `inspect` and `claude-code` | Those tagged `bag` |
 | `mcp-bgt-wijkenbuurten-subsurface` | Variant 0 plus three MCP servers: the BGT and the CBS wijken en buurten on bag.ldproxy.net, and the subsurface models server on the host, for the agents `inspect` and `claude-code` | Those tagged `bgt` |
+| `mcp-dsfl-context` | Variant 0 plus the semantic context MCP server on catalog.modeldesk.io, for the agents `inspect` and `claude-code` | None yet: name `--ids` or `--tags` |
 
 `mcp-bag-ldproxy` reaches a public server over Streamable HTTP, without a key. Claude Code gets it as the MCP server `bag` in its own configuration, reaches it from the sandbox, and passes the server's instructions to the model itself. The agent `model` has no tools, so the matrix skips it for every variant with an MCP server. That server is not pinned: the log records the tools it offered, but if it changes its data or tools, a later measurement measures another server. It offers 18 tools whose definitions take about 91,000 tokens, and the token limit of a run counts them with every model call, cached or not (13 November 2026).
 
 `mcp-bgt-wijkenbuurten-subsurface` gives the agent the servers `bgt`, `wijkenbuurten` and `subsurface-models`. The first two are public, like the BAG server. The subsurface models image holds the GeoTOP and REGIS tiles of Amersfoort; outside them it refuses with `OUT_OF_SAMPLE_EXTENT`.
+
+`mcp-dsfl-context` gives the agent the server `dsfl-context`, which answers what a published information standard says about its own elements, from cards compiled from the standard. It is public and not pinned; it reports itself as `@modeldesk/semantic-context` 0.1.0 and offers 4 tools whose definitions take about 3,000 tokens for Sonnet (20 November 2026). No sample is made for it yet, so the matrix skips it unless `--ids` or `--tags` choose samples.
 
 ### Servers on the host
 

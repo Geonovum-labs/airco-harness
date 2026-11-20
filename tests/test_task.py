@@ -299,6 +299,15 @@ def test_the_bgt_variant_gives_three_named_servers_one_of_them_on_the_host(monke
     assert moved.url == "http://localhost:9000/mcp"
 
 
+def test_the_dsfl_context_variant_reaches_its_server_over_http_and_has_no_samples_of_its_own_yet():
+    variant = "mcp-dsfl-context"
+    assert tasks.VARIANTS[variant].mcp == (tasks.McpServer("dsfl-context", url="https://catalog.modeldesk.io/mcp/modeldesk/context"),)
+    assert tasks.takes(variant, "inspect") and tasks.takes(variant, "claude-code") and not tasks.takes(variant, "model")
+    with pytest.raises(ValueError, match="no samples of test set dsfl for variant mcp-dsfl-context"):
+        airco(testset="dsfl", variant=variant, agent="inspect")
+    assert [s.id for s in airco(testset="dsfl", variant=variant, agent="claude-code", ids="dsfl-01").dataset] == ["dsfl-01"]
+
+
 def test_price_file_registers_a_model_inspect_does_not_know(tmp_path):
     prices = tmp_path / "model-costs.yaml"
     prices.write_text("test/custom: {input: 1, output: 2, input_cache_write: 3, input_cache_read: 4}\n", encoding="utf-8")

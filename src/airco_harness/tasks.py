@@ -96,6 +96,13 @@ VARIANTS = {
         ),
         tags=("bgt",),
     ),
+    # No question is made for it yet: its tag is on no sample, so a run of it needs ids or tags.
+    "mcp-dsfl-context": Variant(
+        "Variant 0 plus the semantic context MCP server on catalog.modeldesk.io, which answers what a published information standard "
+        "says about its own elements (describe_standard, search_concepts, get_concepts, check_value).",
+        mcp=(McpServer("dsfl-context", url="https://catalog.modeldesk.io/mcp/modeldesk/context"),),
+        tags=("dsfl-context",),
+    ),
 }
 AgentName = Literal["model", "inspect", "claude-code"]
 MAX_TOOL_OUTPUT = 48 * 1024
@@ -272,7 +279,7 @@ def airco(
 
     Args:
       testset: Test set under testsets/.
-      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, mcp-bag-ldproxy or mcp-bgt-wijkenbuurten-subsurface (agents inspect and claude-code), variant 0 plus MCP servers.
+      variant: Variant: 0, the question alone; mcp-groundwater-monitoring, mcp-bag-ldproxy, mcp-bgt-wijkenbuurten-subsurface or mcp-dsfl-context (agents inspect and claude-code), variant 0 plus MCP servers.
       agent: model for the model without prompt or tools; inspect for Inspect's react() with web search and fetch; claude-code for Claude Code in a Docker sandbox.
       ids: Comma-separated sample ids; default the samples the variant is made for, all for variant 0.
       tags: Comma-separated tags; the samples with one of them.
