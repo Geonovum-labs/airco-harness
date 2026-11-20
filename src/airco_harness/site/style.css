@@ -409,15 +409,16 @@ dl.callfacts dd { margin: 0; font-size: 0.88rem; font-variant-numeric: tabular-n
 @media (max-width: 640px) { .detail dl.scores.effort { padding-left: 0; border-left: 0; } }
 
 /* Fixed columns, so that a run opened below its row fits the card; a wider table inside it scrolls in its own frame. */
-table.runlist { table-layout: fixed; min-width: 46rem; }
+table.runlist { table-layout: fixed; min-width: 52rem; }
 table.runlist col.c-mark { width: 2rem; }
-table.runlist col.c-setup { width: 18%; }
-table.runlist col.c-variant { width: 17%; }
+table.runlist col.c-setup { width: 17%; }
+table.runlist col.c-variant { width: 15%; }
 table.runlist col.c-epoch { width: 4.8rem; }
-table.runlist col.c-outcome { width: 17%; }
+table.runlist col.c-outcome { width: 15%; }
 table.runlist col.c-complete { width: 6.2rem; }
 table.runlist col.c-calls { width: 7.8rem; }
 table.runlist col.c-tokens { width: 5rem; }
+table.runlist col.c-time { width: 6.8rem; }
 table.runlist col.c-cost { width: 5rem; }
 table.runlist col.c-chev { width: 2rem; }
 table.runlist > tbody > tr.rundetailrow > td { overflow: hidden; }

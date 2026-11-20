@@ -37,6 +37,11 @@ function h(tag, attrs = {}, ...children) {
 }
 const fmt = (v, digits = 2) => (v === null || v === undefined || Number.isNaN(v) ? "n/a" : Number(v).toFixed(digits));
 const money = v => (v === null || v === undefined ? "n/a" : `$${Number(v).toFixed(2)}`);
+const duration = s => {
+  if (s === null || s === undefined || Number.isNaN(s)) return "n/a";
+  const total = Math.round(s);
+  return total < 60 ? `${total} s` : `${Math.floor(total / 60)} min ${total % 60} s`;
+};
 const compact = v => (v === null || v === undefined ? "n/a" : v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${Math.round(v / 1e3)}K` : String(Math.round(v)));
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const series = () => Array.from({length: 8}, (_, i) => css(`--series-${i + 1}`));
@@ -748,17 +753,17 @@ function runsTable(d, m, sample, selected, onPick) {
       h("td", {class: "variant"}, r.variant.split("-").flatMap((part, i) => (i ? ["-", h("wbr"), part] : [part]))), h("td", {class: "num", text: String(r.epoch)}),
       h("td", {class: "outcome", text: outcomeShort(r)}), h("td", {class: "num", text: r.failed ? "n/a" : pct(r.complete)}),
       h("td", {class: "num", text: `${r.model_calls ?? "n/a"} / ${r.tool_calls ?? 0}`}),
-      h("td", {class: "num", text: compact(r.tokens)}), h("td", {class: "num", text: dollars(r.cost)}),
+      h("td", {class: "num", text: compact(r.tokens)}), h("td", {class: "num", text: duration(r.total_time_s)}), h("td", {class: "num", text: dollars(r.cost)}),
       h("td", {class: "chev", text: open ? "▾" : "▸", "aria-hidden": "true"}));
     tr.addEventListener("click", () => onPick(r));
     tr.addEventListener("pointerenter", () => markOf(key)?.classList.add("hot"));
     tr.addEventListener("pointerleave", () => markOf(key)?.classList.remove("hot"));
-    return open ? [tr, h("tr", {class: "rundetailrow"}, h("td", {colspan: "10"}, runDetail(d, m, r, () => onPick(null))))] : [tr];
+    return open ? [tr, h("tr", {class: "rundetailrow"}, h("td", {colspan: "11"}, runDetail(d, m, r, () => onPick(null))))] : [tr];
   });
   const list = h("div", {class: "tablewrap"}, h("table", {class: "runlist"},
-    h("colgroup", {}, ["mark", "setup", "variant", "epoch", "outcome", "complete", "calls", "tokens", "cost", "chev"].map(c => h("col", {class: `c-${c}`}))),
-    h("thead", {}, h("tr", {}, ["", "Model · agent", "Variant", "Epoch", "Outcome", "Complete", "Model / tool calls", "Tokens", "Cost", ""].map((t, i) =>
-      h("th", {scope: "col", class: [3, 5, 6, 7, 8].includes(i) ? "num" : null, text: t})))),
+    h("colgroup", {}, ["mark", "setup", "variant", "epoch", "outcome", "complete", "calls", "tokens", "time", "cost", "chev"].map(c => h("col", {class: `c-${c}`}))),
+    h("thead", {}, h("tr", {}, ["", "Model · agent", "Variant", "Epoch", "Outcome", "Complete", "Model / tool calls", "Tokens", "Time", "Cost", ""].map((t, i) =>
+      h("th", {scope: "col", class: [3, 5, 6, 7, 8, 9].includes(i) ? "num" : null, text: t})))),
     h("tbody", {}, rows)));
   const title = `Runs (${runs.length})`;
   const hint = "Choose a run, here or by its mark in the plot, for its outcome, sources, model calls and log.";
